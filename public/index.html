@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b5d34">
+<title>Field Shift · Rotación de cultivos con datos NASA</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo" aria-hidden="true">◐</span><div><h1>Field Shift</h1><p>Rotaciones de cultivo con evidencia satelital</p></div></div>
+  <nav class="steps" aria-label="Pasos">
+    <button data-step="1" class="on">1<span>Parcela</span></button>
+    <button data-step="2">2<span>Historial</span></button>
+    <button data-step="3">3<span>Prioridades</span></button>
+    <button data-step="4">4<span>Resultados</span></button>
+  </nav>
+</header>
+
+<main>
+  <section id="step1" class="panel">
+    <h2>¿Dónde está su parcela?</h2>
+    <p class="hint">Toque el mapa para ubicar el centro de su parcela. Los datos satelitales describen la <strong>zona</strong> (celdas de 10–55 km), no el detalle de su terreno.</p>
+    <div id="map" role="application" aria-label="Mapa para ubicar la parcela"></div>
+    <div class="row">
+      <button id="btnDemo" class="ghost">Caso demo: Moyobamba</button>
+      <button id="btnGeo" class="ghost">Usar mi ubicación</button>
+    </div>
+    <div class="grid2">
+      <label>Nombre de la parcela<input id="pName" type="text" maxlength="80" placeholder="Ej. Chacra El Mirador"></label>
+      <label>Área aproximada (ha)<input id="pArea" type="number" min="0" step="0.1" placeholder="1.5"></label>
+    </div>
+    <label class="check"><input id="pIrrig" type="checkbox"> Dispongo de riego (también necesario para arroz)</label>
+    <p id="coords" class="mono muted">Sin ubicación seleccionada</p>
+    <div class="row"><button id="btnSave" class="ghost">Guardar parcela</button><button id="next1" class="primary">Continuar →</button></div>
+    <h3>Parcelas guardadas</h3>
+    <ul id="saved" class="saved"><li class="muted">Ninguna todavía</li></ul>
+  </section>
+
+  <section id="step2" class="panel" hidden>
+    <h2>¿Qué sembró antes?</h2>
+    <p class="hint">Indique las últimas campañas (la más reciente al final). El sistema proyecta su patrón actual como primera estrategia a comparar.</p>
+    <div id="histSelects"></div>
+    <label>Próxima campaña a planificar
+      <select id="startSlot"><option value="A">A · siembra desde 1-nov (inicio de lluvias)</option><option value="B">B · siembra desde 15-abr (menor lluvia)</option></select>
+    </label>
+    <div class="row"><button class="ghost" data-go="1">← Atrás</button><button id="next2" class="primary">Continuar →</button></div>
+  </section>
+
+  <section id="step3" class="panel" hidden>
+    <h2>¿Qué es lo más importante para usted?</h2>
+    <p class="hint">Estas prioridades ponderan los criterios de evaluación. Los pesos resultantes son <strong>provisionales</strong> y se muestran en los resultados.</p>
+    <div id="sliders"></div>
+    <h3>Cultivos que NO quiere sembrar</h3>
+    <div id="excl" class="chips"></div>
+    <h3>Escenario climático</h3>
+    <select id="scenario"></select>
+    <p class="hint">Los escenarios «hipotéticos» son ejercicios de sensibilidad, <strong>no pronósticos</strong>.</p>
+    <div class="row"><button class="ghost" data-go="2">← Atrás</button><button id="btnRun" class="primary">Analizar rotaciones</button></div>
+  </section>
+
+  <section id="step4" class="panel" hidden>
+    <div id="results"></div>
+    <div class="row"><button class="ghost" data-go="3">← Ajustar prioridades</button></div>
+  </section>
+</main>
+
+<footer>
+  <p><strong>Apoyo a la decisión, no un dictamen.</strong> Resultados modelados con datos satelitales/reanálisis de baja resolución y reglas agronómicas provisionales; consulte a un técnico agrícola local.</p>
+  <p class="muted">Datos: NASA POWER · NASA GPM IMERG · SRTM · ISRIC SoilGrids · ERA5 (control). Capa de mapa NASA GIBS solo con fines visuales.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

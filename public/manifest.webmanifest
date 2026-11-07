@@ -1,0 +1,10 @@
+{
+  "name": "Field Shift",
+  "short_name": "Field Shift",
+  "description": "Rotaciones de cultivo con datos NASA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f4ee",
+  "theme_color": "#2b5d34",
+  "lang": "es"
+}

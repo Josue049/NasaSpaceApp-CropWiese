@@ -1,0 +1,425 @@
+{
+  "_meta": {
+    "status": "PROVISIONAL - pendiente de validación por agrónomo local (Alto Mayo / San Martín)",
+    "version": "0.1",
+    "notes": [
+      "kc y duración de etapas: valores típicos de FAO-56 (Allen et al., 1998, Tablas 11 y 12), adaptados a ciclos tropicales; verificar con variedades locales.",
+      "t_abs / t_stress_max / ph: rangos aproximados de literatura agronómica general y FAO EcoCrop; no calibrados localmente.",
+      "cover, biomass, n_balance, cost, waterlog_sens: escalas ORDINALES de criterio experto (0-1 / -2..+2 / 1-3). NO son cantidades físicas: no representan kg N/ha, t/ha ni % de cobertura medido.",
+      "El balance de N es el signo y magnitud relativa del efecto neto sobre el sistema (fijación vs. extracción), no una dosis.",
+      "root_m y p_depletion: FAO-56 Tabla 22 (valores medios conservadores, constantes durante el ciclo); verificar.",
+      "Se asume capacidad de agua útil del suelo de 110 mm/m (franco) por defecto; 70 si arena>=60 %; 120 si arcilla>=40 % (SoilGrids). Simplificación PROVISIONAL."
+    ],
+    "refs": {
+      "FAO56": "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56. https://www.fao.org/4/x0490e/x0490e00.htm",
+      "FAO33": "Doorenbos J., Kassam A.H. (1979). Yield response to water. FAO Irrigation and Drainage Paper 33.",
+      "ECOCROP": "FAO EcoCrop database. https://gaez.fao.org/pages/ecocrop-search",
+      "PEOPLES2009": "Peoples M.B. et al. (2009). The contributions of nitrogen-fixing crop legumes to the productivity of agricultural systems. Symbiosis 48:1-17. (verificar DOI)"
+    }
+  },
+  "crops": [
+    {
+      "id": "maiz",
+      "name": "Maíz amarillo duro",
+      "sci": "Zea mays",
+      "family": "Poaceae",
+      "type": "cereal",
+      "cycle": {
+        "ini": 25,
+        "dev": 40,
+        "mid": 45,
+        "late": 25
+      },
+      "kc": {
+        "ini": 0.3,
+        "mid": 1.2,
+        "end": 0.6
+      },
+      "t_abs": [
+        15,
+        35
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5.5,
+        7.5
+      ],
+      "regime": "rainfed",
+      "cover": 0.55,
+      "biomass": 0.8,
+      "n_balance": -1.5,
+      "cost": 2,
+      "waterlog_sens": 0.6,
+      "refs": [
+        "FAO56",
+        "ECOCROP"
+      ],
+      "notes": "Cultivo exigente en N; deja buen volumen de rastrojo. Alta demanda de agua en floración.",
+      "root_m": 0.9,
+      "p_depletion": 0.55
+    },
+    {
+      "id": "arroz",
+      "name": "Arroz (riego/inundación)",
+      "sci": "Oryza sativa",
+      "family": "Poaceae",
+      "type": "cereal",
+      "cycle": {
+        "ini": 30,
+        "dev": 30,
+        "mid": 60,
+        "late": 30
+      },
+      "kc": {
+        "ini": 1.05,
+        "mid": 1.2,
+        "end": 0.9
+      },
+      "t_abs": [
+        18,
+        35
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5,
+        7.5
+      ],
+      "regime": "irrigated_required",
+      "cover": 0.8,
+      "biomass": 0.6,
+      "n_balance": -1,
+      "cost": 3,
+      "waterlog_sens": 0,
+      "refs": [
+        "FAO56",
+        "ECOCROP"
+      ],
+      "notes": "Requiere lámina de agua/riego: sólo elegible si la parcela dispone de riego. El Kc FAO-56 no incluye percolación ni saturación de suelo.",
+      "root_m": 0.5,
+      "p_depletion": 0.2
+    },
+    {
+      "id": "frijol",
+      "name": "Frijol común",
+      "sci": "Phaseolus vulgaris",
+      "family": "Fabaceae",
+      "type": "legume",
+      "cycle": {
+        "ini": 20,
+        "dev": 30,
+        "mid": 40,
+        "late": 20
+      },
+      "kc": {
+        "ini": 0.4,
+        "mid": 1.15,
+        "end": 0.35
+      },
+      "t_abs": [
+        15,
+        30
+      ],
+      "t_stress_max": 30,
+      "ph": [
+        6,
+        7
+      ],
+      "regime": "rainfed",
+      "cover": 0.6,
+      "biomass": 0.4,
+      "n_balance": 0.5,
+      "cost": 1,
+      "waterlog_sens": 0.8,
+      "refs": [
+        "FAO56",
+        "ECOCROP",
+        "PEOPLES2009"
+      ],
+      "notes": "Fijación de N baja a moderada; sensible a calor en floración (aborto floral) y al encharcamiento.",
+      "root_m": 0.5,
+      "p_depletion": 0.45
+    },
+    {
+      "id": "caupi",
+      "name": "Frijol caupí (castilla)",
+      "sci": "Vigna unguiculata",
+      "family": "Fabaceae",
+      "type": "legume",
+      "cycle": {
+        "ini": 20,
+        "dev": 25,
+        "mid": 30,
+        "late": 15
+      },
+      "kc": {
+        "ini": 0.4,
+        "mid": 1.05,
+        "end": 0.35
+      },
+      "t_abs": [
+        18,
+        35
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5.5,
+        7
+      ],
+      "regime": "rainfed",
+      "cover": 0.75,
+      "biomass": 0.5,
+      "n_balance": 1,
+      "cost": 1,
+      "waterlog_sens": 0.5,
+      "refs": [
+        "FAO56",
+        "ECOCROP",
+        "PEOPLES2009"
+      ],
+      "notes": "Más tolerante a calor y sequía que el frijol común; ciclo corto.",
+      "root_m": 0.6,
+      "p_depletion": 0.45
+    },
+    {
+      "id": "soya",
+      "name": "Soya",
+      "sci": "Glycine max",
+      "family": "Fabaceae",
+      "type": "legume",
+      "cycle": {
+        "ini": 15,
+        "dev": 25,
+        "mid": 50,
+        "late": 20
+      },
+      "kc": {
+        "ini": 0.4,
+        "mid": 1.15,
+        "end": 0.5
+      },
+      "t_abs": [
+        17,
+        33
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        6,
+        7
+      ],
+      "regime": "rainfed",
+      "cover": 0.7,
+      "biomass": 0.5,
+      "n_balance": 0.5,
+      "cost": 2,
+      "waterlog_sens": 0.6,
+      "refs": [
+        "FAO56",
+        "ECOCROP",
+        "PEOPLES2009"
+      ],
+      "notes": "Fija N, pero la exportación en grano deja un balance neto cercano a neutro. Sensible a suelos ácidos (pH<6).",
+      "root_m": 0.8,
+      "p_depletion": 0.5
+    },
+    {
+      "id": "mani",
+      "name": "Maní",
+      "sci": "Arachis hypogaea",
+      "family": "Fabaceae",
+      "type": "legume",
+      "cycle": {
+        "ini": 25,
+        "dev": 35,
+        "mid": 45,
+        "late": 25
+      },
+      "kc": {
+        "ini": 0.4,
+        "mid": 1.15,
+        "end": 0.6
+      },
+      "t_abs": [
+        18,
+        33
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5.5,
+        7
+      ],
+      "regime": "rainfed",
+      "cover": 0.65,
+      "biomass": 0.5,
+      "n_balance": 1,
+      "cost": 2,
+      "waterlog_sens": 0.8,
+      "refs": [
+        "FAO56",
+        "ECOCROP",
+        "PEOPLES2009"
+      ],
+      "notes": "Prefiere suelos sueltos y bien drenados; sensible a encharcamiento.",
+      "root_m": 0.6,
+      "p_depletion": 0.5
+    },
+    {
+      "id": "camote",
+      "name": "Camote",
+      "sci": "Ipomoea batatas",
+      "family": "Convolvulaceae",
+      "type": "root",
+      "cycle": {
+        "ini": 20,
+        "dev": 30,
+        "mid": 60,
+        "late": 40
+      },
+      "kc": {
+        "ini": 0.5,
+        "mid": 1.15,
+        "end": 0.65
+      },
+      "t_abs": [
+        15,
+        32
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5.2,
+        6.5
+      ],
+      "regime": "rainfed",
+      "cover": 0.9,
+      "biomass": 0.6,
+      "n_balance": -0.5,
+      "cost": 1,
+      "waterlog_sens": 0.8,
+      "refs": [
+        "FAO56",
+        "ECOCROP"
+      ],
+      "notes": "Follaje rastrero denso: buena cobertura del suelo; tolera suelos ácidos.",
+      "root_m": 0.9,
+      "p_depletion": 0.65
+    },
+    {
+      "id": "tomate",
+      "name": "Tomate",
+      "sci": "Solanum lycopersicum",
+      "family": "Solanaceae",
+      "type": "vegetable",
+      "cycle": {
+        "ini": 30,
+        "dev": 40,
+        "mid": 45,
+        "late": 30
+      },
+      "kc": {
+        "ini": 0.6,
+        "mid": 1.15,
+        "end": 0.8
+      },
+      "t_abs": [
+        15,
+        30
+      ],
+      "t_stress_max": 32,
+      "ph": [
+        6,
+        6.8
+      ],
+      "regime": "rainfed",
+      "cover": 0.35,
+      "biomass": 0.3,
+      "n_balance": -2,
+      "cost": 3,
+      "waterlog_sens": 0.8,
+      "refs": [
+        "FAO56",
+        "ECOCROP"
+      ],
+      "notes": "Cultivo de alto insumo y riesgo fitosanitario; no repetir solanáceas en campañas consecutivas.",
+      "root_m": 0.8,
+      "p_depletion": 0.4
+    },
+    {
+      "id": "zapallo",
+      "name": "Zapallo / calabaza",
+      "sci": "Cucurbita spp.",
+      "family": "Cucurbitaceae",
+      "type": "vegetable",
+      "cycle": {
+        "ini": 20,
+        "dev": 30,
+        "mid": 30,
+        "late": 20
+      },
+      "kc": {
+        "ini": 0.5,
+        "mid": 1,
+        "end": 0.8
+      },
+      "t_abs": [
+        15,
+        35
+      ],
+      "t_stress_max": 35,
+      "ph": [
+        5.5,
+        7.5
+      ],
+      "regime": "rainfed",
+      "cover": 0.75,
+      "biomass": 0.4,
+      "n_balance": -1,
+      "cost": 1,
+      "waterlog_sens": 0.5,
+      "refs": [
+        "FAO56",
+        "ECOCROP"
+      ],
+      "notes": "Cobertura rastrera; buena opción de diversificación (familia distinta de cereales y leguminosas).",
+      "root_m": 0.9,
+      "p_depletion": 0.5
+    },
+    {
+      "id": "mucuna",
+      "name": "Mucuna (abono verde / cobertura)",
+      "sci": "Mucuna pruriens",
+      "family": "Fabaceae",
+      "type": "cover",
+      "cycle": {
+        "ini": 20,
+        "dev": 40,
+        "mid": 60,
+        "late": 20
+      },
+      "kc": {
+        "ini": 0.5,
+        "mid": 1,
+        "end": 0.8
+      },
+      "t_abs": [
+        18,
+        35
+      ],
+      "t_stress_max": 38,
+      "ph": [
+        5,
+        7.5
+      ],
+      "regime": "rainfed",
+      "cover": 0.95,
+      "biomass": 1,
+      "n_balance": 2,
+      "cost": 1,
+      "waterlog_sens": 0.3,
+      "refs": [
+        "PEOPLES2009"
+      ],
+      "notes": "Kc SUPUESTO (FAO-56 no lo tabula para este cultivo). Abono verde: aporta biomasa y N pero no genera ingreso directo.",
+      "root_m": 0.8,
+      "p_depletion": 0.5
+    }
+  ]
+}
