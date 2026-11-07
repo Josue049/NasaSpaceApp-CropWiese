@@ -89,7 +89,12 @@ function analyze(input, g, scenario = SCENARIOS.base) {
     res.sowing_windows = {
       source: prim.id, step_days: 15, temperature_uncertainty_c: +dT.toFixed(2),
       note: 'Fecha de inicio cada 15 días. viable = completa el ciclo ≥90 % de los años aun con T−δ y ETa/ETc ≥ 0,8; marginal = completa ≥50 % de los años; no_viable = menos. Umbrales de diseño; no es calendario agronómico validado.',
-      crops: Object.fromEntries(CROPS.crops.map((c) => [c.id, sowingWindows(prim.climate, c, !!input.irrigation, awc, { step: 15, dT })])),
+      crops: Object.fromEntries(CROPS.crops.map((c) => {
+        const w = sowingWindows(prim.climate, c, !!input.irrigation, awc, { step: 15, dT });
+        // mismas reglas de capacidad que el motor: riego obligatorio y altitud máxima EcoCrop
+        const blocked = (c.regime === 'irrigated_required' && !input.irrigation) || (c.eco?.altmx != null && prim.climate.elevation_m > c.eco.altmx);
+        return [c.id, blocked ? w.map((x) => ({ ...x, status: 'no_viable', blocked: true })) : w];
+      })),
     };
   }
   res.scenario = scenario;

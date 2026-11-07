@@ -102,3 +102,11 @@ test('Caché IMERG separada por producto (datatype en el nombre del archivo)', (
   assert.ok(names.some((f) => f.startsWith('imerg226_')) && names.some((f) => f.startsWith('imerg26_')));
   assert.ok(!names.some((f) => /^imerg_/.test(f)));
 });
+
+test('Ventanas de siembra coherentes con las reglas de capacidad: arroz sin riego ⇒ ninguna ventana viable', async () => {
+  const g = await demoData();
+  const r = analyze(baseInput(), g, SCENARIOS.base);
+  assert.ok(r.sowing_windows.crops.arroz.every((x) => x.status === 'no_viable'));
+  const wet = analyze({ ...baseInput(), irrigation: true }, g, SCENARIOS.base);
+  assert.ok(wet.sowing_windows.crops.arroz.some((x) => x.status !== 'no_viable'));
+});

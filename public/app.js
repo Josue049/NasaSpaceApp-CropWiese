@@ -178,7 +178,7 @@ function render(r) {
   if (r.unsupported) { $('#results').innerHTML = h; return; }
   const S = r.strategies, cols = { current: 'var(--cur)', alt_a: 'var(--a)', alt_b: 'var(--b)' };
   const cmp = r.sensitivity?.comparisons || {};
-  h += `<h2>${S.length === 3 ? 'Tres estrategias' : S.length === 2 ? 'Dos estrategias' : 'Su rotación actual'} de rotación</h2><p class="hint">Cuatro campañas (2 años). Puntuación 0–100 = índice relativo para comparar, <strong>no un rendimiento ni una mejora medida</strong>.</p><div class="strats">`;
+  h += `<h2>${S.length === 3 ? 'Tres estrategias de rotación' : S.length === 2 ? 'Dos estrategias de rotación' : 'Su rotación actual (sin alternativa viable)'}</h2><p class="hint">Cuatro campañas (2 años). Puntuación 0–100 = índice relativo para comparar, <strong>no un rendimiento ni una mejora medida</strong>.</p><div class="strats">`;
   for (const s of S) {
     const rb = r.robustness.by_source;
     h += `<article class="strat ${s.id}"><header>${ring(s.score, cols[s.id])}<div><h4>${esc(s.label)}</h4><span class="muted" style="font-size:13px">Puntuación por fuente de lluvia: ${Object.entries(s.totals_by_source).map(([k, v]) => `${esc(rb.find((x) => x.source === k)?.label.split(' ')[0] || k)} ${fmt(v)}`).join(' · ')}</span></div></header>
