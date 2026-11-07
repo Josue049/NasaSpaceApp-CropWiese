@@ -1,4 +1,7 @@
-# Estado del proyecto (actualizado 2026‑11‑06)
+# Estado del proyecto (actualizado 2026‑11‑06, v0.2 en curso)
+
+**Hecho en v0.2 (ver `AUDITORIA.md`)**: IMERG `datatype 226` (26 queda como serie heredada), WS2M cuantificado (+2 % ET₀), contraste parcial con pluviómetro GHCN Tarapoto (POWER ≥ IMERG en ese punto), base de cultivos auditada contra FAO‑56, sensibilidad, corrección por altitud, aviso de temperatura marginal, 2 casos geográficos, UI claro/oscuro corregida. 26 pruebas pasan.
+**Sigue pendiente**: SENAMHI Moyobamba, agrónomo local (`HOJA_AGRONOMO.md`), escalas ordinales sin fuente, ciclos por temperatura (>1500 m), prueba en móvil real.
 
 > **Desarrollo reanudado (2026‑11‑06, decisión del usuario):** proyecto independiente de I+D, sin entrega oficial al concurso. Los pendientes de abajo se ejecutan; ver `REGLAS_Y_CRONOLOGIA.md` §7 y `AUDITORIA.md`.
 
