@@ -63,6 +63,7 @@ function assessSupport(input, g, climates) {
   else if (g.slope.ok && g.slope.data.slope_pct > 25) cautions.push(`Pendiente ${g.slope.data.slope_pct.toFixed(0)} %: alto riesgo de erosión; la pendiente SRTM (ventana de 180 m) puede no representar la parcela.`);
   const annual = climates.map((c) => c.climate.annual.precip_mm).filter(Number.isFinite);
   if (annual.length > 1 && Math.max(...annual) / Math.min(...annual) > 1.5) cautions.push(`Las fuentes de lluvia discrepan (${Math.round(Math.min(...annual))}–${Math.round(Math.max(...annual))} mm/año, ratio ${(Math.max(...annual) / Math.min(...annual)).toFixed(2)}): el riesgo hídrico es incierto.`);
+  if (annual.length && Math.max(...annual) < 400) cautions.push(`Zona árida (lluvia anual ≤ ${Math.round(Math.max(...annual))} mm en todas las fuentes): el secano no es viable; solo tendría sentido evaluar con riego y el modelo de riego es un supuesto simple (×0,3).`);
   if (!climates.find((c) => c.id === 'imerg')) cautions.push('Sin serie IMERG completa: la lluvia depende de reanálisis (ERA5/POWER).');
   if (!g.soil.ok) cautions.push('Sin datos de suelo: se omite el criterio de ajuste al suelo.');
   const level = blockers.length ? 'no_recomendable' : cautions.length ? 'limitada' : 'aceptable';

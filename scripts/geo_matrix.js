@@ -19,7 +19,7 @@ const sites = [
   ['Cusco', -13.52, -71.97, 'andino alto > 3000 m'],
   ['Lima (costa desértica)', -12.05, -77.04, 'casi sin lluvia'],
 ];
-const names = Object.fromEntries(CROPS.crops.map((c) => [c.id, c.name.split(' ')[0]]));
+const names = { maiz: 'Maíz', arroz: 'Arroz', frijol: 'Frijol común', caupi: 'Caupí', soya: 'Soya', mani: 'Maní', camote: 'Camote', tomate: 'Tomate', zapallo: 'Zapallo', mucuna: 'Mucuna' };
 (async () => {
   const rows = [], detail = [];
   for (const [name, lat, lon, note] of sites) {
