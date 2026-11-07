@@ -54,7 +54,7 @@ function buildClimate(raw, opts = {}) {
   const [lon, lat, zCell] = raw.geometry.coordinates;
   // SUPUESTO: gradiente térmico estándar −6,5 °C/km entre la celda POWER y la parcela (SRTM). Humedad relativa sin corregir.
   const dz = Number.isFinite(opts.elevation) ? Math.max(-1500, Math.min(1500, opts.elevation - zCell)) : 0;
-  const lapse = -0.0065 * dz, zElev = zCell + dz;
+  const lapse = dz === 0 ? 0 : -0.0065 * dz, zElev = zCell + dz;
   const days = [], byKey = new Map();
   for (const k of Object.keys(p.PRECTOTCORR).sort()) {
     if (opts.yearRange && (+k.slice(0, 4) < opts.yearRange[0] || +k.slice(0, 4) > opts.yearRange[1])) continue;
