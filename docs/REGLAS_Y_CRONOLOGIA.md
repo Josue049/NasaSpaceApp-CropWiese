@@ -1,6 +1,6 @@
 # Reglas del concurso y cronología del trabajo (registro de cumplimiento)
 
-**Estado: repositorio CONGELADO desde 2026‑11‑06.** No se debe seguir desarrollando funcionalidades del reto antes del hackathon (14–15 nov 2026).
+**Estado: desarrollo REANUDADO el 2026‑11‑06 como proyecto independiente de I+D** (ver §7). El texto de las secciones 1–6 se conserva como registro histórico de la congelación breve.
 
 ## 1. Regla verificada
 
@@ -39,3 +39,9 @@ Pendiente de redactar por el equipo antes de cualquier envío oficial: las regla
 - Etiqueta git `pre-event-prototype-2026-11-06` marca el último estado del código.
 - Solo se admiten commits de **documentación** hasta el evento.
 - Pendientes técnicos conocidos y no ejecutados por esta regla: ver `docs/ESTADO.md` (incluye la duda sobre la versión de IMERG en ClimateSERV).
+
+## 7. Reanudación como proyecto independiente (2026‑11‑06)
+Decisión del usuario: Field Shift es, por ahora, un **proyecto independiente de investigación y desarrollo tecnológico**; **no se prepara ni realiza una entrega oficial** al NASA Space Apps Challenge. Se retira la congelación.
+- El historial git y las fechas se conservan sin alteración (`81e936c` prototipo; `8e9cb8d` congelación; tag `pre-event-prototype-2026-11-06`).
+- La regla del FAQ sigue siendo un hecho verificado. **Si en el futuro el equipo decide participar oficialmente**, la elegibilidad del trabajo previo se evaluará por separado (consultar al Local Lead / Contact Us, leer los T&C 2026) y no debe presentarse este trabajo como realizado durante el evento.
+- Los datos NASA usados son públicos y su uso en un proyecto independiente no depende del concurso.

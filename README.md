@@ -1,6 +1,6 @@
 # Field Shift
 
-> ⚠️ **REPOSITORIO CONGELADO – trabajo previo al hackathon.** Este prototipo se construyó el 2026‑11‑06, **antes** del evento (14–15 nov 2026). El FAQ oficial de NASA Space Apps 2026 dice: *«Teams are not allowed to begin working on the challenges prior to the hackathon.»* No debe presentarse como hecho durante el evento ni reutilizarse sin aclararlo con los organizadores. Ver [`docs/REGLAS_Y_CRONOLOGIA.md`](docs/REGLAS_Y_CRONOLOGIA.md).
+> ℹ️ **Proyecto independiente de I+D.** Field Shift se desarrolla como proyecto de investigación y desarrollo tecnológico **independiente**. **No es, por ahora, una entrega oficial** al NASA Space Apps Challenge; la eventual participación y su elegibilidad se evaluarán por separado (el FAQ oficial 2026 dice: *«Teams are not allowed to begin working on the challenges prior to the hackathon.»*). La cronología real —incluido el prototipo v0.1 del 2026‑11‑06— está en [`docs/REGLAS_Y_CRONOLOGIA.md`](docs/REGLAS_Y_CRONOLOGIA.md).
 
 Herramienta de apoyo a decisiones para **comparar estrategias de rotación de cultivos por parcela** con datos de observación terrestre NASA, suelos, características de cultivos y prioridades del agricultor. Proyecto para el *NASA Space Apps Challenge 2026 – Field Shift: Adapting Farms with NASA Data*.
 

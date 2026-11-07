@@ -1,6 +1,6 @@
 # Estado del proyecto (actualizado 2026‑11‑06)
 
-> **CONGELADO por la regla del concurso** (ver `REGLAS_Y_CRONOLOGIA.md`): los pendientes de abajo **no se ejecutan antes del hackathon**. Quedan registrados, no resueltos.
+> **Desarrollo reanudado (2026‑11‑06, decisión del usuario):** proyecto independiente de I+D, sin entrega oficial al concurso. Los pendientes de abajo se ejecutan; ver `REGLAS_Y_CRONOLOGIA.md` §7 y `AUDITORIA.md`.
 
 ## Pendiente adicional conocido (aportado por el usuario, NO verificado)
 - ClimateSERV documentaría `datatype=26` como **IMERG V06 Late** y `datatype=226` como **V07 Late**. El código y los documentos dicen «V07» para `datatype=26`: **esa etiqueta puede ser incorrecta** y está sin comprobar. Tampoco se contrastó el efecto de ese cambio de versión en las cifras de lluvia.
