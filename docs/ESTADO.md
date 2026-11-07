@@ -1,5 +1,11 @@
 # Estado del proyecto (actualizado 2026‑11‑06)
 
+> **CONGELADO por la regla del concurso** (ver `REGLAS_Y_CRONOLOGIA.md`): los pendientes de abajo **no se ejecutan antes del hackathon**. Quedan registrados, no resueltos.
+
+## Pendiente adicional conocido (aportado por el usuario, NO verificado)
+- ClimateSERV documentaría `datatype=26` como **IMERG V06 Late** y `datatype=226` como **V07 Late**. El código y los documentos dicen «V07» para `datatype=26`: **esa etiqueta puede ser incorrecta** y está sin comprobar. Tampoco se contrastó el efecto de ese cambio de versión en las cifras de lluvia.
+- Lo mismo para: contraste con SENAMHI, tratamiento de `WS2M` (el calificativo «físicamente irreal» es una afirmación no cuantificada; falta medir el efecto del límite de 0,5 m/s sobre ET₀), auditoría bibliográfica de la base de cultivos, casos geográficos distintos de un punto urbano, y pruebas de interfaz.
+
 ## Hecho y verificado
 - Pipeline real de datos con caché, procedencia y degradación controlada (POWER, IMERG, ERA5, SRTM, SoilGrids). [consultas reales]
 - Motor completo: ET₀, balance hídrico, reglas eliminatorias, 8 criterios, robustez entre fuentes, sensibilidad de pesos, explicaciones. 
