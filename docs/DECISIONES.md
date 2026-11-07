@@ -16,3 +16,7 @@ Estados: propuesta · validación pendiente · adoptada · descartada.
 | D‑10 | Ventana 2015–2023 común a todas las fuentes | 2015–2024 | IMERG/ClimateSERV termina el 2024‑06‑01 | 9 años: variabilidad interanual limitada | adoptada |
 | D‑11 | Alternativa B = maximin entre fuentes de lluvia | B = 2.ª mejor | Hace visible la robustez, que es el principal riesgo de datos | A y B pueden empatar (ocurre en el demo) | adoptada |
 | D‑12 | Parcela = punto (no polígono) | Dibujo de polígono | Los datos son de 10–55 km; el polígono no aportaría resolución | — | adoptada |
+| D‑13 | IMERG `datatype=226` por defecto; 26 conservado como serie heredada | Seguir con 26 | 26 termina en 2024‑06 y difiere de 226 (2023: 2350 vs 1382 mm); ver AUDITORIA §1 | Versión V06/V07 inferida, no declarada por la API | adoptada |
+| D‑14 | Corrección térmica por altitud (−6,5 °C/km) celda POWER → parcela SRTM | Usar T de POWER sin corregir | POWER es de una celda de ~55 km (diferencia de 106 m en Moyobamba, 241 m en Chachapoyas) | Gradiente estándar, no local; humedad relativa sin corregir | adoptada |
+| D‑15 | Aviso (no regla) cuando la temperatura media del ciclo queda a <3 °C del mínimo del cultivo | Inventar temperaturas óptimas | Sin fuente verificada para óptimos; el aviso no inventa parámetros | No penaliza el puntaje | adoptada |
+| D‑16 | Raíces y `p` de FAO‑56 Tabla 22 (límite inferior del rango de Zr) | Valores propios | Trazabilidad a literatura; zapallo p 0,5→0,35 | Zr real depende del suelo local | adoptada |

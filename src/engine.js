@@ -117,7 +117,7 @@ function campaignMetrics(ctx, climId, cropId, slotId) {
     soilFit = ph * wl;
   }
   return {
-    cropId, slotId, sat: s.sat, drought_frac: s.drought_frac, heat_frac: s.heat_frac, etc_mm: s.etc_mm, rain_mm: s.rain_mm,
+    cropId, slotId, tmean: s.tmean, sat: s.sat, drought_frac: s.drought_frac, heat_frac: s.heat_frac, etc_mm: s.etc_mm, rain_mm: s.rain_mm,
     deficit_mm: s.deficit_mm, eff_cover: effCover, bare_frac: gap / win, erosion_risk: erosionRisk, soil_fit: soilFit,
     heavy_early_mm: s.heavy_early_mm,
   };
@@ -311,6 +311,7 @@ function describeStrategy(ctx, id, label, seqIds, per, totals, weights, primary,
       crop: cid, crop_name: crop.name, family: crop.family, cycle_days: cycleLength(crop),
       etc_mm: Math.round(m.etc_mm), rain_mm: Math.round(m.rain_mm), water_deficit_mm: Math.round(m.deficit_mm),
       water_coverage_pct: Math.round(m.sat * 100), drought_year_frac: +m.drought_frac.toFixed(2), heat_stress_frac: +m.heat_frac.toFixed(2),
+      tmean_c: +m.tmean.toFixed(1), t_min_crop: crop.t_abs[0],
       bare_soil_pct: Math.round(m.bare_frac * 100), eff_cover_pct: Math.round(m.eff_cover * 100),
     };
   });
@@ -318,6 +319,7 @@ function describeStrategy(ctx, id, label, seqIds, per, totals, weights, primary,
   timeline.forEach((t) => {
     if (t.drought_year_frac >= 0.3 && !ctx.irrigated) risks.push(`${t.crop_name} (campaña ${t.campaign}): en ${Math.round(t.drought_year_frac * 100)} % de los años analizados el cultivo habría tenido déficit hídrico (ETa/ETc < 80 %).`);
     if (t.heat_stress_frac >= 0.15) risks.push(`${t.crop_name} (campaña ${t.campaign}): ${Math.round(t.heat_stress_frac * 100)} % de los días de la etapa media superaron el umbral de calor del cultivo.`);
+    if (t.tmean_c - t.t_min_crop < 3) risks.push(`${t.crop_name} (campaña ${t.campaign}): temperatura media del ciclo ${t.tmean_c} °C, a menos de 3 °C del mínimo usado para el cultivo (${t.t_min_crop} °C; valor de literatura general sin verificar). El crecimiento sería más lento y el ciclo real, más largo que los ${t.cycle_days} días modelados.`);
     if (t.bare_soil_pct >= 25) risks.push(`${t.crop_name} (campaña ${t.campaign}): ~${t.bare_soil_pct} % de la ventana queda sin cultivo (suelo expuesto o con residuos).`);
   });
   seqIds.forEach((cid, i) => {

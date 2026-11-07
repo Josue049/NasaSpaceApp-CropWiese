@@ -74,3 +74,14 @@ test('buildClimate: omite días con dato faltante (-999) sin inventar valores', 
   const c = buildClimate(raw);
   assert.equal(c.days.length, 1);
 });
+
+test('Corrección por altitud: parcela más alta que la celda POWER es más fría (−6,5 °C/km) y sin elevación no cambia nada', async () => {
+  const g = await demoData();
+  const raw = g.power.data, cell = raw.geometry.coordinates[2];
+  const base = buildClimate(raw, { yearRange: [2020, 2020] });
+  const alta = buildClimate(raw, { yearRange: [2020, 2020], elevation: cell + 1000 });
+  assert.equal(base.lapse_c, 0);
+  assert.ok(Math.abs(alta.lapse_c + 6.5) < 1e-9);
+  assert.ok(Math.abs(base.monthly[0].tmean - alta.monthly[0].tmean - 6.5) < 1e-6);
+  assert.ok(alta.annual.et0_mm < base.annual.et0_mm); // más frío → menor ET0
+});

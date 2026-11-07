@@ -41,3 +41,12 @@ Comparación con las Tablas 11, 12 y 22 de FAO‑56 leídas en fao.org (extracto
 
 ## 5. Sensibilidad
 `docs/SENSIBILIDAD.md`: la estrategia A (mucuna → zapallo → camote → caupí) no cambia al variar AWC (70–150 mm/m), piso de viento (0,5–1,5), profundidad radicular (×0,7–×1,3) ni Kc_mid (×0,9–×1,1); varía su puntaje (79–83) y a veces la estrategia B. **Limitación**: la recomendación es robusta a los parámetros *físicos* probados, pero no se ha probado frente a las escalas ordinales (sección 4), que son la fuente principal de incertidumbre.
+
+## 6. Casos geográficos (`docs/CASOS_GEOGRAFICOS.md`, `node scripts/geo_cases.js`)
+- **Ladera (−6,10; −77,00; pendiente SRTM 26 %, 1335 m)**: el motor activa el peso de erosión (0,24) y la regla de cobertura con pendiente > 25 %; las alternativas A y B incluyen mucuna/zapallo/camote.
+- **Chachapoyas (−6,23; −77,87; 2353 m)**: hallazgo de debilidad. La temperatura de POWER venía de una celda a 2112 m y no se corregía. Se añadió corrección por altitud (D‑14): temperatura media de ciclo ≈ 15–16 °C. El motor aún permite camote y zapallo (mínimo usado 15 °C, sin verificar) y mantiene ciclos fijos de 135–150 d, que serían más largos en frío. Se añadió un **aviso** de temperatura marginal (D‑15); no se inventaron óptimos.
+- **PENDIENTE**: modelar ciclos más largos con la temperatura (grados‑día) requiere parámetros por cultivo con fuente; un agrónomo andino debería revisar esto antes de usar la herramienta por encima de ~1500 m.
+
+## 7. Interfaz (capturas con Edge headless a 500 px)
+- Pantallas 2, 3 y resultados revisadas en modo claro y oscuro. **Error encontrado y corregido**: en modo oscuro los chips de «cultivos que NO quiere sembrar» tenían texto casi invisible (`color` sin definir). Enlaces de prueba `?demo=1&step=2|3&theme=light|dark`.
+- **No probado**: teléfono real, toques en el mapa, lector de pantalla, conexión lenta.

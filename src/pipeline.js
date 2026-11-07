@@ -28,12 +28,13 @@ function usableRain(map) { return !!map && Object.keys(map).length >= (ds.Y1 - d
 /** Construye las climatologías por fuente de lluvia. IMERG es la fuente primaria si está completa. */
 function buildClimates(g, scenario = SCENARIOS.base) {
   if (!g.power.ok) return { climates: [], problems: [g.power.error] };
+  const elev = g.slope && g.slope.ok ? g.slope.data.elevation_m : undefined;
   const raw = g.power.data, sc = { precip_factor: scenario.precip_factor, temp_delta: scenario.temp_delta }, yr = [ds.Y0, ds.Y1], list = [], problems = [];
-  if (g.imergComplete && usableRain(g.imerg.data)) list.push({ id: 'imerg', label: 'GPM IMERG (NASA)', role: 'primary', climate: buildClimate(raw, { rain: g.imerg.data, scenario: sc, yearRange: yr }), provenance: ds.IMERG_PROV });
+  if (g.imergComplete && usableRain(g.imerg.data)) list.push({ id: 'imerg', label: 'GPM IMERG (NASA)', role: 'primary', climate: buildClimate(raw, { rain: g.imerg.data, scenario: sc, yearRange: yr, elevation: elev }), provenance: ds.IMERG_PROV });
   else problems.push(`IMERG incompleto (faltan años: ${g.imergMissing.join(', ') || 'n/d'}); se usa fuente alternativa y se degrada la confianza.`);
-  if (g.era5.ok) list.push({ id: 'era5', label: 'ERA5 (control, no-NASA)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { rain: g.era5.data, scenario: sc, yearRange: yr }), provenance: g.era5.provenance });
+  if (g.era5.ok) list.push({ id: 'era5', label: 'ERA5 (control, no-NASA)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { rain: g.era5.data, scenario: sc, yearRange: yr, elevation: elev }), provenance: g.era5.provenance });
   else problems.push(g.era5.error);
-  list.push({ id: 'power', label: 'NASA POWER (lluvia reanálisis)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { scenario: sc, yearRange: yr }), provenance: g.power.provenance });
+  list.push({ id: 'power', label: 'NASA POWER (lluvia reanálisis)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { scenario: sc, yearRange: yr, elevation: elev }), provenance: g.power.provenance });
   return { climates: list, problems };
 }
 

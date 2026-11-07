@@ -51,7 +51,10 @@ function et0Day({ tmean, tmax, tmin, rh, ws, rs, lat, doy, z }) {
 function buildClimate(raw, opts = {}) {
   const sc = Object.assign({ precip_factor: 1, temp_delta: 0 }, opts.scenario || {});
   const p = raw.properties.parameter;
-  const [lon, lat, zElev] = raw.geometry.coordinates;
+  const [lon, lat, zCell] = raw.geometry.coordinates;
+  // SUPUESTO: gradiente térmico estándar −6,5 °C/km entre la celda POWER y la parcela (SRTM). Humedad relativa sin corregir.
+  const dz = Number.isFinite(opts.elevation) ? Math.max(-1500, Math.min(1500, opts.elevation - zCell)) : 0;
+  const lapse = -0.0065 * dz, zElev = zCell + dz;
   const days = [], byKey = new Map();
   for (const k of Object.keys(p.PRECTOTCORR).sort()) {
     if (opts.yearRange && (+k.slice(0, 4) < opts.yearRange[0] || +k.slice(0, 4) > opts.yearRange[1])) continue;
@@ -59,7 +62,7 @@ function buildClimate(raw, opts = {}) {
     const v = { P: rainVal === undefined ? -999 : rainVal, T: p.T2M[k], Tx: p.T2M_MAX[k], Tn: p.T2M_MIN[k], RH: p.RH2M[k], WS: p.WS2M[k], RS: p.ALLSKY_SFC_SW_DWN[k] };
     if (Object.values(v).some((x) => x === -999 || x == null || Number.isNaN(x))) continue; // día con dato faltante: se omite
     const y = +k.slice(0, 4), m = +k.slice(4, 6), d = +k.slice(6, 8);
-    const T = v.T + sc.temp_delta, Tx = v.Tx + sc.temp_delta, Tn = v.Tn + sc.temp_delta;
+    const T = v.T + lapse + sc.temp_delta, Tx = v.Tx + lapse + sc.temp_delta, Tn = v.Tn + lapse + sc.temp_delta;
     // SUPUESTO del escenario térmico: la humedad relativa se mantiene constante (aumenta el déficit de vapor)
     const et0 = et0Day({ tmean: T, tmax: Tx, tmin: Tn, rh: Math.min(100, v.RH), ws: v.WS, rs: v.RS, lat, doy: dayOfYear(y, m, d), z: zElev });
     const rec = { key: k, y, m, d, P: v.P * sc.precip_factor, T, Tx, Tn, et0 };
@@ -81,7 +84,7 @@ function buildClimate(raw, opts = {}) {
   const annualP = fullYears.map((y) => days.filter((x) => x.y === y).reduce((a, x) => a + x.P, 0));
   const annualEt0 = fullYears.map((y) => days.filter((x) => x.y === y).reduce((a, x) => a + x.et0, 0));
   const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
-  return { lat, lon, elevation_m: zElev, years, days, byKey, monthly, scenario: sc, annual: { precip_mm: mean(annualP), et0_mm: mean(annualEt0), precip_by_year: annualP, n_years: annualP.length } };
+  return { lat, lon, elevation_m: zElev, cell_elevation_m: zCell, lapse_c: lapse, years, days, byKey, monthly, scenario: sc, annual: { precip_mm: mean(annualP), et0_mm: mean(annualEt0), precip_by_year: annualP, n_years: annualP.length } };
 }
 
 /** Curva Kc FAO-56 por etapas. t = día dentro del ciclo (0..L-1). */
