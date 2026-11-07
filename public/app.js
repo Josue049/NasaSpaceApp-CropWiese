@@ -222,6 +222,9 @@ async function init() {
   $('#next1').onclick = () => (state.lat == null ? alert('Toque el mapa para ubicar la parcela.') : go(2));
   $('#next2').onclick = () => (state.history.length ? go(3) : alert('Indique al menos el último cultivo sembrado.'));
   $('#btnRun').onclick = () => runAnalysis();
+  const q = new URLSearchParams(location.search);
+  if (['light', 'dark'].includes(q.get('theme'))) document.documentElement.dataset.theme = q.get('theme'); // enlaces de prueba/captura
+  if (q.get('demo') && ['2', '3'].includes(q.get('step'))) { $('#btnDemo').click(); go(+q.get('step')); return; }
   if (new URLSearchParams(location.search).get('demo')) { $('#btnDemo').click(); $('#startSlot').value = state.meta.default_start_slot; runAnalysis(); }
 }
 init().catch((e) => { document.body.insertAdjacentHTML('afterbegin', `<div class="banner">No se pudo iniciar: ${esc(e.message)}</div>`); });
