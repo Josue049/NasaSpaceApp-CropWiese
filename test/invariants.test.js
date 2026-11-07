@@ -53,3 +53,12 @@ test('Determinismo: misma entrada, misma salida (incluidas comparaciones por Mon
   const strip = (r) => JSON.stringify({ ...r, generated_at: 0 });
   assert.equal(strip(analyze(baseInput(), g)), strip(analyze(baseInput(), g)));
 });
+
+test('Riego: el índice de agua de cada campaña mejora (o iguala) respecto del secano, y no empeora el riesgo', async () => {
+  const g = await demoData();
+  const dry = analyze({ ...baseInput(), irrigation: false }, g), wet = analyze({ ...baseInput(), irrigation: true }, g);
+  const w = (r) => r.strategies.find((s) => s.id === 'current').criteria.water.score;
+  assert.ok(w(wet) > w(dry));
+  const res = (r) => r.strategies.find((s) => s.id === 'current').criteria.resilience.score;
+  assert.ok(res(wet) >= res(dry));
+});

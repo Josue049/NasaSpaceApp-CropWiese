@@ -122,7 +122,7 @@ function campaignMetrics(ctx, climId, cropId, slotId) {
     soilFit = ph * wl;
   }
   return {
-    cropId, slotId, tmean: s.tmean, dur_days: s.dur_days, cf_base: s.complete_frac, cf_cold: sCold.complete_frac, sat: s.sat, drought_frac: s.drought_frac, heat_frac: s.heat_frac, etc_mm: s.etc_mm, rain_mm: s.rain_mm,
+    cropId, slotId, tmean: s.tmean, dur_days: s.dur_days, cf_base: s.complete_frac, cf_cold: sCold.complete_frac, sat: ctx.irrigated ? 1 - 0.3 * (1 - s.sat) : s.sat, /* SUPUESTO: el riego reduce (no elimina) el déficit, igual que el riesgo (x0,3) */ drought_frac: s.drought_frac, heat_frac: s.heat_frac, etc_mm: s.etc_mm, rain_mm: s.rain_mm,
     deficit_mm: s.deficit_mm, eff_cover: effCover, bare_frac: gap / win, erosion_risk: erosionRisk, soil_fit: soilFit,
     heavy_early_mm: s.heavy_early_mm,
   };
