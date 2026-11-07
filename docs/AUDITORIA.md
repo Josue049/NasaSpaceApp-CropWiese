@@ -15,18 +15,23 @@ Estado de cada afirmación: **VERIFICADO** (comprobado con datos/fuentes en esta
 - **Efecto sobre ET₀ anual** (`node scripts/audit_ws2m.js`): u2=0,5 → 1250 mm; 0,8 → +2,0 %; 1,0 → +3,2 %; 1,5 → +6,2 %; 2,0 → +8,9 %. Se mantiene el piso FAO‑56 de 0,5 m/s; la incertidumbre por viento es ≈ +2 % (ERA5) y hasta +6 %.
 - **Efecto sobre la recomendación** (`docs/SENSIBILIDAD.md`): ninguno en la estrategia A para u2 = 0,8 o 1,5.
 
-## 3. Contraste con pluviómetro (parcial)
-- SENAMHI: la web de datos históricos se consulta por estación mediante formulario dinámico; **no se obtuvo acceso programático**. PENDIENTE: serie de la estación de Moyobamba.
-- Alternativa usada: GHCN‑Daily (NOAA), estación **Tarapoto PE000084455** (−6,5; −76,367; 282 m), a ≈70 km de Moyobamba y ≈600 m más baja. Mala representatividad; solo da una comprobación indicativa. Años 2015–2019, 681 días con dato (huecos grandes; no se usan totales anuales).
-- Resultado (`scripts/validate_gauge.js`, `docs/evidence/gauge_-6.5_-76.367.json`), con desfase de −1 día (la lectura de las 7 h se asigna al día siguiente):
+## 3. Contraste con pluviómetro (parcial; CORREGIDO)
+- **SENAMHI**: la descarga oficial de datos hidrometeorológicos exige un código de verificación y aceptar términos (tutorial de SENAMHI): **no es automatizable de forma legítima**. PENDIENTE manual: `node scripts/validate_gauge.js datos.csv <lat> <lon> <ini> <fin>` acepta un CSV `fecha,precip_mm` descargado a mano.
+- **Alternativa usada**: GHCN‑Daily (NOAA). Estaciones peruanas cercanas: Tarapoto PE000084455 (−6,50; −76,367; 282 m; a ≈70 km y ≈600 m más baja que Moyobamba), Yurimaguas «Moisés Benzaquen» PEM00084425 (−5,894; −76,118; 179 m; ≈180 km), Chachapoyas PE000084444 (sin datos 2015–2023) y Juanjuí (casi sin datos). Solo hay 2 estaciones utilizables y ninguna en Moyobamba ni a su altitud: **no validan la lluvia de Moyobamba**.
+- Se compararon solo días con dato del pluviómetro, con desfase de −1 día (la lectura matinal se asigna al día siguiente; las tres fuentes usan día UTC, el pluviómetro, día local: el desfase horario degrada las correlaciones diarias). Detalle en `docs/evidence/gauge_*.json`.
 
-| Fuente | Sesgo (días con dato) | r diario | r en bloques de 5 días (25 bloques) |
-|---|---|---|---|
-| IMERG 226 | +49 % | 0,25 | 0,09 |
-| ERA5 | +30 % | 0,32 | 0,15 |
-| POWER | +19 % | 0,57 | 0,69 |
+| Estación (años; días con dato) | Fuente | Sesgo | r diario | r en bloques de 5 días |
+|---|---|---|---|---|
+| Tarapoto (2015–19; 681) | IMERG V07 | +49 % | 0,25 | 0,09 (25 bloques) |
+| | ERA5 | +30 % | 0,32 | 0,15 |
+| | POWER | +19 % | 0,57 | 0,69 |
+| Yurimaguas (2015–19; 958) | IMERG V07 | −15 % | 0,35 | 0,66 (48 bloques) |
+| | ERA5 | −4 % | 0,17 | 0,56 |
+| | POWER | −28 % | 0,83 | 0,95 |
 
-- **Lectura**: en este punto POWER concuerda mejor con el pluviómetro que IMERG, lo que **no respalda** presumir que IMERG sea la mejor fuente. La muestra es pequeña, la representatividad baja, y las tres fuentes usan día UTC frente al día de pluviómetro local. No hay base para cambiar la fuente primaria ni para afirmar lo contrario en Moyobamba. Por eso el diseño evalúa cada rotación con las tres fuentes y comunica la discrepancia.
+- **Corrección de una lectura previa**: antes se escribió que POWER «concordaba mejor» y que eso «no respaldaba presumir que IMERG sea la mejor». Esa comparación **no es independiente**: `PRECTOTCORR` es la precipitación de MERRA‑2 *corregida con observaciones* (análisis CPCU, basado sobre todo en pluviómetros a latitudes bajas; fuentes: documentación de MERRA‑2/GMAO), de modo que su acuerdo alto con pluviómetros GTS/GHCN es esperable y puede deberse a que ya los incorpora. No se verificó qué estaciones usa CPCU en esta región.
+- **Lo que sí se puede decir**: IMERG V07 Late y ERA5 no son comparables en independencia de forma más clara (IMERG Late se calibra climatológicamente; ERA5 no asimila pluviómetros; ambas afirmaciones sin verificar aquí). Entre ellas, IMERG tiene mejor correlación en bloques que ERA5 en Yurimaguas (0,66 vs 0,56) y peor en Tarapoto (0,09 vs 0,15); sesgos de signo opuesto (+49 % / −15 %). **Con dos estaciones lejanas y huecos no hay base para ordenar las fuentes**; por eso el diseño evalúa cada rotación con las tres y comunica la discrepancia.
+- **Implicación para Moyobamba**: POWER (gauge‑corregido) da 943 mm/año frente a 1407 (IMERG) y 1505 (ERA5). Si el análisis CPCU tiene pocos pluviómetros cerca, su cifra podría ser interpolación lejana, pero eso es una hipótesis no verificada. Se requiere un pluviómetro local.
 
 ## 4. Base de cultivos vs FAO‑56 (`data/crops.json`, campo `param_status`)
 Comparación con las Tablas 11, 12 y 22 de FAO‑56 leídas en fao.org (extractos en `docs/evidence/fao56_*`).

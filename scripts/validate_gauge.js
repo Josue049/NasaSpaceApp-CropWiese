@@ -1,6 +1,6 @@
 'use strict';
 // Contraste de lluvia diaria (IMERG, ERA5, POWER) con un pluviómetro real de GHCN-Daily (NOAA).
-// Uso: node scripts/validate_gauge.js <ghcnd.dly> <lat> <lon> <añoIni> <añoFin>
+// Uso: node scripts/validate_gauge.js <ghcnd.dly | datos.csv> <lat> <lon> <añoIni> <añoFin>
 // Estación por defecto: Tarapoto (PE000084455). Compara SOLO días con dato del pluviómetro.
 const fs = require('fs');
 const ds = require('../src/datasources');
@@ -9,7 +9,22 @@ const [dly, latS, lonS, y0S = '2015', y1S = '2019'] = process.argv.slice(2);
 if (!dly) { console.error('Uso: node scripts/validate_gauge.js <archivo.dly> <lat> <lon> [añoIni] [añoFin]'); process.exit(1); }
 const lat = +latS, lon = +lonS, Y0 = +y0S, Y1 = +y1S;
 
+// CSV manual (p. ej. descarga de SENAMHI): columnas fecha,precip_mm. Fecha YYYY-MM-DD, YYYYMMDD o DD/MM/YYYY. Vacío/-99/-999 = sin dato.
+function readCsv(file) {
+  const g = {};
+  for (const l of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const [d, v] = l.split(/[;,\t]/).map((x) => x.trim());
+    let k = null;
+    if (/^\d{4}-\d{2}-\d{2}/.test(d || '')) k = d.slice(0, 10).replace(/-/g, '');
+    else if (/^\d{8}$/.test(d || '')) k = d;
+    else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(d || '')) { const [dd, mm, yy] = d.split('/'); k = `${yy}${mm.padStart(2, '0')}${dd.padStart(2, '0')}`; }
+    const x = parseFloat(v);
+    if (k && Number.isFinite(x) && x >= 0 && +k.slice(0, 4) >= Y0 && +k.slice(0, 4) <= Y1) g[k] = x;
+  }
+  return g;
+}
 function readGauge(file) {
+  if (/\.csv$/i.test(file)) return readCsv(file);
   const g = {};
   for (const l of fs.readFileSync(file, 'utf8').split('\n')) {
     if (l.slice(17, 21) !== 'PRCP') continue;
