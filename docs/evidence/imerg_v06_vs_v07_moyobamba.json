@@ -1,0 +1,25 @@
+{
+ "n_days": 3285,
+ "units": "mm/día (ambas)",
+ "mean_mm_day": {
+  "v06": 4.39,
+  "v07": 3.85
+ },
+ "annual_mm": {
+  "v06": 1603,
+  "v07": 1407
+ },
+ "ratio_v07_over_v06": 0.878,
+ "wet_day_freq_ge1mm": {
+  "v06": 0.479,
+  "v07": 0.45
+ },
+ "max_daily_mm": {
+  "v06": 174.8000030517578,
+  "v07": 120.9000015258789
+ },
+ "r_daily": 0.727,
+ "r_monthly": 0.743,
+ "mean_abs_diff_mm_day": 2.87,
+ "note": "Descriptivo. Las diferencias reflejan cambios de algoritmo, calibración y entradas entre versiones; sin pluviómetro local no se puede decir cuál se acerca más a la realidad."
+}

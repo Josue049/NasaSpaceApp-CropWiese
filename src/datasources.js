@@ -69,7 +69,7 @@ async function fetchImergYears(lat, lon, years, onProgress, concurrency = 3) {
       try {
         const data = await fetchImergDaily(lat, lon, `${y}-01-01`, `${y}-12-31`, { timeoutMs: 300000 });
         if (Object.keys(data).length < 360) throw new Error('serie incompleta');
-        writeCache(imergFile(lat, lon, y), { fetchedAt: new Date().toISOString(), lat, lon, year: y, product: `GPM IMERG Late vía ClimateSERV (datatype ${IMERG_DATATYPE})`, data });
+        writeCache(imergFile(lat, lon, y), { fetchedAt: new Date().toISOString(), lat, lon, year: y, product: IMERG_LABEL[IMERG_DATATYPE] || `GPM IMERG vía ClimateSERV (datatype ${IMERG_DATATYPE})`, data });
       } catch (e) { errors.push(`${y}: ${e.message}`); }
       done++; if (onProgress) onProgress(done, years.length);
     }
@@ -77,8 +77,9 @@ async function fetchImergYears(lat, lon, years, onProgress, concurrency = 3) {
   await Promise.all(Array.from({ length: concurrency }, worker));
   return errors;
 }
+const IMERG_LABEL = { 26: 'NASA GPM IMERG V06 Late (ClimateSERV datatype 26, serie heredada)', 226: 'NASA GPM IMERG V07 Late (ClimateSERV datatype 226)', 227: 'NASA GPM IMERG V07 Early (ClimateSERV datatype 227)' };
 const IMERG_PROV = {
-  source: `NASA GPM IMERG Late (ClimateSERV datatype ${IMERG_DATATYPE}; versión inferida, no declarada por la API)`, variables: 'precipitation (mm/día), promedio de un cuadro de 0,1°',
+  source: IMERG_LABEL[IMERG_DATATYPE] || `NASA GPM IMERG Late (ClimateSERV datatype ${IMERG_DATATYPE})`, variables: 'precipitation (mm/día), promedio de un cuadro de 0,1°',
   period: `${Y0}-${Y1}`, resolution: '0,1° (≈ 11 km); pixel ≠ parcela', kind: 'estimación satelital multisensor (calibrada con pluviómetros a escala mensual)', url: 'https://gpm.nasa.gov/data/imerg',
 };
 

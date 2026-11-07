@@ -3,12 +3,11 @@
 Estado de cada afirmación: **VERIFICADO** (comprobado con datos/fuentes en esta sesión), **INFERIDO** (consistente con la evidencia, sin confirmación oficial), **PENDIENTE**. Nada de esto equivale a validación agronómica de campo.
 
 ## 1. Producto IMERG de ClimateSERV (`datatype` 26 vs 226)
-- **VERIFICADO**: `26` y `226` devuelven series *distintas* para el mismo cuadro de 0,1° y las mismas fechas (ene–feb 2022: error absoluto medio diario 2,2 mm).
-- **VERIFICADO**: `26` no devuelve datos desde 2024‑06‑01; `226` sí devuelve datos en ene–feb 2025.
-- **INFERIDO**: 26 = IMERG V06 Late (heredado) y 226 = V07 Late, como indicó el usuario. ClimateSERV no expone la etiqueta de versión en la API consultada (`getParameterTypes`, `getClimateScenarioInfo`, sin catálogo de datasets); la inferencia se apoya en la fecha de corte coherente con la transición V06→V07.
-- **Efecto medido (Moyobamba, 2015–2023)**: media anual 26 = 1602 mm; 226 = 1406 mm. El año 2023 pasa de 2350 a 1382 mm. El «desacuerdo extremo de 2023» que se reportaba antes (IMERG 2394 vs POWER 548) era en gran parte un artefacto del producto heredado.
-- **Concordancia mensual IMERG–ERA5**: r = 0,58 (26) → 0,70 (226).
-- **Acción**: el código usa 226 por defecto (`FIELDSHIFT_IMERG_DT` para cambiarlo); caché separada `imerg<dt>_…`; los datos del `datatype 26` se conservan en `data/demo/imerg26_*`. La etiqueta de procedencia ya no afirma «V07».
+- **VERIFICADO (documentación oficial)**: la tabla de ClimateSERV (`/develop-api`, leída el 2026‑11‑06) identifica `26` = NASA‑IMERG‑V06‑Late, `91` = V06‑Early, `226` = NASA‑IMERG‑V07‑Late, `227` = NASA‑IMERG‑V07‑Early, todos diarios y «2000 – near present». El usuario lo había señalado; antes se había etiquetado `26` como V07 por error.
+- **VERIFICADO (medido)**: `26` y `226` devuelven series distintas para el mismo cuadro de 0,1° y las mismas fechas. `26` **no devuelve datos desde 2024‑06‑01** aunque la tabla diga «near present»; `226` sí devuelve (comprobado en ene–feb 2025).
+- **Comparabilidad (Moyobamba, 2015–2023, `docs/evidence/imerg_v06_vs_v07_moyobamba.json`)**: ambas en mm/día (magnitudes coherentes; la API no declara la unidad). Media anual V06 1603 mm, V07 1407 mm (razón 0,88); días con ≥1 mm: 47,9 % vs 45,0 %; máximo diario 175 vs 121 mm; r diario 0,73, r mensual 0,74; diferencia absoluta media 2,9 mm/día. El año 2023 pasa de 2350 a 1382 mm.
+- **Lo que NO se afirma**: no se investigó la causa de las diferencias ni se atribuyen a error de una versión; sin pluviómetro local no se sabe cuál se acerca más a la realidad. Concordancia mensual con ERA5: r = 0,58 (V06) → 0,70 (V07), lo que no prueba que V07 sea más exacta.
+- **Procedencia y caché**: el código usa `226` por defecto (`FIELDSHIFT_IMERG_DT` lo cambia); los archivos de caché llevan el datatype en el nombre (`imerg226_…`, `imerg26_…`) para no mezclar versiones; la procedencia mostrada en la interfaz indica «V07 Late (datatype 226)». La ventana del análisis sigue siendo 2015–2023 (ampliable porque 226 llega a 2025).
 
 ## 2. `WS2M` de NASA POWER y piso de viento
 - **VERIFICADO**: en Moyobamba 2015–2023 `WS2M` tiene media 0,05 m/s y máximo 0,33 m/s. ERA5 (u10 medio 1,04 m/s × 0,748, FAO‑56 ec. 47) da u2 ≈ 0,78 m/s.

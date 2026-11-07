@@ -6,8 +6,9 @@
  * Devuelve { 'YYYYMMDD': mm/día } promediado sobre un polígono pequeño (~1 celda IMERG de 0,1°).
  */
 const BASE = 'https://climateserv.servirglobal.net/api';
-// 26 = serie heredada (termina 2024‑06; probablemente IMERG V06 Late). 226 = serie vigente (llega a 2025+; probablemente V07 Late).
-// La etiqueta de versión NO aparece en la API de ClimateSERV: es inferencia (docs/AUDITORIA.md §1).
+// Documentación oficial de ClimateSERV (https://climateserv.servirglobal.net/develop-api, leída el 2026-11-06):
+//   26 = NASA-IMERG-V06-Late, 91 = V06-Early, 226 = NASA-IMERG-V07-Late, 227 = NASA-IMERG-V07-Early (diarios, '2000 - near present').
+// Medido por nosotros: el 26 no devuelve datos desde 2024-06-01; el 226 sí (docs/AUDITORIA.md §1).
 const IMERG_DATATYPE = Number(process.env.FIELDSHIFT_IMERG_DT) || 226;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

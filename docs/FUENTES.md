@@ -3,7 +3,7 @@
 | Producto | Uso | Acceso | Resolución | Estado |
 |---|---|---|---|---|
 | **NASA POWER** diaria v2.10 (MERRA‑2/SYN1DEG) | T, Tmax, Tmin, HR, radiación, viento → ET₀ | `https://power.larc.nasa.gov/api/temporal/daily/point` sin credenciales | ~0,5°×0,625° | ✔ funciona. **Lluvia poco fiable aquí**; `WS2M` muy bajo (ver AUDITORIA §2) |
-| **NASA GPM IMERG Late** diaria | Lluvia primaria | vía **ClimateSERV** (SERVIR, NASA/USAID) `datatype=226` (V07 *inferida*; el 26 es la serie heredada ≈V06, termina 2024‑06), asíncrono, ~50 s/año | 0,1° | ✔ funciona. Ver `AUDITORIA.md` §1 |
+| **NASA GPM IMERG Late** diaria | Lluvia primaria | vía **ClimateSERV** (SERVIR, NASA/USAID) `datatype=226` (= V07 Late según la documentación oficial; el 26 = V06 Late, serie heredada, sin datos desde 2024‑06), asíncrono, ~50 s/año | 0,1° | ✔ funciona. Ver `AUDITORIA.md` §1 |
 | **SRTM 1″** (NASA/USGS/NGA) | Pendiente (Horn 3×3, paso 90 m) | espejo de terceros **OpenTopoData** (`srtm30m`) | ~30 m | ✔ funciona; no es un endpoint NASA |
 | **ISRIC SoilGrids 2.0** | pH, C orgánico, arcilla, arena 0–30 cm | `rest.isric.org` | 250 m | ✔ funciona; `null` en píxeles urbanos (se prueba el entorno); incertidumbre muy alta |
 | **ERA5** vía Open‑Meteo | Control independiente de lluvia (**no NASA**) | `archive-api.open-meteo.com` | ~25 km | ✔ funciona |
