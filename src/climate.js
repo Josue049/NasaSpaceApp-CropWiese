@@ -10,7 +10,7 @@
  * describe el CONTEXTO ZONAL, no la parcela.
  */
 
-const U2_MIN = 0.5; // m/s. WS2M de POWER es irreal (<0,35 m/s) en esta zona; límite inferior habitual en FAO-56.
+const U2_MIN = Number(process.env.FIELDSHIFT_U2MIN) || 0.5; /* override solo para sensibilidad */ // m/s. Piso FAO-56 (recomienda >=0,5 m/s). WS2M de POWER en Moyobamba: media 0,05, máx 0,33 m/s; ERA5 (u10*0.748) da 0,78 m/s. Efecto cuantificado en docs/AUDITORIA.md §2 (~+2 % ET0 con u2=0,8).
 const SPINUP_DAYS = 45; // días previos a la siembra para inicializar el balance hídrico
 
 const es = (T) => 0.6108 * Math.exp((17.27 * T) / (T + 237.3));
@@ -101,6 +101,7 @@ const SLOTS = [
 
 /** Capacidad de agua útil (mm/m) a partir de textura SoilGrids; 110 por defecto. */
 function awcFromSoil(soil) {
+  if (process.env.FIELDSHIFT_AWC) return Number(process.env.FIELDSHIFT_AWC); // solo sensibilidad
   if (!soil || !soil.sand || !soil.clay) return 110;
   if (soil.sand.mean >= 60) return 70;
   if (soil.clay.mean >= 40) return 120;

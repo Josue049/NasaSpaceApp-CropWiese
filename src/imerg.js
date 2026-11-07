@@ -2,11 +2,13 @@
 /**
  * Precipitación diaria GPM IMERG vía ClimateSERV (SERVIR, NASA/USAID).
  * Se usa ClimateSERV porque la descarga directa de GES DISC exige credenciales Earthdata.
- * API documentada en https://climateserv.servirglobal.net/develop-api  (datatype 26 = IMERG).
+ * API documentada en https://climateserv.servirglobal.net/develop-api  (datatype 26 y 226 = IMERG Late, ver abajo).
  * Devuelve { 'YYYYMMDD': mm/día } promediado sobre un polígono pequeño (~1 celda IMERG de 0,1°).
  */
 const BASE = 'https://climateserv.servirglobal.net/api';
-const IMERG_DATATYPE = 26;
+// 26 = serie heredada (termina 2024‑06; probablemente IMERG V06 Late). 226 = serie vigente (llega a 2025+; probablemente V07 Late).
+// La etiqueta de versión NO aparece en la API de ClimateSERV: es inferencia (docs/AUDITORIA.md §1).
+const IMERG_DATATYPE = Number(process.env.FIELDSHIFT_IMERG_DT) || 226;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (d) => `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}`;
@@ -25,9 +27,9 @@ function squareAround(lat, lon, half = 0.05) {
   return { type: 'Polygon', coordinates: [[[lon - half, lat - half], [lon + half, lat - half], [lon + half, lat + half], [lon - half, lat + half], [lon - half, lat - half]]] };
 }
 
-async function fetchImergDaily(lat, lon, startISO, endISO, { timeoutMs = 240000 } = {}) {
+async function fetchImergDaily(lat, lon, startISO, endISO, { timeoutMs = 240000, datatype = IMERG_DATATYPE } = {}) {
   const geometry = encodeURIComponent(JSON.stringify(squareAround(lat, lon)));
-  const url = `${BASE}/submitDataRequest/?datatype=${IMERG_DATATYPE}&begintime=${fmt(new Date(startISO))}&endtime=${fmt(new Date(endISO))}&intervaltype=0&operationtype=5&dateType_Category=default&isZip_CurrentDataType=false&geometry=${geometry}`;
+  const url = `${BASE}/submitDataRequest/?datatype=${datatype}&begintime=${fmt(new Date(startISO))}&endtime=${fmt(new Date(endISO))}&intervaltype=0&operationtype=5&dateType_Category=default&isZip_CurrentDataType=false&geometry=${geometry}`;
   const sub = await getJson(url);
   const id = Array.isArray(sub) ? sub[0] : sub;
   if (typeof id !== 'string' || id.length < 20) throw new Error(`ClimateSERV rechazó la solicitud: ${JSON.stringify(sub).slice(0, 200)}`);

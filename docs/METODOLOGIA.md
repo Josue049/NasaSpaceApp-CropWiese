@@ -11,7 +11,7 @@ Produce **índices relativos 0–100 para comparar secuencias**. No estima rendi
 ## 2. Flujo de cálculo
 
 1. **Clima diario** (2015–2023): temperatura, humedad, radiación y viento de NASA POWER; lluvia de IMERG (primaria), ERA5 y POWER (controles).
-2. **ET₀ diaria** FAO‑56 Penman‑Monteith (Allen et al., 1998, ec. 6). Viento acotado a u₂ ≥ 0,5 m/s porque `WS2M` de POWER es irreal en esta zona (máx. 0,33 m/s). [C]
+2. **ET₀ diaria** FAO‑56 Penman‑Monteith (Allen et al., 1998, ec. 6). Viento acotado a u₂ ≥ 0,5 m/s (piso FAO-56) porque `WS2M` de POWER es muy bajo aquí (media 0,05; máx. 0,33 m/s) frente a ERA5 (≈0,78 m/s); sensibilidad en AUDITORIA.md §2. [C]
 3. **Demanda del cultivo** ETc = Kc·ET₀ con curva de cuatro etapas (FAO‑56, valores típicos). [C]
 4. **Balance hídrico diario de la zona radicular** (FAO‑56 cap. 8): agotamiento Dr, coeficiente de estrés Ks, ETa = Ks·ETc; el exceso sobre capacidad de campo se pierde. Capacidad de agua útil 110 mm/m (70 si arena ≥ 60 %, 120 si arcilla ≥ 40 %), profundidad radicular y fracción de agotamiento constantes por cultivo. Arranque con 45 días de barbecho (Kc 0,4). [C/S]
    *Se descartó la «lluvia efectiva USDA‑SCS»: descarta ~70 % de una lluvia de 200 mm/mes y exageraba la sequía en un clima húmedo (ver DECISIONES D‑06).*

@@ -6,11 +6,11 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { fetchImergDaily } = require('./imerg');
+const { fetchImergDaily, IMERG_DATATYPE } = require('./imerg');
 
 const CACHE_DIR = process.env.FIELDSHIFT_CACHE || path.join(__dirname, '..', 'data', 'cache');
 const DEMO_DIR = path.join(__dirname, '..', 'data', 'demo');
-const Y0 = 2015, Y1 = 2023; // ventana fija y común a todas las fuentes (IMERG en ClimateSERV termina el 2024-06-01)
+const Y0 = 2015, Y1 = 2023; // ventana fija y común a todas las fuentes (datatype 26 termina el 2024-06-01; el 226 llega a 2025+, ventana ampliable)
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const r2 = (x) => (+x).toFixed(2);
@@ -52,7 +52,7 @@ async function getPower(lat, lon) {
 }
 
 // ---------- GPM IMERG vía ClimateSERV (lluvia, producto NASA) ----------
-const imergFile = (lat, lon, y) => `imerg_${r2(lat)}_${r2(lon)}_${y}.json`;
+const imergFile = (lat, lon, y, dt = IMERG_DATATYPE) => `imerg${dt}_${r2(lat)}_${r2(lon)}_${y}.json`;
 function getImergCached(lat, lon) {
   const out = {}; let missing = [];
   for (let y = Y0; y <= Y1; y++) {
@@ -69,7 +69,7 @@ async function fetchImergYears(lat, lon, years, onProgress, concurrency = 3) {
       try {
         const data = await fetchImergDaily(lat, lon, `${y}-01-01`, `${y}-12-31`, { timeoutMs: 300000 });
         if (Object.keys(data).length < 360) throw new Error('serie incompleta');
-        writeCache(imergFile(lat, lon, y), { fetchedAt: new Date().toISOString(), lat, lon, year: y, product: 'GPM IMERG V07 vía ClimateSERV', data });
+        writeCache(imergFile(lat, lon, y), { fetchedAt: new Date().toISOString(), lat, lon, year: y, product: `GPM IMERG Late vía ClimateSERV (datatype ${IMERG_DATATYPE})`, data });
       } catch (e) { errors.push(`${y}: ${e.message}`); }
       done++; if (onProgress) onProgress(done, years.length);
     }
@@ -78,7 +78,7 @@ async function fetchImergYears(lat, lon, years, onProgress, concurrency = 3) {
   return errors;
 }
 const IMERG_PROV = {
-  source: 'NASA GPM IMERG (V07, producto diario) vía ClimateSERV/SERVIR', variables: 'precipitation (mm/día), promedio de un cuadro de 0,1°',
+  source: `NASA GPM IMERG Late (ClimateSERV datatype ${IMERG_DATATYPE}; versión inferida, no declarada por la API)`, variables: 'precipitation (mm/día), promedio de un cuadro de 0,1°',
   period: `${Y0}-${Y1}`, resolution: '0,1° (≈ 11 km); pixel ≠ parcela', kind: 'estimación satelital multisensor (calibrada con pluviómetros a escala mensual)', url: 'https://gpm.nasa.gov/data/imerg',
 };
 
@@ -169,7 +169,7 @@ function validatePower(raw) {
     if (bad) issues.push(`${k}: ${bad} valores fuera de [${lo}, ${hi}]`);
   }
   const ws = Object.values(p.WS2M || {}).filter((x) => x !== -999);
-  if (ws.length && Math.max(...ws) < 1) issues.push(`WS2M máx ${Math.max(...ws).toFixed(2)} m/s: físicamente irreal para agronomía; se aplica mínimo 0,5 m/s en ET0`);
+  if (ws.length && Math.max(...ws) < 1) issues.push(`WS2M máx ${Math.max(...ws).toFixed(2)} m/s: muy bajo (rugosidad/escala de la rejilla); se aplica piso FAO-56 de 0,5 m/s en ET0 (efecto ≈+2 % con u2=0,8; ver AUDITORIA.md)`);
   return issues;
 }
 

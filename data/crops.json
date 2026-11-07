@@ -55,8 +55,21 @@
         "ECOCROP"
       ],
       "notes": "Cultivo exigente en N; deja buen volumen de rastrojo. Alta demanda de agua en floración.",
-      "root_m": 0.9,
-      "p_depletion": 0.55
+      "root_m": 1.0,
+      "p_depletion": 0.55,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "PROVISIONAL: difiere de la primera fila de FAO-56 Tabla 11 (variedad/ciclo local sin fuente)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "arroz",
@@ -96,7 +109,20 @@
       ],
       "notes": "Requiere lámina de agua/riego: sólo elegible si la parcela dispone de riego. El Kc FAO-56 no incluye percolación ni saturación de suelo.",
       "root_m": 0.5,
-      "p_depletion": 0.2
+      "p_depletion": 0.2,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "LITERATURA: FAO-56 Tabla 11 (primera fila; varía con clima/variedad)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "frijol",
@@ -136,8 +162,21 @@
         "PEOPLES2009"
       ],
       "notes": "Fijación de N baja a moderada; sensible a calor en floración (aborto floral) y al encharcamiento.",
-      "root_m": 0.5,
-      "p_depletion": 0.45
+      "root_m": 0.6,
+      "p_depletion": 0.45,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "LITERATURA: FAO-56 Tabla 11 (primera fila; varía con clima/variedad)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "caupi",
@@ -178,7 +217,20 @@
       ],
       "notes": "Más tolerante a calor y sequía que el frijol común; ciclo corto.",
       "root_m": 0.6,
-      "p_depletion": 0.45
+      "p_depletion": 0.45,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "PROVISIONAL: difiere de la primera fila de FAO-56 Tabla 11 (variedad/ciclo local sin fuente)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "soya",
@@ -219,7 +271,20 @@
       ],
       "notes": "Fija N, pero la exportación en grano deja un balance neto cercano a neutro. Sensible a suelos ácidos (pH<6).",
       "root_m": 0.8,
-      "p_depletion": 0.5
+      "p_depletion": 0.5,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "PROVISIONAL: difiere de la primera fila de FAO-56 Tabla 11 (variedad/ciclo local sin fuente)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "mani",
@@ -260,7 +325,20 @@
       ],
       "notes": "Prefiere suelos sueltos y bien drenados; sensible a encharcamiento.",
       "root_m": 0.6,
-      "p_depletion": 0.5
+      "p_depletion": 0.5,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "LITERATURA: FAO-56 Tabla 11 (primera fila; varía con clima/variedad)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "camote",
@@ -299,8 +377,21 @@
         "ECOCROP"
       ],
       "notes": "Follaje rastrero denso: buena cobertura del suelo; tolera suelos ácidos.",
-      "root_m": 0.9,
-      "p_depletion": 0.65
+      "root_m": 1.0,
+      "p_depletion": 0.65,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "LITERATURA: FAO-56 Tabla 11 (primera fila; varía con clima/variedad)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "tomate",
@@ -340,7 +431,20 @@
       ],
       "notes": "Cultivo de alto insumo y riesgo fitosanitario; no repetir solanáceas en campañas consecutivas.",
       "root_m": 0.8,
-      "p_depletion": 0.4
+      "p_depletion": 0.4,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "PROVISIONAL: difiere de la primera fila de FAO-56 Tabla 11 (variedad/ciclo local sin fuente)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "zapallo",
@@ -379,8 +483,21 @@
         "ECOCROP"
       ],
       "notes": "Cobertura rastrera; buena opción de diversificación (familia distinta de cereales y leguminosas).",
-      "root_m": 0.9,
-      "p_depletion": 0.5
+      "root_m": 1.0,
+      "p_depletion": 0.35,
+      "param_status": {
+        "kc": "LITERATURA: FAO-56 Tabla 12 (verificado el 2026-11-06 contra fao.org/4/x0490e)",
+        "cycle": "LITERATURA: FAO-56 Tabla 11 (primera fila; varía con clima/variedad)",
+        "root_m": "LITERATURA: FAO-56 Tabla 22, límite inferior del rango (conservador)",
+        "p_depletion": "LITERATURA: FAO-56 Tabla 22",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     },
     {
       "id": "mucuna",
@@ -419,7 +536,20 @@
       ],
       "notes": "Kc SUPUESTO (FAO-56 no lo tabula para este cultivo). Abono verde: aporta biomasa y N pero no genera ingreso directo.",
       "root_m": 0.8,
-      "p_depletion": 0.5
+      "p_depletion": 0.5,
+      "param_status": {
+        "cycle": "PROVISIONAL (no está en FAO-56; sin fuente verificada)",
+        "kc": "PROVISIONAL (no está en FAO-56; sin fuente verificada)",
+        "root_m": "PROVISIONAL (no está en FAO-56; sin fuente verificada)",
+        "p_depletion": "PROVISIONAL (no está en FAO-56; sin fuente verificada)",
+        "cover": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "biomass": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
+        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+      }
     }
   ]
 }
