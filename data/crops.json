@@ -8,7 +8,8 @@
       "cover, biomass, n_balance, cost, waterlog_sens: escalas ORDINALES de criterio experto (0-1 / -2..+2 / 1-3). NO son cantidades físicas: no representan kg N/ha, t/ha ni % de cobertura medido.",
       "El balance de N es el signo y magnitud relativa del efecto neto sobre el sistema (fijación vs. extracción), no una dosis.",
       "root_m y p_depletion: FAO-56 Tabla 22 (valores medios conservadores, constantes durante el ciclo); verificar.",
-      "Se asume capacidad de agua útil del suelo de 110 mm/m (franco) por defecto; 70 si arena>=60 %; 120 si arcilla>=40 % (SoilGrids). Simplificación PROVISIONAL."
+      "Se asume capacidad de agua útil del suelo de 110 mm/m (franco) por defecto; 70 si arena>=60 %; 120 si arcilla>=40 % (SoilGrids). Simplificación PROVISIONAL.",
+      "eco: parámetros térmicos y de duración del ciclo de FAO EcoCrop (copia de terceros). TMIN/TMAX = temperatura media mínima/máxima absoluta para crecer; TOPMN-TOPMX = rango óptimo; GMIN/GMAX = duración mínima/máxima del ciclo (días). El tiempo térmico del modelo usa estos valores; que el ciclo base (cycle) corresponda a temperatura óptima es un SUPUESTO."
     ],
     "refs": {
       "FAO56": "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56. https://www.fao.org/4/x0490e/x0490e00.htm",
@@ -67,8 +68,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Zea mays",
+        "tmin": 10.0,
+        "topmn": 18.0,
+        "topmx": 33.0,
+        "tmax": 47.0,
+        "ktmp": null,
+        "gmin": 65.0,
+        "gmax": 365.0,
+        "altmx": 4000.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -120,8 +134,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Oryza sativa",
+        "tmin": 10.0,
+        "topmn": 20.0,
+        "topmx": 30.0,
+        "tmax": 36.0,
+        "ktmp": null,
+        "gmin": 80.0,
+        "gmax": 180.0,
+        "altmx": 2500.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -174,8 +201,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Phaseolus vulgaris",
+        "tmin": 7.0,
+        "topmn": 16.0,
+        "topmx": 25.0,
+        "tmax": 32.0,
+        "ktmp": null,
+        "gmin": 50.0,
+        "gmax": 270.0,
+        "altmx": 3000.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -228,8 +268,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Vigna unguiculata",
+        "tmin": 15.0,
+        "topmn": 25.0,
+        "topmx": 35.0,
+        "tmax": 40.0,
+        "ktmp": -1.0,
+        "gmin": 30.0,
+        "gmax": 240.0,
+        "altmx": 2000.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -282,8 +335,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Glycine max",
+        "tmin": 10.0,
+        "topmn": 20.0,
+        "topmx": 33.0,
+        "tmax": 38.0,
+        "ktmp": null,
+        "gmin": 75.0,
+        "gmax": 180.0,
+        "altmx": 3000.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -336,8 +402,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Arachis hypogaea",
+        "tmin": 10.0,
+        "topmn": 22.0,
+        "topmx": 32.0,
+        "tmax": 45.0,
+        "ktmp": null,
+        "gmin": 90.0,
+        "gmax": 150.0,
+        "altmx": 1650.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -389,8 +468,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Ipomoea batatas",
+        "tmin": 10.0,
+        "topmn": 18.0,
+        "topmx": 28.0,
+        "tmax": 38.0,
+        "ktmp": 5.0,
+        "gmin": 80.0,
+        "gmax": 170.0,
+        "altmx": 2800.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -442,8 +534,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Lycopersicon esculentum",
+        "tmin": 7.0,
+        "topmn": 20.0,
+        "topmx": 27.0,
+        "tmax": 35.0,
+        "ktmp": null,
+        "gmin": 70.0,
+        "gmax": 150.0,
+        "altmx": 2400.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -495,8 +600,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Cucurbita moschata",
+        "tmin": 10.0,
+        "topmn": 20.0,
+        "topmx": 30.0,
+        "tmax": 40.0,
+        "ktmp": null,
+        "gmin": 80.0,
+        "gmax": 140.0,
+        "altmx": 2400.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     },
     {
@@ -547,8 +665,21 @@
         "n_balance": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "cost": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
-        "t_abs": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión"
+        "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
+        "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+      },
+      "eco": {
+        "species": "Mucuna pruriens",
+        "tmin": 10.0,
+        "topmn": 20.0,
+        "topmx": 30.0,
+        "tmax": 34.0,
+        "ktmp": 5.0,
+        "gmin": 90.0,
+        "gmax": 270.0,
+        "altmx": 2100.0,
+        "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
       }
     }
   ]

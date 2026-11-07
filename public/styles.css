@@ -87,3 +87,13 @@ html,body{max-width:100%;overflow-x:hidden}
 .panel table{display:block;max-width:100%;overflow-x:auto}
 .strat header>div{min-width:0}
 svg{max-width:100%;height:auto}
+
+.banner.bad{background:color-mix(in srgb,var(--bad) 18%,var(--surface));border-color:var(--bad)}
+.verdict.equivalentes,.verdict.indistinguibles{border-left:4px solid var(--muted);padding-left:10px}
+.verdict.claramente_preferible{border-left:4px solid var(--a);padding-left:10px}
+.verdict.probablemente_preferible{border-left:4px solid var(--b);padding-left:10px}
+.wins{overflow-x:auto;font-size:12px}.wrow{display:grid;grid-template-columns:110px repeat(25,minmax(14px,1fr));gap:1px;align-items:center;min-width:480px}
+.wrow span{font-size:12px;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wrow i{font-style:normal;text-align:center;font-weight:700;padding:3px 0;border-radius:3px;color:var(--ink)}
+.wrow.wh i{font-weight:600;color:var(--muted)}
+.w-viable{background:color-mix(in srgb,var(--a) 45%,transparent)}.w-marginal{background:color-mix(in srgb,#d9a441 55%,transparent)}.w-no_viable{background:color-mix(in srgb,var(--bad) 25%,transparent);color:var(--muted)}

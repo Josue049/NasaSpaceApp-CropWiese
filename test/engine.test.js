@@ -107,5 +107,8 @@ test('Robustez: se reporta el ranking bajo cada fuente de lluvia y los criterios
   assert.equal(r.robustness.by_source.length, 3);
   assert.ok(r.robustness.by_source.every((x) => x.ranking.length === 3));
   for (const k of CRITERIA) assert.ok(r.strategies[1].criteria[k].confidence);
-  assert.ok(r.sensitivity.draws === 300 && r.sensitivity.alt_a_beats_current >= 0.9);
+  assert.equal(r.sensitivity.draws, 400);
+  assert.ok(r.sensitivity.alt_a_beats_current >= 0.9);
+  assert.ok(r.sensitivity.comparisons.a_vs_b.level, 'A vs B debe clasificarse (equivalentes / preferible)');
+  assert.ok(/NO es validación/.test(r.sensitivity.note));
 });

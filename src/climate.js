@@ -112,46 +112,79 @@ function awcFromSoil(soil) {
 }
 
 /**
- * Siembra al inicio de la campaña `slot` en cada año disponible y simula el balance hídrico diario.
- * Índices: ETa/ETc (1 = sin estrés). Riesgo = fracción de años con ETa/ETc ponderado < 0,8.
+ * Tasa de desarrollo diaria r(T) ∈ [0,1] con la forma trapezoidal de FAO EcoCrop:
+ * 0 por debajo de TMIN, lineal hasta 1 en TOPMN, 1 en [TOPMN, TOPMX], lineal hasta 0 en TMAX.
+ * Un "día efectivo" = un día con r = 1. Sin parámetros térmicos devuelve 1 (ciclo fijo).
  */
-function evaluateSeason(clim, crop, slot, irrigated, awc = 110) {
+function devRate(eco, T) {
+  if (!eco || eco.tmin == null || eco.topmn == null || eco.topmx == null || eco.tmax == null) return 1;
+  if (T <= eco.tmin || T >= eco.tmax) return 0;
+  if (T < eco.topmn) return (T - eco.tmin) / (eco.topmn - eco.tmin);
+  if (T <= eco.topmx) return 1;
+  return (eco.tmax - T) / (eco.tmax - eco.topmx);
+}
+
+/** Incertidumbre de la temperatura (°C): discrepancia entre productos (RMS 1,9 °C POWER-corregido vs ERA5, docs/AUDITORIA.md) ⊕ ±1,5 °C/km de gradiente × |Δz|. */
+function tempUncertainty(clim) {
+  const dz = Math.abs((clim.elevation_m ?? 0) - (clim.cell_elevation_m ?? clim.elevation_m ?? 0));
+  return Math.sqrt(1.9 ** 2 + (1.5 * dz / 1000) ** 2);
+}
+
+/**
+ * Siembra en la fecha dada de cada año disponible y simula, día a día, fenología por tiempo térmico + balance hídrico.
+ * El ciclo base (crop.cycle, días) se interpreta como días efectivos (SUPUESTO: duración a temperatura óptima);
+ * los días reales necesarios son los que hagan falta para acumularlos. Los límites de la simulación son
+ * min(ventana disponible, EcoCrop GMAX). El año cuenta como "completo" si el cultivo termina dentro de ese límite.
+ * opts.dT desplaza la temperatura SOLO en la tasa de desarrollo (no en ET0): se usa para propagar su incertidumbre.
+ * Índices hídricos: ETa/ETc (1 = sin estrés); riesgo = fracción de años con índice ponderado < 0,8.
+ */
+function evaluateSeason(clim, crop, slot, irrigated, awc = 110, opts = {}) {
+  const dT = opts.dT || 0, eco = crop.eco;
   const L = cycleLength(crop), { ini, dev, mid } = crop.cycle;
+  const maxDays = Math.min(slot.window_days, eco && eco.gmax ? eco.gmax : Infinity);
   const TAW = awc * crop.root_m, RAW = crop.p_depletion * TAW;
-  const perYear = [];
+  const perYear = []; let nTried = 0, nDone = 0;
   for (const y of clim.years) {
     const start = Date.UTC(y, slot.start.m - 1, slot.start.d);
     let Dr = 0, ok = true;
-    // arranque: barbecho con Kc 0,4 durante SPINUP_DAYS
-    for (let t = -SPINUP_DAYS; t < 0; t++) {
+    for (let t = -SPINUP_DAYS; t < 0; t++) { // barbecho previo con Kc 0,4
       const day = clim.byKey.get(ymd(start + t * 86400000));
-      if (!day) { Dr = RAW * 0.5; continue; } // sin datos previos (primer año): condición media y se sigue
+      if (!day) { Dr = RAW * 0.5; continue; }
       const ks = Dr > RAW ? Math.max(0, (TAW - Dr) / ((1 - crop.p_depletion) * TAW)) : 1;
       Dr = Math.min(TAW, Math.max(0, Dr - day.P + ks * 0.4 * day.et0));
     }
-    let etc = 0, eta = 0, etcMid = 0, etaMid = 0, heat = 0, midDays = 0, heavyEarly = 0, tsum = 0, rain = 0;
-    for (let t = 0; t < L; t++) {
+    let etc = 0, eta = 0, etcMid = 0, etaMid = 0, heat = 0, midDays = 0, heavyEarly = 0, tsum = 0, rain = 0, te = 0, days = 0, done = false;
+    for (let t = 0; t < maxDays; t++) {
       const day = clim.byKey.get(ymd(start + t * 86400000));
       if (!day) { ok = false; break; }
-      const kc = kcAt(crop, t), etcD = kc * day.et0;
+      const kc = kcAt(crop, Math.min(te, L - 1e-9)), etcD = kc * day.et0;
       const ks = Dr > RAW ? Math.max(0, (TAW - Dr) / ((1 - crop.p_depletion) * TAW)) : 1;
       const etaD = ks * etcD;
-      Dr = Math.min(TAW, Math.max(0, Dr - day.P + etaD)); // exceso sobre capacidad de campo = percolación/escorrentía
-      etc += etcD; eta += etaD; tsum += day.T; rain += day.P;
-      if (t >= ini + dev && t < ini + dev + mid) { etcMid += etcD; etaMid += etaD; midDays++; if (day.Tx > crop.t_stress_max) heat++; }
-      if (t < ini + dev && day.P >= 20) heavyEarly += day.P;
+      Dr = Math.min(TAW, Math.max(0, Dr - day.P + etaD));
+      etc += etcD; eta += etaD; tsum += day.T; rain += day.P; days++;
+      const inMid = te >= ini + dev && te < ini + dev + mid;
+      if (inMid) { etcMid += etcD; etaMid += etaD; midDays++; if (day.Tx > crop.t_stress_max) heat++; }
+      if (te < ini + dev && day.P >= 20) heavyEarly += day.P;
+      te += devRate(eco, day.T + dT);
+      if (te >= L) { done = true; break; }
     }
     if (!ok) continue;
+    nTried++; if (done) nDone++;
+    if (!done) continue; // año sin ciclo completo: cuenta para complete_frac, no para los índices hídricos
     const satTotal = etc > 0 ? eta / etc : 1, satMid = etcMid > 0 ? etaMid / etcMid : 1;
-    perYear.push({ year: y, etc, eta, rain, sat_total: satTotal, sat_mid: satMid, sat: 0.4 * satTotal + 0.6 * satMid, /* ponderación PROVISIONAL (FAO-33: etapa media más sensible) */
-      heat_frac: midDays ? heat / midDays : 0, heavy_early_mm: heavyEarly, tmean: tsum / L });
+    perYear.push({ year: y, etc, eta, rain, days, sat_total: satTotal, sat_mid: satMid, sat: 0.4 * satTotal + 0.6 * satMid, /* ponderación PROVISIONAL (FAO-33: etapa media más sensible) */
+      heat_frac: midDays ? heat / midDays : 0, heavy_early_mm: heavyEarly, tmean: tsum / days });
   }
-  if (!perYear.length) return null;
-  const med = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor((s.length - 1) / 2)]; };
+  if (!nTried) return null;
+  const complete_frac = nDone / nTried;
+  const med = (a) => { const q = [...a].sort((x, y) => x - y); return q[Math.floor((q.length - 1) / 2)]; };
   const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+  if (!perYear.length) return { n_years: 0, complete_frac, cycle_days: L, dur_days: null, max_days: maxDays, window_days: slot.window_days, incomplete: true, sat: 0, drought_frac: 1, drought_frac_rainfed: 1, heat_frac: 0, heavy_early_mm: 0, tmean: NaN, etc_mm: 0, rain_mm: 0, deficit_mm: 0, taw_mm: TAW };
   const droughtFrac = perYear.filter((r) => r.sat < 0.8).length / perYear.length;
+  const dur = perYear.map((r) => r.days).sort((a, b) => a - b);
   return {
-    n_years: perYear.length, cycle_days: L, window_days: slot.window_days,
+    n_years: perYear.length, complete_frac, cycle_days: L, dur_days: med(dur), dur_p90_days: dur[Math.min(dur.length - 1, Math.ceil(0.9 * dur.length) - 1)],
+    max_days: maxDays, window_days: slot.window_days,
     etc_mm: med(perYear.map((r) => r.etc)), rain_mm: med(perYear.map((r) => r.rain)),
     deficit_mm: med(perYear.map((r) => r.etc - r.eta)),
     sat: med(perYear.map((r) => r.sat)), sat_total: med(perYear.map((r) => r.sat_total)), sat_mid: med(perYear.map((r) => r.sat_mid)),
@@ -162,4 +195,25 @@ function evaluateSeason(clim, crop, slot, irrigated, awc = 110) {
   };
 }
 
-module.exports = { buildClimate, evaluateSeason, kcAt, cycleLength, et0Day, extraterrestrial, dayOfYear, awcFromSoil, SLOTS, U2_MIN, SPINUP_DAYS };
+/**
+ * Ventanas de siembra: para fechas de inicio cada `step` días a lo largo del año, fracción de años en que el ciclo
+ * se completa (sin límite de campaña, solo EcoCrop GMAX) y suficiencia hídrica. Estado: viable / marginal / no_viable.
+ * Umbrales de estado = decisiones de diseño (no de la literatura): viable si completa ≥90 % de los años (con T−δ) y ETa/ETc ≥ 0,8.
+ */
+function sowingWindows(clim, crop, irrigated, awc, { step = 15, dT = 0 } = {}) {
+  const out = [];
+  for (let doy = 1; doy <= 365; doy += step) {
+    const d0 = new Date(Date.UTC(2001, 0, doy)); // año de referencia no bisiesto
+    const slot = { id: 'W', start: { m: d0.getUTCMonth() + 1, d: d0.getUTCDate() }, window_days: crop.eco && crop.eco.gmax ? Math.min(365, crop.eco.gmax) : 365 };
+    const base = evaluateSeason(clim, crop, slot, irrigated, awc);
+    const cold = evaluateSeason(clim, crop, slot, irrigated, awc, { dT: -Math.abs(dT) });
+    if (!base) continue;
+    const sat = base.n_years ? base.sat : 0;
+    const cf = base.complete_frac, cfc = cold ? cold.complete_frac : 0;
+    const status = cf < 0.5 ? 'no_viable' : (cfc >= 0.9 && sat >= 0.8 ? 'viable' : 'marginal');
+    out.push({ doy, month: slot.start.m, day: slot.start.d, status, complete_frac: +cf.toFixed(2), complete_frac_cold: +cfc.toFixed(2), dur_days: base.dur_days, sat: +sat.toFixed(2) });
+  }
+  return out;
+}
+
+module.exports = { devRate, tempUncertainty, sowingWindows, buildClimate, evaluateSeason, kcAt, cycleLength, et0Day, extraterrestrial, dayOfYear, awcFromSoil, SLOTS, U2_MIN, SPINUP_DAYS };

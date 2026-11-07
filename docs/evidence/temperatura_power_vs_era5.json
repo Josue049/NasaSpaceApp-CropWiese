@@ -1,0 +1,71 @@
+{
+ "rms_c": 1.87,
+ "sites": [
+  {
+   "name": "Moyobamba urbano",
+   "z": 878,
+   "cell": 983.69,
+   "dz": -105.69000000000005,
+   "power_raw": 22.5,
+   "power_corr": 23.19,
+   "era5": 21.38,
+   "diff_corr_minus_era5": 1.81,
+   "diff_raw_minus_era5": 1.12
+  },
+  {
+   "name": "Ladera sur de Moyobamba",
+   "z": 1335,
+   "cell": 983.69,
+   "dz": 351.30999999999995,
+   "power_raw": 22.5,
+   "power_corr": 20.22,
+   "era5": 18.97,
+   "diff_corr_minus_era5": 1.25,
+   "diff_raw_minus_era5": 3.53
+  },
+  {
+   "name": "Chachapoyas",
+   "z": 2353,
+   "cell": 2112.5,
+   "dz": 240.5,
+   "power_raw": 17.5,
+   "power_corr": 15.94,
+   "era5": 15.39,
+   "diff_corr_minus_era5": 0.55,
+   "diff_raw_minus_era5": 2.11
+  },
+  {
+   "name": "Tarapoto",
+   "z": 277,
+   "cell": 525.96,
+   "dz": -248.96000000000004,
+   "power_raw": 25.3,
+   "power_corr": 26.92,
+   "era5": 25.08,
+   "diff_corr_minus_era5": 1.84,
+   "diff_raw_minus_era5": 0.22
+  },
+  {
+   "name": "Rioja",
+   "z": 827,
+   "cell": 2060.82,
+   "dz": -1233.8200000000002,
+   "power_raw": 16.86,
+   "power_corr": 24.88,
+   "era5": 22.01,
+   "diff_corr_minus_era5": 2.87,
+   "diff_raw_minus_era5": -5.15
+  },
+  {
+   "name": "Pucallpa",
+   "z": 154,
+   "cell": 173.73,
+   "dz": -19.72999999999999,
+   "power_raw": 27.97,
+   "power_corr": 28.1,
+   "era5": 26.01,
+   "diff_corr_minus_era5": 2.08,
+   "diff_raw_minus_era5": 1.96
+  }
+ ]
+}
