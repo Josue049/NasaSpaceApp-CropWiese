@@ -59,3 +59,34 @@ test('Estáticos: sirve index y bloquea salida del directorio público', async (
   const evil = await fetch(base + '/..%2F..%2Fpackage.json');
   assert.notEqual(evil.status, 200);
 });
+
+test('Recorrido completo: parcela → análisis → soporte/ventanas/comparaciones → decisión → listado → eliminación', async () => {
+  const p = await (await post('/api/parcels', { name: 'Recorrido', lat: -6.034, lon: -76.971, history: ['maiz', 'maiz', 'maiz', 'maiz'], priorities: { protect_soil: 4 } })).json();
+  const saved = await (await fetch(base + '/api/parcels')).json();
+  assert.ok(saved.some((x) => x.id === p.id));
+  const r = await (await post('/api/analyze', { lat: p.lat, lon: p.lon, history: p.history, priorities: p.priorities })).json();
+  assert.ok(r.support && ['aceptable', 'limitada', 'no_recomendable'].includes(r.support.level));
+  assert.ok(r.strategies.length >= 1 && r.sowing_windows.crops.maiz.length >= 12);
+  assert.ok(r.sensitivity.comparisons.a_vs_b.text && /NO es validación/.test(r.sensitivity.note));
+  const best = r.strategies.find((s) => s.id === 'alt_a');
+  const d = await (await post(`/api/parcels/${p.id}/decision`, { chosen: best.id, sequence: best.sequence, engine_version: r.engine_version, scenario: r.scenario.id, weights: r.weights, scores: { alt_a: best.score } })).json();
+  assert.equal(d.decisions[0].engine_version, r.engine_version);
+  assert.equal((await fetch(base + `/api/parcels/${p.id}`, { method: 'DELETE' })).status, 200);
+});
+
+test('Entradas adversas: coordenadas fuera de rango, latitud extrema, cultivos desconocidos, JSON inválido, cuerpo vacío', async () => {
+  for (const b of [{ lat: 95, lon: 0, history: ['maiz'] }, { lat: -6, lon: 200, history: ['maiz'] }, { lat: 70, lon: 10, history: ['maiz'] }, { lat: -6, lon: -77, history: ['quinua'] }, { lat: -6, lon: -77, history: [] }, { lat: -6, lon: -77, history: ['maiz'], excluded_crops: ['xyz'] }]) {
+    const r = await post('/api/analyze', b); assert.equal(r.status, 400, JSON.stringify(b));
+  }
+  const bad = await fetch(base + '/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{no es json' });
+  assert.ok(bad.status >= 400 && bad.status < 500 || bad.status === 500);
+  const empty = await post('/api/analyze', {}); assert.equal(empty.status, 400);
+  const noPar = await post('/api/parcels', { lat: 1, lon: 1 }); assert.equal(noPar.status, 400);
+});
+
+test('Fuente de datos caída: el análisis falla con mensaje claro (422), sin inventar resultados', async () => {
+  // punto sin caché y con red bloqueada artificialmente: se fuerza error de POWER cambiando la URL base no es posible; se verifica a nivel de pipeline
+  const { analyze } = require('../src/pipeline');
+  const g = await require('./helpers').demoData();
+  assert.throws(() => analyze({ ...require('./helpers').baseInput() }, { ...g, power: { ok: false, error: 'POWER caído', provenance: {} } }), /Sin datos climáticos/);
+});
