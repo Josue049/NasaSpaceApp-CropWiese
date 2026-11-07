@@ -3,10 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 const ds = require('./datasources');
-const { buildClimate, sowingWindows, awcFromSoil, tempUncertainty } = require('./climate');
+const { buildClimate, sowingWindows, awcFromSoil, tempUncertainty, canopyCoverMean } = require('./climate');
 const engine = require('./engine');
 
 const CROPS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'crops.json'), 'utf8'));
+for (const c of CROPS.crops) c.canopy_cover = canopyCoverMean(c); // campo derivado (FAO-56 ec. 76); no está en el JSON
 
 const SCENARIOS = {
   base: { id: 'base', label: 'Clima observado 2015–2023', precip_factor: 1, temp_delta: 0, hypothetical: false },

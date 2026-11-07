@@ -13,7 +13,7 @@
  *
  * Nada aquí predice rendimientos ni cantidades de N: son índices relativos para comparar.
  */
-const { evaluateSeason, SLOTS, cycleLength, awcFromSoil, tempUncertainty } = require('./climate');
+const { evaluateSeason, SLOTS, cycleLength, awcFromSoil, tempUncertainty, coverOf } = require('./climate');
 
 const ENGINE_VERSION = '0.2.0';
 const CRITERIA = ['erosion', 'organic_n', 'water', 'resilience', 'pest', 'market', 'low_cost', 'soil_fit', 'thermal'];
@@ -66,7 +66,7 @@ function cropSlotBlockers(ctx, cropId, slotId, primaryId) {
   if (crop.eco?.altmx != null && ctx.elev > crop.eco.altmx) out.push(`altitud ${Math.round(ctx.elev)} m por encima del máximo de EcoCrop para el cultivo (${crop.eco.altmx} m)`);
   if (crop.regime === 'irrigated_required' && !ctx.irrigated) out.push('requiere riego/inundación y la parcela no dispone de riego');
   if (!ctx.irrigated && crop.regime !== 'irrigated_required' && s.sat < 0.5) out.push(`déficit hídrico severo en secano (ETa/ETc mediana ${(s.sat * 100).toFixed(0)} %)`);
-  if (ctx.slope != null && ctx.slope > 25 && crop.cover < 0.5) out.push(`pendiente ${ctx.slope.toFixed(0)} % demasiado alta para un cultivo de baja cobertura`);
+  if (ctx.slope != null && ctx.slope > 25 && coverOf(crop) < 0.5) out.push(`pendiente ${ctx.slope.toFixed(0)} % demasiado alta para un cultivo de baja cobertura`);
   if ((ctx.input.excluded_crops || []).includes(cropId)) out.push('excluido por el agricultor');
   return out;
 }
@@ -111,7 +111,7 @@ function campaignMetrics(ctx, climId, cropId, slotId) {
   const crop = ctx.crops[cropId], shift = ctx.dTdraw ?? 0, s = season(ctx, climId, cropId, slotId, shift);
   const sCold = ctx.dTdraw !== undefined ? s : season(ctx, climId, cropId, slotId, -ctx.dT);
   const win = ctx.slotById[slotId].window_days, cycle = s.dur_days ?? s.max_days, gap = Math.max(0, win - cycle);
-  const effCover = (crop.cover * cycle + 0.25 * crop.biomass * gap) / win;
+  const effCover = (coverOf(crop) * cycle + 0.25 * crop.biomass * gap) / win;
   const slopeF = ctx.slope == null ? 0.4 : Math.min(1, ctx.slope / 30);
   const earlyF = Math.min(1, s.heavy_early_mm / 120);
   const erosionRisk = (0.3 + 0.7 * slopeF) * (0.3 + 0.7 * earlyF) * (1 - effCover);

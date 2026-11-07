@@ -32,7 +32,7 @@ test('Invariantes de capacidad en todas las estrategias propuestas (rejilla de c
         assert.ok(t.thermal.complete_frac >= 0.5, `I1 ciclo completable ${ctxLabel}`);
         assert.ok(t.duration_days <= (t.slot === 'A' ? 165 : 200), `I1b duración dentro de ventana ${ctxLabel}`);
         if (!c.irr && crop.regime === 'irrigated_required') assert.fail(`I5 cultivo de riego en secano ${ctxLabel}`);
-        if (c.slope > 25) assert.ok(crop.cover >= 0.5, `I6 cobertura en pendiente ${ctxLabel}`);
+        if (c.slope > 25) assert.ok(require('../src/climate').coverOf(crop) >= 0.5, `I6 cobertura en pendiente ${ctxLabel}`);
         assert.ok(!(input.excluded_crops || []).includes(t.crop), `I7 exclusión del agricultor ${ctxLabel}`);
         if (crop.eco.altmx != null) assert.ok(elev <= crop.eco.altmx, `I8 altitud ${ctxLabel}`);
         if (!c.irr && crop.regime !== 'irrigated_required') assert.ok(t.water_coverage_pct >= 50, `I9 suficiencia hídrica en secano ${ctxLabel}`);

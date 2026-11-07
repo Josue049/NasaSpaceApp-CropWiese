@@ -9,7 +9,8 @@
       "El balance de N es el signo y magnitud relativa del efecto neto sobre el sistema (fijación vs. extracción), no una dosis.",
       "root_m y p_depletion: FAO-56 Tabla 22 (valores medios conservadores, constantes durante el ciclo); verificar.",
       "Se asume capacidad de agua útil del suelo de 110 mm/m (franco) por defecto; 70 si arena>=60 %; 120 si arcilla>=40 % (SoilGrids). Simplificación PROVISIONAL.",
-      "eco: parámetros térmicos y de duración del ciclo de FAO EcoCrop (copia de terceros). TMIN/TMAX = temperatura media mínima/máxima absoluta para crecer; TOPMN-TOPMX = rango óptimo; GMIN/GMAX = duración mínima/máxima del ciclo (días). El tiempo térmico del modelo usa estos valores; que el ciclo base (cycle) corresponda a temperatura óptima es un SUPUESTO."
+      "eco: parámetros térmicos y de duración del ciclo de FAO EcoCrop (copia de terceros). TMIN/TMAX = temperatura media mínima/máxima absoluta para crecer; TOPMN-TOPMX = rango óptimo; GMIN/GMAX = duración mínima/máxima del ciclo (días). El tiempo térmico del modelo usa estos valores; que el ciclo base (cycle) corresponda a temperatura óptima es un SUPUESTO.",
+      "height_m: altura máxima (FAO-56 Tabla 12); con Kc permite la cobertura de dosel FAO-56 ec. 76 (Kcmin 0,15; Kcmax 1,2; se usa Kc como aproximación de Kcb). La cobertura efectiva del modelo es min(cover ordinal, cobertura de dosel)."
     ],
     "refs": {
       "FAO56": "Allen R.G., Pereira L.S., Raes D., Smith M. (1998). Crop evapotranspiration. FAO Irrigation and Drainage Paper 56. https://www.fao.org/4/x0490e/x0490e00.htm",
@@ -70,7 +71,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Zea mays",
@@ -83,7 +85,8 @@
         "gmax": 365.0,
         "altmx": 4000.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 2
     },
     {
       "id": "arroz",
@@ -136,7 +139,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Oryza sativa",
@@ -149,7 +153,8 @@
         "gmax": 180.0,
         "altmx": 2500.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 1
     },
     {
       "id": "frijol",
@@ -203,7 +208,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Phaseolus vulgaris",
@@ -216,7 +222,8 @@
         "gmax": 270.0,
         "altmx": 3000.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.4
     },
     {
       "id": "caupi",
@@ -270,7 +277,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Vigna unguiculata",
@@ -283,7 +291,8 @@
         "gmax": 240.0,
         "altmx": 2000.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.4
     },
     {
       "id": "soya",
@@ -337,7 +346,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo (soya: rango 0,5–1,0 m, se usa el punto medio)"
       },
       "eco": {
         "species": "Glycine max",
@@ -350,7 +360,8 @@
         "gmax": 180.0,
         "altmx": 3000.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.75
     },
     {
       "id": "mani",
@@ -404,7 +415,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Arachis hypogaea",
@@ -417,7 +429,8 @@
         "gmax": 150.0,
         "altmx": 1650.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.4
     },
     {
       "id": "camote",
@@ -470,7 +483,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Ipomoea batatas",
@@ -483,7 +497,8 @@
         "gmax": 170.0,
         "altmx": 2800.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.4
     },
     {
       "id": "tomate",
@@ -536,7 +551,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Lycopersicon esculentum",
@@ -549,7 +565,8 @@
         "gmax": 150.0,
         "altmx": 2400.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.6
     },
     {
       "id": "zapallo",
@@ -602,7 +619,8 @@
         "waterlog_sens": "PROVISIONAL: juicio propio ordinal, sin fuente",
         "t_abs": "OBSOLETO: ya no se usa; reemplazado por eco.tmin/topmn/topmx/tmax y el modelo de tiempo térmico",
         "ph": "ECOCROP/FAO citado, NO verificado en esta sesión",
-        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona"
+        "eco": "LITERATURA (EcoCrop, copia de terceros): rangos amplios por especie; no por variedad ni por zona",
+        "height_m": "LITERATURA: FAO-56 Tabla 12, altura máxima del cultivo"
       },
       "eco": {
         "species": "Cucurbita moschata",
@@ -615,7 +633,8 @@
         "gmax": 140.0,
         "altmx": 2400.0,
         "source": "FAO EcoCrop (copia GitHub openclim/ecocrop, EcoCrop_DB.csv, descargada 2026-11-06); rangos amplios de literatura, NO específicos de variedad"
-      }
+      },
+      "height_m": 0.4
     },
     {
       "id": "mucuna",

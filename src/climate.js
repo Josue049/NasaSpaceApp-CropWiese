@@ -216,4 +216,13 @@ function sowingWindows(clim, crop, irrigated, awc, { step = 15, dT = 0 } = {}) {
   return out;
 }
 
-module.exports = { devRate, tempUncertainty, sowingWindows, buildClimate, evaluateSeason, kcAt, cycleLength, et0Day, extraterrestrial, dayOfYear, awcFromSoil, SLOTS, U2_MIN, SPINUP_DAYS };
+/** Cobertura media de dosel durante el ciclo (FAO-56 ec. 76: fc = ((Kc−0,15)/(1,2−0,15))^(1+0,5h)); null si el cultivo no tiene altura. Kc se usa como aproximación de Kcb. */
+function canopyCoverMean(crop) {
+  if (!Number.isFinite(crop.height_m)) return null;
+  const L = cycleLength(crop); let s = 0;
+  for (let t = 0; t < L; t++) s += Math.min(0.99, Math.max(0, Math.pow(Math.max(0, (kcAt(crop, t) - 0.15) / 1.05), 1 + 0.5 * crop.height_m)));
+  return s / L;
+}
+const coverOf = (crop) => (crop.canopy_cover != null ? Math.min(crop.cover, crop.canopy_cover) : crop.cover);
+
+module.exports = { canopyCoverMean, coverOf, devRate, tempUncertainty, sowingWindows, buildClimate, evaluateSeason, kcAt, cycleLength, et0Day, extraterrestrial, dayOfYear, awcFromSoil, SLOTS, U2_MIN, SPINUP_DAYS };
