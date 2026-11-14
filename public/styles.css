@@ -113,3 +113,10 @@ svg{max-width:100%;height:auto}
 .lim{padding-left:1.1em;font-size:14px}.lim li{margin:.35em 0}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 details{margin:.6em 0}summary{cursor:pointer;font-weight:600}
+
+/* ---- modos Instantánea / Precisa ---- */
+.modes{border:1px solid var(--line);border-radius:12px;padding:8px 12px 12px;margin:14px 0}
+.modes legend{font-weight:700;padding:0 6px}
+.modes label.check{align-items:flex-start;margin-top:8px}
+#precisaBox{border-left:4px solid var(--primary);padding-left:12px;margin:10px 0}
+#precisaBox h4{margin:1em 0 .2em;font-size:15px}#precisaBox h4 small{font-weight:400;color:var(--muted)}

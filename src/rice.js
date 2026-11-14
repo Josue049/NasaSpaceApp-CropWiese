@@ -12,6 +12,7 @@ const path = require('path');
 const { devRate, kcAt, cycleLength, tempUncertainty } = require('./climate');
 const { buildClimates, SCENARIOS } = require('./pipeline');
 const { temperatureCheck, offsetsFrom } = require('./morropon');
+const { calibratedProfile, supplyMm } = require('./insitu');
 
 const PROFILE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'rice_tinajones.json'), 'utf8'));
 const OBS_CSV = path.join(__dirname, '..', 'docs', 'evidence', 'rice_morropon_2026_senamhi.csv');
@@ -33,19 +34,19 @@ const r1 = (x) => (x == null ? null : Math.round(x * 10) / 10);
 const r2 = (x) => (x == null ? null : Math.round(x * 100) / 100);
 
 /** Simula una siembra (año y fecha) en la climatología primaria. Devuelve null si faltan datos. */
-function simulate(clim, y, m, d, dT = 0) {
-  const start = Date.UTC(y, m - 1, d);
+function simulate(clim, y, m, d, dT = 0, prof = PROFILE) {
+  const start = Date.UTC(y, m - 1, d), L = cycleLength(prof);
   let te = 0, etc = 0, done = false, flowN = 0, flowHeat = 0, flowTn = 0, flowTx = 0;
   const stageDay = {}; const keys = [];
-  const das = PROFILE.phenology_das, [f0, f1] = PROFILE.flowering_window_das;
+  const das = prof.phenology_das, [f0, f1] = prof.flowering_window_das;
   const stageIds = Object.keys(das);
   for (let t = 0; t < 260; t++) {
     const day = clim.byKey.get(ymd(start + t * 86400000));
     if (!day) return null;
     keys.push(day.key);
-    etc += kcAt(PROFILE, Math.min(te, L - 1e-9)) * day.et0;
-    if (te >= f0 && te < f1) { flowN++; flowTn += day.Tn; flowTx += day.Tx; if (day.Tx > PROFILE.t_stress_max) flowHeat++; }
-    te += devRate(PROFILE.eco, day.T + dT);
+    etc += kcAt(prof, Math.min(te, L - 1e-9)) * day.et0;
+    if (te >= f0 && te < f1) { flowN++; flowTn += day.Tn; flowTx += day.Tx; if (day.Tx > prof.t_stress_max) flowHeat++; }
+    te += devRate(prof.eco, day.T + dT);
     for (const s of stageIds) if (stageDay[s] === undefined && te >= das[s]) stageDay[s] = t + 1;
     if (te >= L) { done = true; break; }
   }
@@ -55,11 +56,11 @@ function simulate(clim, y, m, d, dT = 0) {
 function rainOver(clim, keys) { let s = 0; for (const k of keys) { const d = clim.byKey.get(k); if (d) s += d.P; } return s; }
 
 /** Evalúa una fecha de siembra (mes/día) en todos los años de la serie. */
-function evaluateDate(climates, m, d, dT) {
+function evaluateDate(climates, m, d, dT, prof = PROFILE) {
   const prim = climates.find((c) => c.role === 'primary') || climates[0];
   const runs = [], runsCold = [];
   for (const y of prim.climate.years) {
-    const r = simulate(prim.climate, y, m, d, 0), rc = simulate(prim.climate, y, m, d, -dT);
+    const r = simulate(prim.climate, y, m, d, 0, prof), rc = simulate(prim.climate, y, m, d, -dT, prof);
     if (r) runs.push({ y, ...r }); if (rc) runsCold.push(rc);
   }
   if (!runs.length) return null;
@@ -71,7 +72,7 @@ function evaluateDate(climates, m, d, dT) {
     const rain = ok.map((r) => rainOver(c.climate, r.keys));
     bySource[c.id] = { net_mm: r1(med(net)), rain_mm: r1(med(rain)) };
   }
-  const stage = {}; for (const s of Object.keys(PROFILE.phenology_das)) { const v = med(ok.map((r) => r.stageDay[s]).filter((x) => x != null)); stage[s] = v == null ? null : Math.round(v); }
+  const stage = {}; for (const s of Object.keys(prof.phenology_das)) { const v = med(ok.map((r) => r.stageDay[s]).filter((x) => x != null)); stage[s] = v == null ? null : Math.round(v); }
   const medStart = ok.length ? new Date(Date.UTC(2001, m - 1, d)) : null;
   const stageDates = {}; if (medStart) for (const s of Object.keys(stage)) if (stage[s] != null) stageDates[s] = new Date(medStart.getTime() + (stage[s] - 1) * 86400000).toISOString().slice(5, 10);
   const heat = mean(ok.map((r) => r.heatFrac));
@@ -118,18 +119,35 @@ function analyzeRice(input, g, scenario = SCENARIOS.base) {
   const offsets = offsetsFrom(chk0);
   const { climates, problems } = offsets ? buildClimates(g, { ...scenario, temp_offsets: offsets }) : first;
   const support = assessSupport(input, g, climates);
-  const base = { engine: 'rice-demo-0.1', generated_at: new Date().toISOString(), scope: { ...DOMAIN, variety: PROFILE.name, crop: 'Arroz' }, support, limitations: LIMITATIONS, status: PROFILE._meta.status, flags: PROFILE._meta.flags };
+  const cal = calibratedProfile(PROFILE, input.insitu || null);
+  const prof = cal.profile, L = cycleLength(prof);
+  const supply = supplyMm(input.insitu), perc = input.insitu && input.insitu.irrigation ? input.insitu.irrigation.percolation_mm_day ?? null : null, mgmt = input.insitu && input.insitu.irrigation ? input.insitu.irrigation.management || null : null;
+  const usedInsitu = !!(input.insitu && (cal.applied.length || supply != null));
+  const mode = usedInsitu ? 'precisa' : 'instantanea';
+  const base = { engine: 'rice-demo-0.2', mode, mode_requested: input.mode === 'precisa' ? 'precisa' : 'instantanea', generated_at: new Date().toISOString(), generated_at: new Date().toISOString(), scope: { ...DOMAIN, variety: PROFILE.name, crop: 'Arroz' }, support, limitations: LIMITATIONS, status: PROFILE._meta.status, flags: PROFILE._meta.flags };
   if (support.level === 'fuera_de_alcance') return { ...base, unsupported: true, windows: [], recommendation: null };
   const prim = climates.find((c) => c.role === 'primary') || climates[0];
   const dT = tempUncertainty(prim.climate);
+  // C1 solo con dotación aportada por el agricultor: requerimiento = ETc + percolación × días − lluvia (fuente primaria). Exploratorio, no es lámina verificada.
+  const c1Fields = (w) => {
+    if (supply == null) return {};
+    const rain = w.by_source[prim.id].rain_mm, req = Math.max(0, w.etc_mm + (perc || 0) * (w.dur_days || 0) - rain);
+    const reqs = Object.values(w.by_source).map((s) => Math.max(0, w.etc_mm + (perc || 0) * (w.dur_days || 0) - s.rain_mm));
+    return { requirement_mm: r1(req), requirement_range_mm: [r1(Math.min(...reqs)), r1(Math.max(...reqs))], requirement_includes_percolation: perc != null };
+  };
+  const c1Inputs = (w) => (supply == null ? {} : { irrigation_supply_mm: mgmt === 'secano' ? 0 : supply, irrigation_requirement_mm: Math.max(1, w.requirement_mm ?? 1) });
   const wins = [];
-  for (let doy = 1; doy <= 365; doy += STEP_DAYS) { const d0 = new Date(Date.UTC(2001, 0, doy)); const w = evaluateDate(climates, d0.getUTCMonth() + 1, d0.getUTCDate(), dT); if (w) wins.push(w); }
+  for (let doy = 1; doy <= 365; doy += STEP_DAYS) { const d0 = new Date(Date.UTC(2001, 0, doy)); const w = evaluateDate(climates, d0.getUTCMonth() + 1, d0.getUTCDate(), dT, prof); if (w) wins.push(w); }
   for (const w of wins) {
     const ok = w.complete_frac >= 0.5;
     // Orden de fechas SOLO por C2 (diagnóstico parcial). C1 (agua) no se puntúa: no hay dotación de riego ni requerimiento total comparables.
-    w.diag = evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering });
+    Object.assign(w, c1Fields(w));
+    w.diag = evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering, ...c1Inputs(w) });
     w.c2_score = w.diag.criteria.C2.score == null ? null : r2(w.diag.criteria.C2.score);
-    w.index = w.c2_score == null ? null : r1(100 * w.c2_score);
+    w.c1_score = w.diag.criteria.C1.score == null ? null : r2(w.diag.criteria.C1.score);
+    // índice = diagnóstico parcial de los criterios con dato (C2 siempre; C1 solo con dotación de riego aportada). Pesos 50/40/10 renormalizados sobre los conocidos.
+    w.index = w.diag.partial_diagnostic_score == null ? null : r1(w.diag.partial_diagnostic_score);
+    w.coverage_weight = r2(w.diag.coverage_weight);
     delete w.thermal_raw; delete w.diag;
     w.status = !ok ? 'no_viable' : (w.complete_frac_cold >= 0.9 && w.heat_frac_flowering <= 0.1 ? 'viable' : 'marginal');
     const rs = Object.values(w.by_source).map((s) => s.rain_mm).filter(Number.isFinite);
@@ -141,17 +159,25 @@ function analyzeRice(input, g, scenario = SCENARIOS.base) {
   const c2Spread = { min: idxs.length ? Math.min(...idxs) : null, max: idxs.length ? Math.max(...idxs) : null };
   c2Spread.informative = idxs.length ? c2Spread.max - c2Spread.min >= 10 : false; // umbral de diseño: menos de 10 puntos = fechas indistinguibles por C2
   const area = Number(input.area_ha) || 0;
-  const chosen = input.sowing_date ? (() => { const [, mm, dd] = input.sowing_date.split('-').map(Number); return evaluateDate(climates, mm, dd, dT); })() : null;
-  if (chosen) { chosen.net_m3_per_ha = r1(chosen.by_source[prim.id].net_mm * 10); chosen.net_m3_total = area ? r1(chosen.by_source[prim.id].net_mm * 10 * area) : null; delete chosen.thermal_raw; }
-  const diagFor = (w) => evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering }, { provenance: 'rice.js (clima 2015–2023, corrección térmica empírica SENAMHI)' });
+  const sowDate = (input.insitu && input.insitu.sowing_date) || input.sowing_date || null;
+  const chosen = sowDate ? (() => { const [, mm, dd] = sowDate.split('-').map(Number); return evaluateDate(climates, mm, dd, dT, prof); })() : null;
+  if (chosen) { chosen.net_m3_per_ha = r1(chosen.by_source[prim.id].net_mm * 10); chosen.net_m3_total = area ? r1(chosen.by_source[prim.id].net_mm * 10 * area) : null; delete chosen.thermal_raw; Object.assign(chosen, c1Fields(chosen)); }
+  const diagFor = (w) => evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering, ...c1Inputs(w) }, { provenance: 'rice.js (clima 2015–2023, corrección térmica empírica SENAMHI)' });
   const criteriaDiag = diagFor(chosen || ranked[0] || wins[0]);
+  let phaseComparison = null;
+  if (chosen && cal.observed_das) {
+    const [, mm, dd] = sowDate.split('-').map(Number), baseRun = evaluateDate(climates, mm, dd, dT, PROFILE);
+    phaseComparison = baseRun ? Object.entries(cal.observed_das).map(([k, obs]) => ({ phase: k, observed_das: obs, instantanea_model_das: baseRun.stage_das[k] ?? null, diff_days: baseRun.stage_das[k] == null ? null : baseRun.stage_das[k] - obs })) : null;
+  }
   return {
     ...base, windows: wins, top: ranked.slice(0, 3), worst: ranked.slice(-1), chosen,
     weights: WEIGHTS, weights_status: 'DISEÑO 50/40/10 (C1 agua, C2 fenología/térmico, C7 rotación), no calibrado. En la demo de fechas SOLO C2 puntúa (diagnóstico parcial); C1 y C7 quedan sin puntuar.', criteria_diagnostic: criteriaDiag, c2_spread: c2Spread,
     temperature_uncertainty_c: r2(dT), primary_source: prim.id,
     sources: climates.map((c) => ({ id: c.id, role: c.role, label: c.label, annual_precip_mm: Math.round(c.climate.annual.precip_mm), provenance: c.provenance })),
     temperature_check: { before_correction: chk0, offsets_c: offsets, after_correction_circular: temperatureCheck(prim.climate), note: 'El sesgo de temperatura (modelo − SENAMHI) se corrigió empíricamente con una sola temporada; el contraste posterior es circular y no valida el modelo.' }, data_problems: problems,
-    profile: { name: PROFILE.name, cycle_effective_days: L, phenology_das: PROFILE.phenology_das, stage_labels_es: PROFILE.stage_labels_es, kc: PROFILE.kc, station: PROFILE.station, observed_campaign: PROFILE.observed_campaign },
+    insitu: { supplied: input.insitu || null, applied: cal.applied, ignored: cal.ignored, calibrated_cycle: prof.calibrated, irrigation_supply_mm: supply, percolation_mm_day: perc, management: mgmt, phase_comparison: phaseComparison,
+      notes: mode === 'precisa' ? ['Datos in situ declarados por el agricultor: no verificados.', ...(supply != null && perc == null ? ['Sin percolación declarada: el requerimiento está subestimado y C1 resulta optimista.'] : []), ...(mgmt === 'secano' ? ['Manejo «secano»: el perfil modela arroz inundado; la dotación se toma como 0.'] : [])] : [] },
+    profile: { name: PROFILE.name, cycle_effective_days: L, cycle: prof.cycle, calibrated: prof.calibrated, phenology_das: prof.phenology_das, stage_labels_es: PROFILE.stage_labels_es, kc: PROFILE.kc, station: PROFILE.station, observed_campaign: PROFILE.observed_campaign },
     parcel: { lat: input.lat, lon: input.lon, area_ha: area, elevation_m: g.slope.ok ? g.slope.data.elevation_m : null, slope_pct: g.slope.ok ? +g.slope.data.slope_pct.toFixed(2) : null },
   };
 }

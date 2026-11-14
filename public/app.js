@@ -9,6 +9,30 @@ const fmtISO = (md) => { const [m, d] = md.split('-').map(Number); return fmtMD(
 const STATUS = { viable: ['Sin impedimento térmico', 'ok'], marginal: ['Dudosa', 'warn'], no_viable: ['Incompatible', 'bad'] };
 let pollTimer = null;
 
+// ---------- modos: Instantánea / Precisa ----------
+const getMode = () => (document.querySelector('input[name="mode"]:checked') || {}).value || 'instantanea';
+const numOrNull = (id) => { const v = $(id).value; return v === '' ? null : Number(v); };
+function insituPayload() {
+  if (getMode() !== 'precisa') return null;
+  const od = {}; for (const k of ['tillering', 'panicle', 'flowering', 'hard_ripening']) if ($('od_' + k).value) od[k] = $('od_' + k).value;
+  return { sowing_date: $('sow').value || null, establishment: $('estab').value || null, variety: $('variety').value || null, observed_dates: od,
+    irrigation: { management: $('irrMgmt').value || null, supply_m3_ha: numOrNull('supply'), percolation_mm_day: numOrNull('perc') } };
+}
+function syncMode() {
+  const p = getMode() === 'precisa';
+  $('precisaBox').hidden = !p;
+  const lab = $('sow').closest('label'); if (lab) lab.firstChild.textContent = p ? 'Fecha de siembra real' : 'Fecha de siembra prevista (opcional)';
+}
+document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncMode));
+const modeBadge = (j) => {
+  if (!j || !j.mode) return '';
+  const p = j.mode === 'precisa', ins = j.insitu || {};
+  const ap = (ins.applied || []).map((x) => '<li>' + esc(x) + '</li>').join(''), ig = (ins.ignored || []).map((x) => '<li>' + esc(x) + '</li>').join(''), nt = (ins.notes || []).map((x) => '<li>' + esc(x) + '</li>').join('');
+  const fell = j.mode_requested === 'precisa' && !p ? '<p class="note warn">Eligió Precisa pero no aportó datos utilizables: el resultado es el de la modalidad Instantánea.</p>' : '';
+  return '<div class="note ' + (p ? '' : 'warn') + '"><b>Modo ' + (p ? 'Precisa' : 'Instantánea') + '</b> — ' + (p ? 'incorpora datos declarados por usted.' : 'solo datos satelitales y de reanálisis de la zona.') + fell
+    + (ap ? '<p class="hint"><b>Se usó:</b></p><ul>' + ap + '</ul>' : '') + (ig ? '<p class="hint"><b>No se usó:</b></p><ul>' + ig + '</ul>' : '') + (nt ? '<ul>' + nt + '</ul>' : '') + '</div>';
+};
+
 function showMsg(text, kind) { const m = $('msg'); m.hidden = !text; m.textContent = text || ''; m.className = 'note ' + (kind || ''); }
 
 async function run() {
@@ -16,7 +40,7 @@ async function run() {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return showMsg('Ingrese latitud y longitud válidas.', 'bad');
   $('btn').disabled = true; showMsg('Calculando con datos reales de la zona…');
   try {
-    const r = await fetch('/api/rice/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon, area_ha: $('area').value, sowing_date: $('sow').value || null }) });
+    const r = await fetch('/api/rice/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon, area_ha: $('area').value, sowing_date: $('sow').value || null, mode: getMode(), insitu: insituPayload() }) });
     const j = await r.json();
     if (!r.ok) { $('out').hidden = true; return showMsg((j.error || 'Error') + (j.details ? ': ' + j.details.join('; ') : ''), 'bad'); }
     render(j); showMsg('');
@@ -36,7 +60,7 @@ function chart(w, primary) {
   let bars = '', lab = '';
   w.forEach((x, i) => {
     const h = (H - pb - 10) * (x.index / 100), xx = pl + i * bw;
-    bars += `<rect x="${xx + 1}" y="${H - pb - h}" width="${Math.max(2, bw - 2)}" height="${h}" fill="${col[x.status]}" rx="2"><title>${esc(fmtMD(x.month, x.day))}: C2 ${x.index} · ${esc(STATUS[x.status][0])} · neto ${x.net_range_by_source_mm[0]}–${x.net_range_by_source_mm[1]} mm</title></rect>`;
+    bars += `<rect x="${xx + 1}" y="${H - pb - h}" width="${Math.max(2, bw - 2)}" height="${h}" fill="${col[x.status]}" rx="2"><title>${esc(fmtMD(x.month, x.day))}: índice ${x.index} · ${esc(STATUS[x.status][0])} · neto ${x.net_range_by_source_mm[0]}–${x.net_range_by_source_mm[1]} mm</title></rect>`;
     if (x.day <= 10) lab += `<text x="${xx + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--muted)">${MES[x.month - 1]}</text>`;
   });
   const grid = [0, 50, 100].map((v) => `<line x1="${pl}" x2="${W}" y1="${H - pb - (H - pb - 10) * v / 100}" y2="${H - pb - (H - pb - 10) * v / 100}" stroke="var(--line)"/><text x="${pl - 4}" y="${H - pb - (H - pb - 10) * v / 100 + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`).join('');
@@ -52,29 +76,34 @@ function render(j) {
   }
   const informative = j.c2_spread && j.c2_spread.informative;
   const top = j.top.map((w, i) => `<li class="card"><div class="cardhead"><strong>${informative ? (i + 1) + '. ' : ''}Siembra hacia el ${esc(fmtMD(w.month, w.day))}</strong><span class="pill ${STATUS[w.status][1]}">${esc(STATUS[w.status][0])}</span></div>
-    <div class="big">${w.index}<small> / 100 · C2 diagnóstico parcial</small></div>
+    <div class="big">${w.index}<small> / 100 · diagnóstico parcial (${w.c1_score != null ? 'C1 + C2' : 'solo C2'})</small></div>
     <ul class="kv"><li>Madurez córnea a los <b>${w.stage_das.hard_ripening ?? '—'}</b> días; floración ≈ <b>${w.stage_dates_md.flowering ? esc(fmtISO(w.stage_dates_md.flowering)) : '—'}</b></li>
-    <li>Informativo, NO puntuado — demanda (ETc − lluvia, sin percolación ni dotación del canal): <b>${w.net_range_by_source_mm[0]}–${w.net_range_by_source_mm[1]} mm</b> según la fuente de lluvia</li>
+    ${w.c1_score != null
+      ? `<li>C1 (agua), con la dotación que usted declaró: requerimiento <b>${w.requirement_mm} mm</b> (${w.requirement_range_mm[0]}–${w.requirement_range_mm[1]} según la lluvia usada${w.requirement_includes_percolation ? '' : '; sin filtración declarada, subestimado'}) → cubre <b>${Math.round(w.c1_score * 100)} %</b></li>`
+      : `<li>Informativo, NO puntuado — demanda (ETc − lluvia, sin percolación ni dotación del canal): <b>${w.net_range_by_source_mm[0]}–${w.net_range_by_source_mm[1]} mm</b> según la fuente de lluvia</li>`}
     <li>Días de calor (&gt;35 °C) en floración: <b>${Math.round(w.heat_frac_flowering * 100)} %</b> · Tmín floración ${w.tmin_flowering_c ?? '—'} °C</li>
     <li>C2 (fenología y riesgo térmico): ciclo completo en ${Math.round(w.complete_frac * 100)} % de los años (${Math.round(w.complete_frac_cold * 100)} % con T−δ)</li></ul></li>`).join('');
   const caut = j.support.cautions.map((c) => `<li>${esc(c)}</li>`).join('');
   const cd = j.criteria_diagnostic && j.criteria_diagnostic.criteria;
   const c1missing = cd && cd.C1 && cd.C1.missing ? cd.C1.missing.map((m) => `<li>${esc(m)}</li>`).join('') : '';
-  $('secTop').innerHTML = `<h2>Fechas de siembra: fenología y riesgo térmico</h2>
-    <p class="hint"><b>Explorador, no recomendación.</b> Solo puntúa C2 (fenología y riesgo térmico; diagnóstico parcial). C1 (agua) y C7 (rotación) no se puntúan aquí. Fuente de lluvia primaria: <b>${esc(j.primary_source.toUpperCase())}</b>.</p>
-    ${informative ? '' : `<div class="note warn"><b>Las fechas son prácticamente indistinguibles por C2</b> (${j.c2_spread.min}–${j.c2_spread.max} de 100): el ciclo se completa en casi todas y el calor en floración es bajo tras la corrección. La diferencia real entre fechas vendría del agua (C1), que no puede puntuarse sin la dotación del canal. Se muestran algunas fechas sin orden de preferencia.</div>`}
+  const hasC1 = j.windows.some((w) => w.c1_score != null);
+  $('secTop').innerHTML = `${modeBadge(j)}<h2>Fechas de siembra: ${hasC1 ? 'agua declarada, fenología y riesgo térmico' : 'fenología y riesgo térmico'}</h2>
+    <p class="hint"><b>Explorador, no recomendación.</b> ${hasC1 ? 'Puntúa C1 (agua, con la dotación que usted declaró) y C2 (fenología y riesgo térmico); C7 (rotación) no se puntúa aquí.' : 'Solo puntúa C2 (fenología y riesgo térmico; diagnóstico parcial). C1 (agua) y C7 (rotación) no se puntúan aquí.'} Fuente de lluvia primaria: <b>${esc(j.primary_source.toUpperCase())}</b>.</p>
+    ${informative ? '' : `<div class="note warn"><b>Las fechas son prácticamente indistinguibles</b> (${j.c2_spread.min}–${j.c2_spread.max} de 100): el ciclo se completa en casi todas y el calor en floración es bajo tras la corrección. ${hasC1 ? 'Ni siquiera con su dotación de agua se separan.' : 'La diferencia real entre fechas vendría del agua (C1), que no puede puntuarse sin la dotación del canal; en modo Precisa puede declararla.'} Se muestran algunas fechas sin orden de preferencia.</div>`}
     <ol class="cards">${top}</ol>
-    <div class="note"><b>C1 · Agua: sin puntuación.</b> Faltan: <ul>${c1missing}</ul></div>
+    ${hasC1 ? '<div class="note"><b>C1 · Agua con datos declarados:</b> es un cociente exploratorio (agua recibida ÷ requerida), no una lámina de riego verificada: faltan eficiencia, pérdidas y requerimiento neto/bruto.</div>' : `<div class="note"><b>C1 · Agua: sin puntuación.</b> Faltan: <ul>${c1missing}</ul></div>`}
     ${caut ? `<div class="note warn"><b>Advertencias de los datos</b><ul>${caut}</ul></div>` : ''}`;
-  $('secChart').innerHTML = `<h2>Todas las fechas</h2><p class="hint">Cada barra es el diagnóstico C2 de una fecha de siembra (cada 10 días). Verde = sin impedimento térmico, ámbar = dudosa. Pase el cursor/toque para ver el detalle.</p>${chart(j.windows, j.primary_source)}`;
+  $('secChart').innerHTML = `<h2>Todas las fechas</h2><p class="hint">Cada barra es el diagnóstico parcial de una fecha de siembra (cada 10 días). Verde = sin impedimento térmico, ámbar = dudosa. Pase el cursor/toque para ver el detalle.</p>${chart(j.windows, j.primary_source)}`;
   const c = j.chosen;
   if (c) {
     $('secChosen').innerHTML = `<h2>Su fecha de siembra: ${esc(fmtMD(c.month, c.day))}</h2>
       <ul class="kv"><li>Ciclo estimado: <b>${c.dur_days ?? '—'}</b> días hasta maduración córnea (calibrado, no independiente)</li>
       <li>ETc del ciclo: <b>${c.etc_mm} mm</b> · lluvia: ${Object.entries(c.by_source).map(([k, v]) => `${esc(k)} ${v.rain_mm} mm`).join(' · ')}</li>
       <li>Demanda neta (ETc − lluvia, sin percolación): <b>${c.net_range_by_source_mm ? c.net_range_by_source_mm.join('–') : Object.values(c.by_source).map((v) => v.net_mm).join(' / ')} mm</b> ≈ ${c.net_m3_per_ha} m³/ha${c.net_m3_total != null ? ` · ${c.net_m3_total} m³ en ${j.parcel.area_ha} ha` : ''} (fuente primaria)</li>
-      <li>Rango entre años (p10–p90): ${c.net_p10_mm}–${c.net_p90_mm} mm</li></ul>
-      <h3>Fenología estimada</h3>${stageTable(c.stage_das, j.profile.stage_labels_es, c.stage_dates_md)}`;
+      <li>Rango entre años (p10–p90): ${c.net_p10_mm}–${c.net_p90_mm} mm</li>
+      ${c.requirement_mm != null ? `<li>Requerimiento de agua con su filtración: <b>${c.requirement_mm} mm</b> frente a <b>${j.insitu.irrigation_supply_mm} mm</b> recibidos (${j.insitu.supplied.irrigation.supply_m3_ha} m³/ha)</li>` : ''}</ul>
+      <h3>Fenología estimada${j.profile.calibrated ? ' (ciclo recalibrado con sus fechas)' : ''}</h3>${stageTable(c.stage_das, j.profile.stage_labels_es, c.stage_dates_md)}
+      ${j.insitu && j.insitu.phase_comparison ? phaseCmp(j) : ''}`;
   } else {
     $('secChosen').innerHTML = `<h2>Fenología de referencia (Tinajones)</h2><p class="hint">Observada por SENAMHI en Morropón, siembra 21‑ene‑2026. Indique una fecha de siembra para ver la estimada para su parcela.</p>${stageTable(j.profile.phenology_das, j.profile.stage_labels_es, null)}`;
   }
@@ -85,6 +114,12 @@ function render(j) {
     <li>Causa probable: la celda de NASA POWER está ${j.support.cautions.some((x) => /933|m de diferencia/.test(x)) ? 'cientos de metros más alta' : 'a otra altitud'} y el gradiente estándar sobrecalienta la parcela.</li></ul>
     <details><summary>Ver valores comparados</summary><table class="tbl"><thead><tr><th>Evento</th><th>Fecha</th><th>Tmedia SENAMHI</th><th>Tmedia modelo</th><th>Tmáx SENAMHI</th><th>Tmáx modelo</th></tr></thead><tbody>${b.rows.map((r) => `<tr><td>${esc(r.event)}</td><td>${esc(r.date)}</td><td class="num">${r.reported_tmean_c}</td><td class="num">${r.model_tmean_c}</td><td class="num">${r.reported_tmax_c}</td><td class="num">${r.model_tmax_c}</td></tr>`).join('')}</tbody></table></details>` : '<p>Sin contraste disponible.</p>'}`;
   $('secLim').innerHTML = limHtml(j);
+}
+
+function phaseCmp(j) {
+  const lbl = { tillering: 'Macollaje', panicle: 'Panoja', flowering: 'Floración', hard_ripening: 'Maduración córnea' };
+  const rows = j.insitu.phase_comparison.map((p) => '<tr><td>' + esc(lbl[p.phase] || p.phase) + '</td><td class="num">' + p.observed_das + '</td><td class="num">' + (p.instantanea_model_das ?? '—') + '</td><td class="num">' + (p.diff_days == null ? '—' : (p.diff_days > 0 ? '+' : '') + p.diff_days) + '</td></tr>').join('');
+  return '<h3>¿Qué tan bien acertó el modo Instantánea con su campaña?</h3><p class="hint">Días tras la siembra: lo que usted observó frente a lo que habría estimado el modelo Instantánea (ciclo de SENAMHI 2026). Esta comparación no es circular: las fechas se usaron aparte para recalibrar su ciclo.</p><table class="tbl"><thead><tr><th>Fase</th><th>Observada</th><th>Instantánea</th><th>Diferencia (días)</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 function limHtml(j) {
@@ -101,7 +136,7 @@ async function runRot() {
   const lat = Number($('lat').value), lon = Number($('lon').value);
   const box = $('rotOut'); box.hidden = false; box.innerHTML = '<p class="hint">Calculando rotaciones…</p>'; $('btnRot').disabled = true;
   try {
-    const r = await fetch('/api/rotation/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon, area_ha: $('area').value, history: [$('h0').value, $('h1').value], start_slot: $('slot').value, irrigation: $('irr').checked }) });
+    const r = await fetch('/api/rotation/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon, area_ha: $('area').value, history: [$('h0').value, $('h1').value], start_slot: $('slot').value, irrigation: $('irr').checked, mode: getMode(), insitu: insituPayload() }) });
     const j = await r.json();
     if (!r.ok) { box.innerHTML = '<p class="note bad">' + esc((j.error || 'Error') + (j.details ? ': ' + j.details.join('; ') : '')) + '</p>'; return; }
     if (j.unsupported) { box.innerHTML = j.support.blockers.map((b) => '<p class="note bad">' + esc(b) + '</p>').join(''); return; }
@@ -110,6 +145,7 @@ async function runRot() {
 }
 function rotHtml(j) {
   const cmp = j.sensitivity && j.sensitivity.comparisons;
+  const badge = modeBadge(j);
   const cards = j.strategies.map((s) => {
     const seq = s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + esc(t.slot_label) + ' · ciclo ' + (t.duration_days ?? '—') + ' d · agua ' + t.water_coverage_pct + ' % · calor ' + Math.round(t.heat_stress_frac * 100) + ' %</li>').join('');
     const risks = s.risks.slice(0, 4).map((x) => '<li>' + esc(x) + '</li>').join('');
@@ -124,7 +160,7 @@ function rotHtml(j) {
       + (risks ? '<div class="note warn"><b>Riesgos</b><ul>' + risks + '</ul></div>' : '') + '</li>';
   }).join('');
   const caut = j.support.cautions.map((c) => '<li>' + esc(c) + '</li>').join('');
-  return '<ol class="cards">' + cards + '</ol>'
+  return badge + '<ol class="cards">' + cards + '</ol>'
     + '<div class="note warn"><b>Lectura crítica</b><ul>'
     + '<li>Con solo dos cultivos, la «mejor» rotación es en gran parte <b>alternar</b> (reglas de plagas y repetición); no es evidencia agronómica de que el frijol mejore el arroz en Morropón.</li>'
     + '<li>El frijol común aparece con mucho calor en su etapa media en la campaña grande; la práctica local observada (arroz en la grande, frijol en agosto–septiembre) no coincide necesariamente con el orden propuesto.</li>'
@@ -160,43 +196,3 @@ async function initMap() {
   });
 }
 initMap();
-
-// ---------- verificación satelital (Sentinel-2, NDVI) ----------
-const SAT_PATTERN = { estacional: ['Patrón estacional de vegetación', 'ok'], vegetacion_permanente: ['Vegetación permanente', 'warn'], suelo_agua_o_urbano: ['Sin vegetación activa', 'bad'], ambiguo: ['Patrón ambiguo', 'warn'], insuficiente: ['Datos insuficientes', 'warn'] };
-function ndviChart(r) {
-  const W = 720, H = 240, pl = 36, pb = 28, pt = 10, t0 = Date.parse(r.range[0]), t1 = Date.parse(r.range[1]);
-  const X = (iso) => pl + (W - pl - 8) * (Date.parse(iso) - t0) / (t1 - t0), Y = (v) => pt + (H - pt - pb) * (1 - (v + 0.1) / 1.1);
-  let svg = [0, 0.25, 0.5, 0.75, 1].map((v) => '<line x1="' + pl + '" x2="' + W + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--line)"/><text x="' + (pl - 4) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + v + '</text>').join('');
-  const pc = r.phenology_contrast;
-  if (pc) {
-    svg += '<rect x="' + X(pc.expected_peak_window[0]) + '" y="' + pt + '" width="' + Math.max(3, X(pc.expected_peak_window[1]) - X(pc.expected_peak_window[0])) + '" height="' + (H - pt - pb) + '" fill="var(--accent)" opacity=".25"><title>Pico esperado (panoja–floración) si se sembró el ' + esc(pc.sowing_date) + '</title></rect>';
-    svg += '<line x1="' + X(pc.sowing_date) + '" x2="' + X(pc.sowing_date) + '" y1="' + pt + '" y2="' + (H - pb) + '" stroke="var(--accent)" stroke-dasharray="4 3"><title>Siembra observada por SENAMHI: ' + esc(pc.sowing_date) + '</title></line>';
-  }
-  const ok = r.series.filter((s) => s.valid && s.ndvi != null);
-  svg += '<polyline fill="none" stroke="var(--primary)" stroke-width="2" points="' + ok.map((s) => X(s.date) + ',' + Y(s.ndvi)).join(' ') + '"/>';
-  svg += r.series.map((s) => s.ndvi == null ? '' : s.valid
-    ? '<circle cx="' + X(s.date) + '" cy="' + Y(s.ndvi) + '" r="4" fill="var(--primary)"><title>' + esc(s.date) + ' · NDVI ' + s.ndvi + '</title></circle>'
-    : '<circle cx="' + X(s.date) + '" cy="' + Y(Math.max(-0.1, Math.min(1, s.ndvi))) + '" r="3.5" fill="none" stroke="var(--muted)"><title>' + esc(s.date) + ' · descartada por nubes/sombra (SCL ' + s.scl + ')</title></circle>').join('');
-  for (let m = 0; m < 9; m++) { const d = new Date(Date.UTC(2025, 10 + m, 1)); const iso = d.toISOString().slice(0, 10); if (Date.parse(iso) >= t0 && Date.parse(iso) <= t1) svg += '<text x="' + X(iso) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + MES[d.getUTCMonth()] + '</text>'; }
-  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Serie de NDVI Sentinel-2 en el punto marcado" style="width:100%;height:auto">' + svg + '</svg>';
-}
-async function runSat() {
-  const lat = Number($('lat').value), lon = Number($('lon').value), box = $('satOut');
-  box.hidden = false; box.innerHTML = '<p class="hint">Consultando imágenes Sentinel‑2 (puede tardar unos segundos la primera vez)…</p>'; $('btnSat').disabled = true;
-  try {
-    const r = await fetch('/api/satellite/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon }) });
-    const j = await r.json();
-    if (!r.ok) { box.innerHTML = '<p class="note bad">' + esc(j.error || 'Error') + '</p>'; return; }
-    const c = j.classification, p = SAT_PATTERN[c.pattern] || [c.pattern, 'warn'], pc = j.phenology_contrast;
-    box.innerHTML = '<div class="cardhead"><strong>Punto ' + j.lat + ', ' + j.lon + '</strong><span class="pill ' + p[1] + '">' + esc(p[0]) + '</span></div>'
-      + '<p>' + esc(c.message) + '</p>'
-      + '<ul class="kv"><li>Escenas encontradas: <b>' + j.scenes_found + '</b> · observaciones sin nubes: <b>' + c.n_valid + '</b>' + (c.n_water ? ' · con agua: ' + c.n_water : '') + '</li>'
-      + (c.amplitude != null ? '<li>NDVI típico bajo–alto (p10–p90): <b>' + c.ndvi_p10 + '–' + c.ndvi_p90 + '</b> · pico <b>' + c.peak_ndvi + '</b> el ' + esc(c.peak_date) + '</li>' : '') + '</ul>'
-      + ndviChart(j)
-      + '<p class="hint">Círculos llenos = observaciones válidas; vacíos = descartadas por nubes. Banda naranja = pico esperado (panoja–floración) y línea punteada = siembra del 21‑ene‑2026 observada por SENAMHI.</p>'
-      + (pc ? '<div class="note"><b>Contraste informativo con la fenología modelada:</b> pico observado el ' + esc(pc.observed_peak_date) + (pc.within_window ? ', dentro de la ventana esperada.' : ', a ' + pc.days_outside_window + ' días de la ventana esperada (' + esc(pc.expected_peak_window[0]) + ' a ' + esc(pc.expected_peak_window[1]) + '). ') + ' ' + esc(pc.note) + '</div>' : '')
-      + '<div class="note warn"><b>Límites</b><ul>' + j.limitations.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
-  } catch (e) { box.innerHTML = '<p class="note bad">No se pudo conectar: ' + esc(e.message) + '</p>'; } finally { $('btnSat').disabled = false; }
-}
-$('btnSat').addEventListener('click', runSat);
-if (location.hash === '#sat') runSat(); // atajo para revisión visual

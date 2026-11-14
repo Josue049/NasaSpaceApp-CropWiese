@@ -94,7 +94,7 @@ function analyze(input, g, scenario = SCENARIOS.base) {
     if (tempOffsets) built = buildClimates(g, { ...scenario, temp_offsets: tempOffsets });
   }
   const { climates, problems } = built;
-  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops) : CROPS.crops;
+  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops, input.rice_cycle || null) : CROPS.crops;
   const support = assessSupport(input, g, climates);
   const res = support.level === 'no_recomendable'
     ? { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [...support.blockers, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {}, weights_status: '', candidates_evaluated: 0,

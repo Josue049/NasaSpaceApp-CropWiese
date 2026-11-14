@@ -23,7 +23,7 @@
 
   <section class="panel" aria-labelledby="formTitle">
     <h2 id="formTitle">Su parcela de arroz</h2>
-    <p class="hint">Toque el mapa para ubicar su parcela dentro del recuadro verde (zona de la demo). Los datos meteorológicos describen la <strong>zona</strong>; las imágenes Sentinel‑2 (más abajo) sí describen el <strong>punto marcado</strong>.</p>
+    <p class="hint">Toque el mapa para ubicar su parcela dentro del recuadro verde (zona de la demo). Los datos satelitales y de reanálisis describen la <strong>zona</strong>, no el detalle de su terreno.</p>
     <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
     <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
     <form id="form" novalidate>
@@ -35,17 +35,37 @@
         <label>Área (ha)<input id="area" type="number" step="0.1" min="0" inputmode="decimal" value="1"></label>
         <label>Fecha de siembra prevista (opcional)<input id="sow" type="date"></label>
       </div>
+      <fieldset class="modes">
+        <legend>Modo de análisis</legend>
+        <label class="check"><input type="radio" name="mode" value="instantanea" checked> <span><b>Instantánea</b> — solo datos satelitales y de reanálisis de la zona. No necesita nada de su parte.</span></label>
+        <label class="check"><input type="radio" name="mode" value="precisa"> <span><b>Precisa</b> — agrega datos de <em>su parcela</em> (siembra real, fases observadas, riego).</span></label>
+      </fieldset>
+      <div id="precisaBox" hidden>
+        <h3>Datos de su parcela (todo es opcional)</h3>
+        <p class="hint">Use solo lo que sepa: cada dato que complete se aplica por separado y la pantalla le dirá qué se usó y qué no. Lo que ingrese <b>no se guarda</b> en el servidor y no se verifica.</p>
+        <div class="grid2">
+          <label>Cómo sembró<select id="estab"><option value="">— no indicar —</option><option value="siembra_directa">Siembra directa</option><option value="trasplante">Trasplante</option></select></label>
+          <label>Variedad<input id="variety" type="text" maxlength="40" placeholder="Tinajones"></label>
+        </div>
+        <h4>Fechas observadas en su campaña <small>(requieren la fecha de siembra real de arriba)</small></h4>
+        <div class="grid2">
+          <label>Macollaje<input id="od_tillering" type="date"></label>
+          <label>Panoja<input id="od_panicle" type="date"></label>
+          <label>Floración<input id="od_flowering" type="date"></label>
+          <label>Maduración córnea<input id="od_hard_ripening" type="date"></label>
+        </div>
+        <h4>Riego</h4>
+        <div class="grid2">
+          <label>Manejo del agua<select id="irrMgmt"><option value="">— no indicar —</option><option value="inundacion_continua">Inundación continua</option><option value="intermitente">Riego intermitente</option><option value="secano">Secano</option></select></label>
+          <label>Agua recibida en la campaña (m³/ha)<input id="supply" type="number" min="0" max="40000" step="100" inputmode="decimal" placeholder="p. ej. 12000"></label>
+          <label>Pérdida por filtración (mm/día)<input id="perc" type="number" min="0" max="30" step="0.5" inputmode="decimal" placeholder="p. ej. 5"></label>
+        </div>
+        <p class="hint">Con la dotación de agua, el criterio C1 (agua) pasa a calcularse como «agua recibida ÷ agua requerida». Sin la filtración el requerimiento queda subestimado.</p>
+      </div>
       <p class="hint">Las coordenadas se llenan al tocar el mapa. Valor inicial: estación SENAMHI Morropón. Fuera del recuadro la demo no emite resultados.</p>
       <div class="row"><button id="btn" class="primary" type="submit">Analizar fechas de siembra</button></div>
     </form>
     <div id="msg" class="note" role="status" aria-live="polite" hidden></div>
-  </section>
-
-  <section class="panel" aria-labelledby="satTitle">
-    <h2 id="satTitle">Verificar el terreno con imágenes satelitales</h2>
-    <p class="hint">Consulta imágenes <strong>Sentinel‑2</strong> (10 m) en el punto marcado y muestra cómo cambió la vegetación (NDVI) de noviembre 2025 a julio 2026. Sirve para ver si el terreno tiene un <em>patrón de cultivo estacional</em>; <strong>no identifica la especie</strong> ni confirma que sea arroz.</p>
-    <div class="row"><button id="btnSat" class="primary" type="button">Verificar el punto marcado</button></div>
-    <div id="satOut" hidden></div>
   </section>
 
   <section class="panel" aria-labelledby="rotTitle">
@@ -78,10 +98,9 @@
       <tr><td>ERA5</td><td>Meteorología de reanálisis</td></tr>
       <tr><td>SRTM</td><td>Elevación del terreno</td></tr>
       <tr><td>SoilGrids</td><td>Propiedades estimadas del suelo</td></tr>
-      <tr><td>Sentinel‑2</td><td>Imágenes satelitales (10 m) para el NDVI del punto marcado</td></tr>
       <tr><td>OpenStreetMap</td><td>Mapa de fondo (cartografía, no imagen satelital)</td></tr>
     </tbody></table>
-    <p class="hint">Excepto Sentinel‑2, estas fuentes son series numéricas de baja resolución (celdas de decenas de km): describen la zona, no la parcela.</p>
+    <p class="hint">Son series numéricas de baja resolución (celdas de decenas de km): describen la zona, no la parcela.</p>
   </section>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

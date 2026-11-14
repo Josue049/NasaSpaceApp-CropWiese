@@ -22,13 +22,13 @@ const SLOTS = [
 ];
 
 /** Cultivos de la rotación: el arroz usa el perfil Tinajones (ciclo observado de 114 días); el resto, la base común. */
-function rotationCrops(allCrops) {
+function rotationCrops(allCrops, riceCycle = null) {
   return ROTATION_CROPS.map((id) => {
     const c = allCrops.find((x) => x.id === id);
     if (!c) throw new Error(`Cultivo ${id} no está en la base`);
     if (id !== 'arroz') return c;
-    const t = { ...c, name: 'Arroz Tinajones', cycle: { ...PROFILE.cycle }, kc: { ...PROFILE.kc }, eco: { ...c.eco, ...PROFILE.eco } };
-    t.param_status = { ...c.param_status, cycle: 'OBSERVACIÓN: SENAMHI Morropón 2026 (114 días a maduración córnea), una temporada; asignación a etapas Kc = supuesto', kc: c.param_status && c.param_status.kc };
+    const t = { ...c, name: 'Arroz Tinajones', cycle: { ...(riceCycle || PROFILE.cycle) }, kc: { ...PROFILE.kc }, eco: { ...c.eco, ...PROFILE.eco } };
+    t.param_status = { ...c.param_status, cycle: riceCycle ? 'DATOS IN SITU del agricultor (modo Precisa); asignación a etapas Kc = supuesto' : 'OBSERVACIÓN: SENAMHI Morropón 2026 (114 días a maduración córnea), una temporada; asignación a etapas Kc = supuesto', kc: c.param_status && c.param_status.kc };
     t.canopy_cover = canopyCoverMean(t);
     return t;
   });
