@@ -3,6 +3,7 @@
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+process.env.FIELDSHIFT_DOMAIN = process.env.FIELDSHIFT_DOMAIN || 'peru'; // las pruebas heredadas usan el demo de Moyobamba
 process.env.FIELDSHIFT_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-cache-'));
 const { gatherData, analyze, SCENARIOS } = require('../src/pipeline');
 

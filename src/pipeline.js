@@ -46,10 +46,23 @@ function buildClimates(g, scenario = SCENARIOS.base) {
  *  - limitada: se recomienda con advertencias visibles.
  *  - aceptable: no se detectó una limitación conocida (NO significa validado: ninguna ubicación está contrastada con pluviómetro local).
  */
+// Dominio de uso. Por defecto, el Bajo Piura (depto. Piura; distrito de estudio: Cura Morí). FIELDSHIFT_DOMAIN=peru restaura el dominio amplio de v0.2.
+// La caja es una APROXIMACIÓN de diseño (no un límite administrativo oficial); debe afinarse con el polígono del distrito/junta de usuarios.
+const DOMAINS = {
+  bajo_piura: { id: 'bajo_piura', label: 'Bajo Piura, Piura', box: { latMin: -5.75, latMax: -5.05, lonMin: -81.0, lonMax: -80.2 }, study_district: { name: 'Cura Morí', lat: -5.383, lon: -80.667 } },
+  peru: { id: 'peru', label: 'Perú', box: { latMin: -18.4, latMax: 0.1, lonMin: -81.4, lonMax: -68.6 } },
+};
+const activeDomain = () => DOMAINS[process.env.FIELDSHIFT_DOMAIN] || DOMAINS.bajo_piura;
+const inBox = (lat, lon, b) => lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
+
 function assessSupport(input, g, climates) {
   const blockers = [], cautions = [];
   const { lat, lon } = input;
-  if (!(lat >= -18.4 && lat <= 0.1 && lon >= -81.4 && lon <= -68.6)) cautions.push('Fuera del dominio probado (Perú): las reglas y la base de cultivos solo se han ejercitado en la selva alta peruana y en un caso andino.');
+  const dom = activeDomain();
+  if (!inBox(lat, lon, dom.box)) {
+    if (dom.id === 'bajo_piura') blockers.push(`Fuera del dominio de Field Shift (${dom.label}): la herramienta se delimita al cultivo de arroz del Bajo Piura (caja aproximada de diseño: lat ${dom.box.latMin} a ${dom.box.latMax}, lon ${dom.box.lonMin} a ${dom.box.lonMax}).`);
+    else cautions.push('Fuera del dominio probado (Perú): las reglas y la base de cultivos solo se han ejercitado en la selva alta peruana y en un caso andino.');
+  }
   const elev = g.slope.ok ? g.slope.data.elevation_m : null;
   const cell = g.power.ok ? g.power.data.geometry.coordinates[2] : null;
   if (elev == null) cautions.push('Sin elevación/pendiente SRTM: no se puede corregir la temperatura por altitud ni evaluar erosión.');
@@ -114,4 +127,4 @@ function analyze(input, g, scenario = SCENARIOS.base) {
   return res;
 }
 
-module.exports = { gatherData, buildClimates, analyze, assessSupport, SCENARIOS, CROPS };
+module.exports = { gatherData, buildClimates, analyze, assessSupport, activeDomain, DOMAINS, SCENARIOS, CROPS };
