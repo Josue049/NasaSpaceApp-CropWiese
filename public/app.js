@@ -5,7 +5,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const fmtMD = (m, d) => `${d} ${MES[m - 1]}`;
 const fmtISO = (md) => { const [m, d] = md.split('-').map(Number); return fmtMD(m, d); };
-const STATUS = { viable: ['Viable', 'ok'], marginal: ['Marginal', 'warn'], no_viable: ['No viable', 'bad'] };
+// Etiquetas prudentes: sin respaldo local ninguna fecha se declara «viable» de forma concluyente.
+const STATUS = { viable: ['Sin impedimento térmico', 'ok'], marginal: ['Dudosa', 'warn'], no_viable: ['Incompatible', 'bad'] };
 let pollTimer = null;
 
 function showMsg(text, kind) { const m = $('msg'); m.hidden = !text; m.textContent = text || ''; m.className = 'note ' + (kind || ''); }
@@ -35,7 +36,7 @@ function chart(w, primary) {
   let bars = '', lab = '';
   w.forEach((x, i) => {
     const h = (H - pb - 10) * (x.index / 100), xx = pl + i * bw;
-    bars += `<rect x="${xx + 1}" y="${H - pb - h}" width="${Math.max(2, bw - 2)}" height="${h}" fill="${col[x.status]}" rx="2"><title>${esc(fmtMD(x.month, x.day))}: índice ${x.index} · ${esc(STATUS[x.status][0])} · neto ${x.net_range_by_source_mm[0]}–${x.net_range_by_source_mm[1]} mm</title></rect>`;
+    bars += `<rect x="${xx + 1}" y="${H - pb - h}" width="${Math.max(2, bw - 2)}" height="${h}" fill="${col[x.status]}" rx="2"><title>${esc(fmtMD(x.month, x.day))}: C2 ${x.index} · ${esc(STATUS[x.status][0])} · neto ${x.net_range_by_source_mm[0]}–${x.net_range_by_source_mm[1]} mm</title></rect>`;
     if (x.day <= 10) lab += `<text x="${xx + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--muted)">${MES[x.month - 1]}</text>`;
   });
   const grid = [0, 50, 100].map((v) => `<line x1="${pl}" x2="${W}" y1="${H - pb - (H - pb - 10) * v / 100}" y2="${H - pb - (H - pb - 10) * v / 100}" stroke="var(--line)"/><text x="${pl - 4}" y="${H - pb - (H - pb - 10) * v / 100 + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`).join('');
@@ -49,18 +50,23 @@ function render(j) {
     ['secChart', 'secChosen', 'secTemp'].forEach((id) => { $(id).innerHTML = ''; });
     $('secLim').innerHTML = limHtml(j); return;
   }
-  const top = j.top.map((w, i) => `<li class="card"><div class="cardhead"><strong>${i + 1}. Siembra hacia el ${esc(fmtMD(w.month, w.day))}</strong><span class="pill ${STATUS[w.status][1]}">${esc(STATUS[w.status][0])}</span></div>
-    <div class="big">${w.index}<small> / 100 (relativo)</small></div>
+  const informative = j.c2_spread && j.c2_spread.informative;
+  const top = j.top.map((w, i) => `<li class="card"><div class="cardhead"><strong>${informative ? (i + 1) + '. ' : ''}Siembra hacia el ${esc(fmtMD(w.month, w.day))}</strong><span class="pill ${STATUS[w.status][1]}">${esc(STATUS[w.status][0])}</span></div>
+    <div class="big">${w.index}<small> / 100 · C2 diagnóstico parcial</small></div>
     <ul class="kv"><li>Madurez córnea a los <b>${w.stage_das.hard_ripening ?? '—'}</b> días; floración ≈ <b>${w.stage_dates_md.flowering ? esc(fmtISO(w.stage_dates_md.flowering)) : '—'}</b></li>
-    <li>Demanda neta de riego (ETc − lluvia, sin percolación): <b>${w.net_range_by_source_mm[0]}–${w.net_range_by_source_mm[1]} mm</b> según la fuente de lluvia</li>
+    <li>Informativo, NO puntuado — demanda (ETc − lluvia, sin percolación ni dotación del canal): <b>${w.net_range_by_source_mm[0]}–${w.net_range_by_source_mm[1]} mm</b> según la fuente de lluvia</li>
     <li>Días de calor (&gt;35 °C) en floración: <b>${Math.round(w.heat_frac_flowering * 100)} %</b> · Tmín floración ${w.tmin_flowering_c ?? '—'} °C</li>
-    <li>Subíndices: agua ${Math.round(w.water_score * 100)} · térmico ${Math.round(w.thermal_score * 100)}</li></ul></li>`).join('');
+    <li>C2 (fenología y riesgo térmico): ciclo completo en ${Math.round(w.complete_frac * 100)} % de los años (${Math.round(w.complete_frac_cold * 100)} % con T−δ)</li></ul></li>`).join('');
   const caut = j.support.cautions.map((c) => `<li>${esc(c)}</li>`).join('');
-  $('secTop').innerHTML = `<h2>Mejores fechas de siembra</h2>
-    <p class="hint">Índice relativo entre fechas (no rendimiento). Pesos provisionales: agua ${Math.round(j.weights.water * 100)} % · térmico ${Math.round(j.weights.thermal * 100)} %. Fuente de lluvia primaria: <b>${esc(j.primary_source.toUpperCase())}</b>.</p>
+  const cd = j.criteria_diagnostic && j.criteria_diagnostic.criteria;
+  const c1missing = cd && cd.C1 && cd.C1.missing ? cd.C1.missing.map((m) => `<li>${esc(m)}</li>`).join('') : '';
+  $('secTop').innerHTML = `<h2>Fechas de siembra: fenología y riesgo térmico</h2>
+    <p class="hint"><b>Explorador, no recomendación.</b> Solo puntúa C2 (fenología y riesgo térmico; diagnóstico parcial). C1 (agua) y C7 (rotación) no se puntúan aquí. Fuente de lluvia primaria: <b>${esc(j.primary_source.toUpperCase())}</b>.</p>
+    ${informative ? '' : `<div class="note warn"><b>Las fechas son prácticamente indistinguibles por C2</b> (${j.c2_spread.min}–${j.c2_spread.max} de 100): el ciclo se completa en casi todas y el calor en floración es bajo tras la corrección. La diferencia real entre fechas vendría del agua (C1), que no puede puntuarse sin la dotación del canal. Se muestran algunas fechas sin orden de preferencia.</div>`}
     <ol class="cards">${top}</ol>
+    <div class="note"><b>C1 · Agua: sin puntuación.</b> Faltan: <ul>${c1missing}</ul></div>
     ${caut ? `<div class="note warn"><b>Advertencias de los datos</b><ul>${caut}</ul></div>` : ''}`;
-  $('secChart').innerHTML = `<h2>Todas las fechas</h2><p class="hint">Cada barra es una fecha de siembra (cada 10 días). Verde = viable, ámbar = marginal. Pase el cursor/toque para ver el detalle.</p>${chart(j.windows, j.primary_source)}`;
+  $('secChart').innerHTML = `<h2>Todas las fechas</h2><p class="hint">Cada barra es el diagnóstico C2 de una fecha de siembra (cada 10 días). Verde = sin impedimento térmico, ámbar = dudosa. Pase el cursor/toque para ver el detalle.</p>${chart(j.windows, j.primary_source)}`;
   const c = j.chosen;
   if (c) {
     $('secChosen').innerHTML = `<h2>Su fecha de siembra: ${esc(fmtMD(c.month, c.day))}</h2>
@@ -107,10 +113,12 @@ function rotHtml(j) {
   const cards = j.strategies.map((s) => {
     const seq = s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + esc(t.slot_label) + ' · ciclo ' + (t.duration_days ?? '—') + ' d · agua ' + t.water_coverage_pct + ' % · calor ' + Math.round(t.heat_stress_frac * 100) + ' %</li>').join('');
     const risks = s.risks.slice(0, 4).map((x) => '<li>' + esc(x) + '</li>').join('');
+    const cc = s.criteria_c1_c2_c7 && s.criteria_c1_c2_c7.criteria; const c7 = cc && cc.C7 && cc.C7.score != null ? Math.round(cc.C7.score * 100) : null;
     const viol = (s.violations || []).map((x) => '<li>' + esc(x) + '</li>').join('');
     const v = s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null;
     return '<li class="card"><div class="cardhead"><strong>' + esc(s.label) + '</strong></div><div class="big">' + s.score + '<small> / 100 (relativo)</small></div>'
       + '<p class="mono">' + s.sequence.map((c) => esc(CROP_ES[c] || c)).join(' → ') + '</p><ul class="kv">' + seq + '</ul>'
+      + '<p class="hint">Criterios del esquema 50/40/10 — C1 agua: <b>sin puntuar</b> (falta dotación y requerimiento total) · C2 fenología/térmico: <b>sin puntuar</b> (el motor genérico mide calor en etapa media, no en floración) · C7 alternancia: <b>' + (c7 == null ? '—' : c7 + ' / 100') + '</b> (solo diversidad de sucesión; no estima N ni sanidad).</p>'
       + (v ? '<p class="hint">Frente a la actual: <b>' + esc(LEVEL[v.level] || v.level) + '</b> (' + esc(v.text) + ')</p>' : '')
       + (viol ? '<div class="note bad"><b>Reglas que incumple</b><ul>' + viol + '</ul></div>' : '')
       + (risks ? '<div class="note warn"><b>Riesgos</b><ul>' + risks + '</ul></div>' : '') + '</li>';

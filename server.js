@@ -99,6 +99,19 @@ async function handleApi(req, res, url) {
     try { result = analyze(v.input, g, v.scenario); } catch (e) { return send(res, 422, { error: e.message }); }
     result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };
     result.input = v.input;
+    if (!result.unsupported) {
+      const { evaluateRiceCriteria } = require('./src/rice_criteria_proposal');
+      const fam = Object.fromEntries(CROPS.crops.map((c) => [c.id, c.family]));
+      const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
+      for (const st of result.strategies) {
+        st.criteria_c1_c2_c7 = evaluateRiceCriteria({
+          sequence: st.sequence, prior_crop_id: v.input.history[v.input.history.length - 1], family_by_id: fam,
+          complete_fraction: avg(st.timeline.map((t) => t.thermal.complete_frac)), complete_fraction_cold: avg(st.timeline.map((t) => t.thermal.complete_frac_cold)),
+          flowering_heat_fraction: null, // el motor genérico mide calor en la etapa media, NO en floración: no son equivalentes
+          etc_mm: avg(st.timeline.map((t) => t.etc_mm)),
+        }, { provenance: 'motor genérico de rotaciones (src/engine.js)' });
+      }
+    }
     return send(res, 200, result);
   }
   if (req.method === 'POST' && p === '/api/rice/analyze') {

@@ -18,7 +18,8 @@ const OBS_CSV = path.join(__dirname, '..', 'docs', 'evidence', 'rice_morropon_20
 const L = cycleLength(PROFILE);
 const STEP_DAYS = 10;
 // Pesos PROVISIONALES: proporción de los criterios C1 (agua, 25 %) y C2 (térmico, 20 %) de docs/CRITERIOS_ARROZ.md renormalizada. Supuesto de diseño.
-const WEIGHTS = { water: 25 / 45, thermal: 20 / 45 };
+const { evaluateRiceCriteria, DEFAULT_WEIGHTS } = require('./rice_criteria_proposal');
+const WEIGHTS = DEFAULT_WEIGHTS; // diseño 50/40/10 (C1 agua, C2 fenología/térmico, C7 rotación); NO se aplican completos en la demo de fechas
 // Dominio de la demo: caja aproximada (≈ ±12 km) alrededor de la estación SENAMHI Morropón. Aproximación de diseño, no un límite oficial.
 const DOMAIN = { id: 'morropon_tinajones', label: 'Morropón, Alto Piura (arroz Tinajones)', box: { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 }, center: { lat: PROFILE.station.lat, lon: PROFILE.station.lon } };
 const inBox = (lat, lon, b = DOMAIN.box) => lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
@@ -101,7 +102,8 @@ const LIMITATIONS = [
   'Variedad sin resolver en la fuente (Tinajones vs. Mallares) y sin saber si fue siembra directa o trasplante.',
   'La demanda de riego es ETc − lluvia: NO incluye percolación, saturación ni preparación de suelo; no es lámina de riego real. Falta la disponibilidad del canal.',
   'No hay rendimiento, precio ni costo para Piura: el índice no estima ganancia ni producción.',
-  'Los pesos (agua 56 %, térmico 44 %) son un supuesto de diseño derivado de docs/CRITERIOS_ARROZ.md; no están calibrados.',
+  'El orden de fechas usa SOLO C2 (fenología y riesgo térmico) como diagnóstico parcial: C1 (agua) no se puntúa porque no hay dotación real de riego ni requerimiento total (percolación, saturación) comparables. Es un explorador de fenología, no una recomendación.',
+  'Los pesos 50/40/10 (C1/C2/C7) son un supuesto de diseño no calibrado; la combinación interna de C2 (0,6 ciclo + 0,4 calor en floración) es una hipótesis para análisis de sensibilidad.',
   'Umbral de calor 35 °C genérico (no verificado para Tinajones); la temperatura nocturna en floración se muestra pero no se puntúa (sin umbral citado).',
   'Los datos satelitales son de baja resolución (celdas de decenas de km): describen la zona, no la parcela.',
   'No hay contraste con pluviómetro local ni validación de un agrónomo.',
@@ -122,25 +124,30 @@ function analyzeRice(input, g, scenario = SCENARIOS.base) {
   const dT = tempUncertainty(prim.climate);
   const wins = [];
   for (let doy = 1; doy <= 365; doy += STEP_DAYS) { const d0 = new Date(Date.UTC(2001, 0, doy)); const w = evaluateDate(climates, d0.getUTCMonth() + 1, d0.getUTCDate(), dT); if (w) wins.push(w); }
-  const valid = wins.filter((w) => w.complete_frac >= 0.5);
-  const nets = valid.map((w) => w.by_source[prim.id].net_mm), nmin = Math.min(...nets), nmax = Math.max(...nets);
   for (const w of wins) {
     const ok = w.complete_frac >= 0.5;
-    w.water_score = ok && nmax > nmin ? r2(1 - (w.by_source[prim.id].net_mm - nmin) / (nmax - nmin)) : ok ? 1 : 0;
-    w.thermal_score = r2(w.thermal_raw); delete w.thermal_raw;
-    w.index = r1(100 * (WEIGHTS.water * w.water_score + WEIGHTS.thermal * w.thermal_score));
+    // Orden de fechas SOLO por C2 (diagnóstico parcial). C1 (agua) no se puntúa: no hay dotación de riego ni requerimiento total comparables.
+    w.diag = evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering });
+    w.c2_score = w.diag.criteria.C2.score == null ? null : r2(w.diag.criteria.C2.score);
+    w.index = w.c2_score == null ? null : r1(100 * w.c2_score);
+    delete w.thermal_raw; delete w.diag;
     w.status = !ok ? 'no_viable' : (w.complete_frac_cold >= 0.9 && w.heat_frac_flowering <= 0.1 ? 'viable' : 'marginal');
     const rs = Object.values(w.by_source).map((s) => s.rain_mm).filter(Number.isFinite);
     w.rain_source_ratio = rs.length > 1 && Math.min(...rs) > 0 ? r2(Math.max(...rs) / Math.min(...rs)) : null;
     w.net_range_by_source_mm = [r1(Math.min(...Object.values(w.by_source).map((s) => s.net_mm))), r1(Math.max(...Object.values(w.by_source).map((s) => s.net_mm)))];
   }
-  const ranked = wins.filter((w) => w.status !== 'no_viable').sort((a, b) => b.index - a.index);
+  const ranked = wins.filter((w) => w.status !== 'no_viable').filter((w) => w.index != null).sort((a, b) => b.index - a.index);
+  const idxs = wins.map((w) => w.index).filter((x) => x != null);
+  const c2Spread = { min: idxs.length ? Math.min(...idxs) : null, max: idxs.length ? Math.max(...idxs) : null };
+  c2Spread.informative = idxs.length ? c2Spread.max - c2Spread.min >= 10 : false; // umbral de diseño: menos de 10 puntos = fechas indistinguibles por C2
   const area = Number(input.area_ha) || 0;
   const chosen = input.sowing_date ? (() => { const [, mm, dd] = input.sowing_date.split('-').map(Number); return evaluateDate(climates, mm, dd, dT); })() : null;
-  if (chosen) { chosen.water_score = null; chosen.net_m3_per_ha = r1(chosen.by_source[prim.id].net_mm * 10); chosen.net_m3_total = area ? r1(chosen.by_source[prim.id].net_mm * 10 * area) : null; delete chosen.thermal_raw; }
+  if (chosen) { chosen.net_m3_per_ha = r1(chosen.by_source[prim.id].net_mm * 10); chosen.net_m3_total = area ? r1(chosen.by_source[prim.id].net_mm * 10 * area) : null; delete chosen.thermal_raw; }
+  const diagFor = (w) => evaluateRiceCriteria({ etc_mm: w.etc_mm, complete_fraction: w.complete_frac, complete_fraction_cold: w.complete_frac_cold, flowering_heat_fraction: w.heat_frac_flowering }, { provenance: 'rice.js (clima 2015–2023, corrección térmica empírica SENAMHI)' });
+  const criteriaDiag = diagFor(chosen || ranked[0] || wins[0]);
   return {
     ...base, windows: wins, top: ranked.slice(0, 3), worst: ranked.slice(-1), chosen,
-    weights: WEIGHTS, weights_status: 'PROVISIONALES: supuesto de diseño (agua 25 : térmico 20 de docs/CRITERIOS_ARROZ.md, renormalizado).',
+    weights: WEIGHTS, weights_status: 'DISEÑO 50/40/10 (C1 agua, C2 fenología/térmico, C7 rotación), no calibrado. En la demo de fechas SOLO C2 puntúa (diagnóstico parcial); C1 y C7 quedan sin puntuar.', criteria_diagnostic: criteriaDiag, c2_spread: c2Spread,
     temperature_uncertainty_c: r2(dT), primary_source: prim.id,
     sources: climates.map((c) => ({ id: c.id, role: c.role, label: c.label, annual_precip_mm: Math.round(c.climate.annual.precip_mm), provenance: c.provenance })),
     temperature_check: { before_correction: chk0, offsets_c: offsets, after_correction_circular: temperatureCheck(prim.climate), note: 'El sesgo de temperatura (modelo − SENAMHI) se corrigió empíricamente con una sola temporada; el contraste posterior es circular y no valida el modelo.' }, data_problems: problems,
