@@ -87,6 +87,13 @@ function validateRiceInput(b) {
 async function handleApi(req, res, url) {
   const p = url.pathname;
   if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS });
+  if (req.method === 'POST' && p === '/api/satellite/check') {
+    const b = await readBody(req), lat = +(+b.lat).toFixed(4), lon = +(+b.lon).toFixed(4);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return send(res, 400, { error: 'Entrada inválida', details: ['latitud y longitud requeridas'] });
+    if (!rice.inBox(lat, lon)) return send(res, 400, { error: 'Fuera del alcance de la demo (Morropón, Alto Piura)' });
+    try { return send(res, 200, await require('./src/satellite').checkParcel(lat, lon, rice.PROFILE)); }
+    catch (e) { return send(res, 502, { error: 'No se pudo consultar Sentinel-2: ' + e.message }); }
+  }
   if (req.method === 'POST' && p === '/api/rotation/analyze') {
     const b = await readBody(req);
     const { ROTATION_CROPS } = require('./src/morropon');

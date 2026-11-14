@@ -23,7 +23,7 @@
 
   <section class="panel" aria-labelledby="formTitle">
     <h2 id="formTitle">Su parcela de arroz</h2>
-    <p class="hint">Toque el mapa para ubicar su parcela dentro del recuadro verde (zona de la demo). Los datos satelitales describen la <strong>zona</strong>, no el detalle de su terreno.</p>
+    <p class="hint">Toque el mapa para ubicar su parcela dentro del recuadro verde (zona de la demo). Los datos meteorológicos describen la <strong>zona</strong>; las imágenes Sentinel‑2 (más abajo) sí describen el <strong>punto marcado</strong>.</p>
     <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
     <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
     <form id="form" novalidate>
@@ -39,6 +39,13 @@
       <div class="row"><button id="btn" class="primary" type="submit">Analizar fechas de siembra</button></div>
     </form>
     <div id="msg" class="note" role="status" aria-live="polite" hidden></div>
+  </section>
+
+  <section class="panel" aria-labelledby="satTitle">
+    <h2 id="satTitle">Verificar el terreno con imágenes satelitales</h2>
+    <p class="hint">Consulta imágenes <strong>Sentinel‑2</strong> (10 m) en el punto marcado y muestra cómo cambió la vegetación (NDVI) de noviembre 2025 a julio 2026. Sirve para ver si el terreno tiene un <em>patrón de cultivo estacional</em>; <strong>no identifica la especie</strong> ni confirma que sea arroz.</p>
+    <div class="row"><button id="btnSat" class="primary" type="button">Verificar el punto marcado</button></div>
+    <div id="satOut" hidden></div>
   </section>
 
   <section class="panel" aria-labelledby="rotTitle">
@@ -63,6 +70,19 @@
     <section class="panel" id="secTemp"></section>
     <section class="panel" id="secLim"></section>
   </div>
+  <section class="panel" aria-labelledby="srcTitle">
+    <h2 id="srcTitle">Fuentes de datos</h2>
+    <table class="tbl"><thead><tr><th>Fuente</th><th>Qué obtiene</th></tr></thead><tbody>
+      <tr><td>NASA POWER</td><td>Temperatura, radiación, humedad y viento</td></tr>
+      <tr><td>IMERG</td><td>Precipitación estimada mediante satélites</td></tr>
+      <tr><td>ERA5</td><td>Meteorología de reanálisis</td></tr>
+      <tr><td>SRTM</td><td>Elevación del terreno</td></tr>
+      <tr><td>SoilGrids</td><td>Propiedades estimadas del suelo</td></tr>
+      <tr><td>Sentinel‑2</td><td>Imágenes satelitales (10 m) para el NDVI del punto marcado</td></tr>
+      <tr><td>OpenStreetMap</td><td>Mapa de fondo (cartografía, no imagen satelital)</td></tr>
+    </tbody></table>
+    <p class="hint">Excepto Sentinel‑2, estas fuentes son series numéricas de baja resolución (celdas de decenas de km): describen la zona, no la parcela.</p>
+  </section>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>

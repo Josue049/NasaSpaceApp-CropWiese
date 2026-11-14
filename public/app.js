@@ -160,3 +160,43 @@ async function initMap() {
   });
 }
 initMap();
+
+// ---------- verificación satelital (Sentinel-2, NDVI) ----------
+const SAT_PATTERN = { estacional: ['Patrón estacional de vegetación', 'ok'], vegetacion_permanente: ['Vegetación permanente', 'warn'], suelo_agua_o_urbano: ['Sin vegetación activa', 'bad'], ambiguo: ['Patrón ambiguo', 'warn'], insuficiente: ['Datos insuficientes', 'warn'] };
+function ndviChart(r) {
+  const W = 720, H = 240, pl = 36, pb = 28, pt = 10, t0 = Date.parse(r.range[0]), t1 = Date.parse(r.range[1]);
+  const X = (iso) => pl + (W - pl - 8) * (Date.parse(iso) - t0) / (t1 - t0), Y = (v) => pt + (H - pt - pb) * (1 - (v + 0.1) / 1.1);
+  let svg = [0, 0.25, 0.5, 0.75, 1].map((v) => '<line x1="' + pl + '" x2="' + W + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--line)"/><text x="' + (pl - 4) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + v + '</text>').join('');
+  const pc = r.phenology_contrast;
+  if (pc) {
+    svg += '<rect x="' + X(pc.expected_peak_window[0]) + '" y="' + pt + '" width="' + Math.max(3, X(pc.expected_peak_window[1]) - X(pc.expected_peak_window[0])) + '" height="' + (H - pt - pb) + '" fill="var(--accent)" opacity=".25"><title>Pico esperado (panoja–floración) si se sembró el ' + esc(pc.sowing_date) + '</title></rect>';
+    svg += '<line x1="' + X(pc.sowing_date) + '" x2="' + X(pc.sowing_date) + '" y1="' + pt + '" y2="' + (H - pb) + '" stroke="var(--accent)" stroke-dasharray="4 3"><title>Siembra observada por SENAMHI: ' + esc(pc.sowing_date) + '</title></line>';
+  }
+  const ok = r.series.filter((s) => s.valid && s.ndvi != null);
+  svg += '<polyline fill="none" stroke="var(--primary)" stroke-width="2" points="' + ok.map((s) => X(s.date) + ',' + Y(s.ndvi)).join(' ') + '"/>';
+  svg += r.series.map((s) => s.ndvi == null ? '' : s.valid
+    ? '<circle cx="' + X(s.date) + '" cy="' + Y(s.ndvi) + '" r="4" fill="var(--primary)"><title>' + esc(s.date) + ' · NDVI ' + s.ndvi + '</title></circle>'
+    : '<circle cx="' + X(s.date) + '" cy="' + Y(Math.max(-0.1, Math.min(1, s.ndvi))) + '" r="3.5" fill="none" stroke="var(--muted)"><title>' + esc(s.date) + ' · descartada por nubes/sombra (SCL ' + s.scl + ')</title></circle>').join('');
+  for (let m = 0; m < 9; m++) { const d = new Date(Date.UTC(2025, 10 + m, 1)); const iso = d.toISOString().slice(0, 10); if (Date.parse(iso) >= t0 && Date.parse(iso) <= t1) svg += '<text x="' + X(iso) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--muted)">' + MES[d.getUTCMonth()] + '</text>'; }
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Serie de NDVI Sentinel-2 en el punto marcado" style="width:100%;height:auto">' + svg + '</svg>';
+}
+async function runSat() {
+  const lat = Number($('lat').value), lon = Number($('lon').value), box = $('satOut');
+  box.hidden = false; box.innerHTML = '<p class="hint">Consultando imágenes Sentinel‑2 (puede tardar unos segundos la primera vez)…</p>'; $('btnSat').disabled = true;
+  try {
+    const r = await fetch('/api/satellite/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon }) });
+    const j = await r.json();
+    if (!r.ok) { box.innerHTML = '<p class="note bad">' + esc(j.error || 'Error') + '</p>'; return; }
+    const c = j.classification, p = SAT_PATTERN[c.pattern] || [c.pattern, 'warn'], pc = j.phenology_contrast;
+    box.innerHTML = '<div class="cardhead"><strong>Punto ' + j.lat + ', ' + j.lon + '</strong><span class="pill ' + p[1] + '">' + esc(p[0]) + '</span></div>'
+      + '<p>' + esc(c.message) + '</p>'
+      + '<ul class="kv"><li>Escenas encontradas: <b>' + j.scenes_found + '</b> · observaciones sin nubes: <b>' + c.n_valid + '</b>' + (c.n_water ? ' · con agua: ' + c.n_water : '') + '</li>'
+      + (c.amplitude != null ? '<li>NDVI típico bajo–alto (p10–p90): <b>' + c.ndvi_p10 + '–' + c.ndvi_p90 + '</b> · pico <b>' + c.peak_ndvi + '</b> el ' + esc(c.peak_date) + '</li>' : '') + '</ul>'
+      + ndviChart(j)
+      + '<p class="hint">Círculos llenos = observaciones válidas; vacíos = descartadas por nubes. Banda naranja = pico esperado (panoja–floración) y línea punteada = siembra del 21‑ene‑2026 observada por SENAMHI.</p>'
+      + (pc ? '<div class="note"><b>Contraste informativo con la fenología modelada:</b> pico observado el ' + esc(pc.observed_peak_date) + (pc.within_window ? ', dentro de la ventana esperada.' : ', a ' + pc.days_outside_window + ' días de la ventana esperada (' + esc(pc.expected_peak_window[0]) + ' a ' + esc(pc.expected_peak_window[1]) + '). ') + ' ' + esc(pc.note) + '</div>' : '')
+      + '<div class="note warn"><b>Límites</b><ul>' + j.limitations.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+  } catch (e) { box.innerHTML = '<p class="note bad">No se pudo conectar: ' + esc(e.message) + '</p>'; } finally { $('btnSat').disabled = false; }
+}
+$('btnSat').addEventListener('click', runSat);
+if (location.hash === '#sat') runSat(); // atajo para revisión visual

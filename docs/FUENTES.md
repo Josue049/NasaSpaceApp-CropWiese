@@ -30,3 +30,10 @@
 - Poggio L. et al. (2021). SoilGrids 2.0. *SOIL* 7, 217–240.
 - Peoples M.B. et al. (2009). The contributions of nitrogen‑fixing crop legumes… *Symbiosis* 48, 1–17. (verificar)
 - ClimateSERV API: https://climateserv.servirglobal.net/develop-api
+
+## Sentinel-2 L2A (verificación del terreno; añadido en la rama `bajo-piura-arroz`)
+- **Qué es:** imágenes satelitales de reflectancia de superficie, 10 m, revisita ~5 días (ESA/Copernicus). Acceso abierto vía [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a): búsqueda STAC y lectura de valores de un punto (`B04` rojo, `B08` infrarrojo cercano, `SCL` clasificación de escena).
+- **Cálculo:** NDVI = (NIR − Rojo)/(NIR + Rojo), con reflectancia (DN − 1000)/10000 por el offset de la línea base ≥ 04.00 (las escenas actuales son 05.12). Se descartan pixeles con nubes, sombras, cirros y saturación (SCL ∉ {4, 5, 6}).
+- **Verificado:** consulta real en Morropón (−5,1944; −79,9867), 31 escenas de nov‑2025 a jul‑2026, 20 válidas. Código en `src/satellite.js`, script `scripts/check_satellite.js`, instantánea en `data/demo_morropon/`.
+- **Qué NO hace:** no identifica la especie (no distingue arroz de otro cultivo anual), no mide rendimiento, estado hídrico ni inundación; un pixel de 10 m puede caer en un camino o canal. En Piura casi cualquier vegetación sigue las lluvias, así que «patrón estacional» discrimina poco. Los umbrales de clasificación (p90 < 0,25; amplitud ≥ 0,30; p10 ≥ 0,55 con amplitud < 0,20) son de diseño, no validados.
+- **No se usa MapBiomas Perú** (cobertura/uso del suelo): no se consultó ni se integró.
