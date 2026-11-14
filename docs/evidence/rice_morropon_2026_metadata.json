@@ -1,0 +1,18 @@
+{
+  "project": "CROPWISE",
+  "dataset": "rice_morropon_2026_senamhi.csv",
+  "source": {
+    "institution": "SENAMHI Perú",
+    "report": "Reporte agrometeorológico de impactos, 26 mayo–1 junio 2026",
+    "url": "https://www.senamhi.gob.pe/load/file/02972SENA-148.pdf",
+    "secondary_crosscheck": "https://www.senamhi.gob.pe/load/file/02972SENA-143.pdf"
+  },
+  "extraction": "Indexed PDF text via public web search/open; source PDF direct download and visual inspection unavailable during assembly",
+  "important_flags": [
+    "Narrative says Mallares; table says Tinajones. Variety unresolved.",
+    "Dates are phase/event onset as tabulated, not harvest date.",
+    "Reported climate numbers in PDF rows should not be interpreted as NASA POWER daily series.",
+    "No exact field parcel polygon or direct crop geolocation is established.",
+    "No genotype-specific calibration; FAO-56 Kc stages are not equivalent to botanical phases."
+  ]
+}
