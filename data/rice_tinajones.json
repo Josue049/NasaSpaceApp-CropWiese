@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "status": "PROVISIONAL: calibrado con UNA temporada observada por SENAMHI (Morropón 2026). No validado por agrónomo.",
+    "scope": "Demo reducida: arroz, variedad Tinajones, Morropón (Alto Piura).",
+    "flags": [
+      "La tabla SENAMHI dice Tinajones y la narrativa dice Mallares: variedad sin resolver.",
+      "Las fechas son inicio de fase, no cosecha; maduración córnea (114 DAS) no es la fecha de cosecha.",
+      "Una sola temporada y una sola estación: no permite estimar variabilidad entre años ni entre parcelas.",
+      "Se desconoce si fue siembra directa o trasplante.",
+      "Las etapas Kc de FAO-56 no equivalen a fases botánicas: la asignación a ini/dev/mid/late es un supuesto de diseño."
+    ],
+    "source": "docs/evidence/rice_morropon_2026_senamhi.csv y docs/evidence/rice_morropon_2026_metadata.json (SENAMHI, reporte 26 may–1 jun 2026; texto indexado, sin verificación visual del PDF)"
+  },
+  "id": "arroz_tinajones",
+  "name": "Arroz · Tinajones (Morropón)",
+  "sci": "Oryza sativa",
+  "station": { "name": "Morropón", "zone": "Alto Piura", "lat": -5.19, "lon": -79.99, "elevation_m": 141 },
+  "observed_campaign": { "sowing_date": "2026-01-21", "reported_tmean_range_c": [25, 28.5] },
+  "phenology_das": {
+    "emergence": 5, "seedling": 24, "tillering": 33, "stem_elongation": 64, "panicle": 79,
+    "panicle_development": 86, "flowering": 93, "milk_ripening": 102, "dough_ripening": 107, "hard_ripening": 114
+  },
+  "stage_labels_es": {
+    "emergence": "Emergencia", "seedling": "Plántula", "tillering": "Macollaje", "stem_elongation": "Elongación del tallo",
+    "panicle": "Panoja", "panicle_development": "Desarrollo de panoja", "flowering": "Floración",
+    "milk_ripening": "Maduración lechosa", "dough_ripening": "Maduración pastosa", "hard_ripening": "Maduración córnea"
+  },
+  "cycle": { "ini": 33, "dev": 46, "mid": 23, "late": 12 },
+  "cycle_note": "Suma 114 días efectivos. ini = siembra→macollaje (33); dev = macollaje→panoja (46); mid = panoja→maduración lechosa (23); late = lechosa→córnea (12). SUPUESTO de diseño.",
+  "kc": { "ini": 1.05, "mid": 1.2, "end": 0.9 },
+  "kc_source": "FAO-56 Tabla 12 (arroz); no incluye percolación ni saturación del suelo.",
+  "eco": { "tmin": 10, "topmn": 20, "topmx": 30, "tmax": 36, "source": "FAO EcoCrop, arroz (especie, no variedad)" },
+  "t_stress_max": 35,
+  "flowering_window_das": [86, 102],
+  "heat_threshold_note": "35 °C es el umbral genérico ya usado en crops.json; no verificado para Tinajones."
+}

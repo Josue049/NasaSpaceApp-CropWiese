@@ -6,6 +6,9 @@ const path = require('path');
 const crypto = require('crypto');
 const ds = require('./src/datasources');
 const { gatherData, analyze, SCENARIOS, CROPS } = require('./src/pipeline');
+const rice = require('./src/rice');
+// Demo reducida: solo arroz Tinajones en Morropón. La API genérica de rotaciones queda apagada salvo FIELDSHIFT_LEGACY=1 (pruebas/desarrollo).
+const LEGACY = process.env.FIELDSHIFT_LEGACY === '1';
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
@@ -49,6 +52,7 @@ function validateInput(b) {
     input: {
       lat, lon, area_ha: Math.max(0, Number(b.area_ha) || 0), irrigation: !!b.irrigation, start_slot: b.start_slot === 'B' ? 'B' : 'A',
       history: b.history.slice(-4), priorities: pr, excluded_crops: b.excluded_crops || [], market_pref: b.market_pref || {},
+      ...(b.weighting_model === 'grouped_v1' ? { weighting_model: 'grouped_v1', group_priorities: b.group_priorities || undefined } : {}), // modo EXPERIMENTAL opt-in (revisión externa de pesos)
     },
     scenario: SCENARIOS[b.scenario] || SCENARIOS.base,
   };
@@ -68,8 +72,33 @@ function readBody(req) {
   });
 }
 
+function validateRiceInput(b) {
+  const errs = [], lat = Number(b.lat), lon = Number(b.lon);
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90) errs.push('latitud inválida');
+  if (!Number.isFinite(lon) || lon < -180 || lon > 180) errs.push('longitud inválida');
+  let sowing = null;
+  if (b.sowing_date != null && b.sowing_date !== '') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.sowing_date)) || Number.isNaN(Date.parse(b.sowing_date))) errs.push('fecha de siembra inválida (use AAAA-MM-DD)'); else sowing = String(b.sowing_date);
+  }
+  if (errs.length) return { errs };
+  return { input: { lat, lon, area_ha: Math.max(0, Math.min(1000, Number(b.area_ha) || 0)), sowing_date: sowing } };
+}
+
 async function handleApi(req, res, url) {
   const p = url.pathname;
+  if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS });
+  if (req.method === 'POST' && p === '/api/rice/analyze') {
+    const v = validateRiceInput(await readBody(req));
+    if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });
+    // El clima se toma de la celda de la estación (la demo cubre una sola localidad); la parcela solo aporta su ubicación, área y pendiente.
+    const g = await gatherData(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon);
+    const job = ensureImerg(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon, g.imergMissing);
+    let result;
+    try { result = rice.analyzeRice(v.input, g); } catch (e) { return send(res, 422, { error: e.message }); }
+    result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };
+    return send(res, 200, result);
+  }
+  if (!LEGACY && (p === '/api/meta' || p === '/api/analyze' || p.startsWith('/api/parcels'))) return send(res, 410, { error: 'Fuera del alcance de esta demo: solo arroz Tinajones en Morropón (Alto Piura). Use /api/rice/analyze.' });
   if (req.method === 'GET' && p === '/api/health') return send(res, 200, { ok: true, version: require('./package.json').version, time: new Date().toISOString() });
   if (req.method === 'GET' && p === '/api/meta') {
     return send(res, 200, {

@@ -10,6 +10,7 @@ const { fetchImergDaily, IMERG_DATATYPE } = require('./imerg');
 
 const CACHE_DIR = process.env.FIELDSHIFT_CACHE || path.join(__dirname, '..', 'data', 'cache');
 const DEMO_DIR = path.join(__dirname, '..', 'data', 'demo');
+const DEMO_DIR_MORROPON = path.join(__dirname, '..', 'data', 'demo_morropon'); // instantánea real de la demo reducida (arroz Tinajones, Morropón)
 const Y0 = 2015, Y1 = 2023; // ventana fija y común a todas las fuentes (datatype 26 termina el 2024-06-01; el 226 llega a 2025+, ventana ampliable)
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
@@ -24,7 +25,7 @@ async function httpJson(url, ms = 90000) {
   } finally { clearTimeout(t); }
 }
 function readCache(name) {
-  for (const dir of [CACHE_DIR, DEMO_DIR]) {
+  for (const dir of [CACHE_DIR, DEMO_DIR, DEMO_DIR_MORROPON]) {
     const f = path.join(dir, name);
     if (fs.existsSync(f)) { try { return { json: JSON.parse(fs.readFileSync(f, 'utf8')), file: f }; } catch { /* corrupto */ } }
   }

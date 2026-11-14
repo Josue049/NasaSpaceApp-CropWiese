@@ -16,7 +16,7 @@
 
 const { evaluateSeason, SLOTS, cycleLength, awcFromSoil, tempUncertainty, coverOf } = require('./climate');
 
-const ENGINE_VERSION = '0.2.0';
+const ENGINE_VERSION = '0.2.0-grouped-review1';
 const CRITERIA = ['erosion', 'organic_n', 'water', 'resilience', 'pest', 'market', 'low_cost', 'soil_fit', 'thermal'];
 const CRITERIA_LABEL = {
   erosion: 'Protección contra erosión', organic_n: 'Materia orgánica y nitrógeno', water: 'Suficiencia de agua',
@@ -87,19 +87,61 @@ function sequenceBlockers(seqIds, prevIds, crops) {
 }
 
 // ---------- puntuación ----------
+// MODO EXPERIMENTAL: agrupación de prioridades, activado únicamente con
+// input.weighting_model === 'grouped_v1'. El modo clásico queda sin cambios.
+// No convierte la compatibilidad edáfica o térmica en una restricción nueva:
+// siguen siendo diagnósticos y deben verificarse con climate.js y datos locales.
 function priorityWeights(ctx) {
+  if (ctx.input.weighting_model !== 'grouped_v1') {
+    const p = Object.assign({ protect_soil: 3, water: 3, resilience: 3, pests: 3, income: 3, low_cost: 3 }, ctx.input.priorities || {});
+    const slopeF = ctx.slope == null ? 0.4 : Math.min(1, ctx.slope / 30);
+    const raw = {
+      erosion: Math.max(0.25, p.protect_soil) * (1 + slopeF),
+      organic_n: Math.max(0.25, p.protect_soil),
+      water: Math.max(0.25, p.water), resilience: Math.max(0.25, p.resilience),
+      pest: Math.max(0.25, p.pests), market: Math.max(0.25, p.income),
+      low_cost: Math.max(0.25, p.low_cost), soil_fit: ctx.soil ? 2 : 0, thermal: 1.5,
+    };
+    const tot = Object.values(raw).reduce((a, b) => a + b, 0);
+    return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / tot]));
+  }
+
+  // 4 grupos de objetivos de CONVENIENCIA (escala 0-100, opcional):
+  // suelo, agua, rotacion, economia. Son preferencias de usuario, no medidas.
+  // Se conserva compatibilidad con las 6 prioridades existentes del formulario.
   const p = Object.assign({ protect_soil: 3, water: 3, resilience: 3, pests: 3, income: 3, low_cost: 3 }, ctx.input.priorities || {});
-  const slopeF = ctx.slope == null ? 0.4 : Math.min(1, ctx.slope / 30);
+  const g = Object.assign({
+    soil: p.protect_soil,
+    water: p.water,
+    rotation: p.pests,
+    economy: (p.income + p.low_cost) / 2,
+  }, ctx.input.group_priorities || {});
+  for (const [key, value] of Object.entries(g)) {
+    if (!Number.isFinite(value) || value < 0 || value > 100) {
+      throw new Error(`Prioridad ${key} fuera de rango [0,100].`);
+    }
+  }
+  const totalGroups = Object.values(g).reduce((a, b) => a + b, 0);
+  if (totalGroups === 0) throw new Error('Asigne al menos una prioridad positiva.');
+
+  // No inflamos erosión por pendiente en los pesos: la pendiente ya está en
+  // erosionRisk. Cada grupo mantiene su peso independientemente de subindicadores.
+  // 'organic_n' queda etiquetado como proxy ordinal, no carbono/N medidos.
   const raw = {
-    erosion: Math.max(0.25, p.protect_soil) * (1 + slopeF), // regla de contexto PROVISIONAL: más pendiente, más peso a la erosión
-    organic_n: Math.max(0.25, p.protect_soil),
-    water: Math.max(0.25, p.water), resilience: Math.max(0.25, p.resilience), pest: Math.max(0.25, p.pests),
-    market: Math.max(0.25, p.income), low_cost: Math.max(0.25, p.low_cost),
-    soil_fit: ctx.soil ? 2 : 0,
-    thermal: 1.5, // peso FIJO de diseño (no es una prioridad del agricultor): ~7 % si todos los criterios valen 3
+    erosion: g.soil * 0.5,
+    organic_n: g.soil * 0.5,
+    water: g.water,
+    pest: g.rotation,
+    market: g.economy * (p.income + p.low_cost > 0 ? p.income / (p.income + p.low_cost) : 0.5),
+    low_cost: g.economy * (p.income + p.low_cost > 0 ? p.low_cost / (p.income + p.low_cost) : 0.5),
+    // Diagnósticos físicos provisionales; NO se compensan mediante puntaje.
+    // La elegibilidad técnica existente continúa en cropSlotBlockers.
+    resilience: 0, // comparte sequía con 'water'; mostrar por separado
+    soil_fit: 0,   // SoilGrids modelado, no prueba de aptitud edáfica
+    thermal: 0,    // ya interviene en capacidad, aún no validado localmente
   };
-  const tot = Object.values(raw).reduce((a, b) => a + b, 0);
-  return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / tot]));
+  const total = Object.values(raw).reduce((a, b) => a + b, 0);
+  return Object.fromEntries(CRITERIA.map((k) => [k, raw[k] / total]));
 }
 
 function phFit(ph, range) {
@@ -309,7 +351,8 @@ function run(input, data) {
     engine_version: ENGINE_VERSION,
     generated_at: new Date().toISOString(),
     weights: Object.fromEntries(Object.entries(weights).map(([k, v]) => [k, +v.toFixed(3)])),
-    weights_status: 'PROVISIONALES: derivadas de las prioridades del agricultor; no calibradas con datos de campo.',
+    weighting_model: input.weighting_model === 'grouped_v1' ? 'grouped_v1_experimental' : 'legacy',
+    weights_status: input.weighting_model === 'grouped_v1' ? 'EXPERIMENTAL: cuatro grupos de conveniencia; agua sin duplicación de sequía; indicadores térmico y edáfico solo diagnósticos. No validado.' : 'PROVISIONALES: derivadas de las prioridades del agricultor; no calibradas con datos de campo.',
     candidates_evaluated: candidates.length,
     eligibility: elig.map((e) => ({ slot: e.slotId, ok: e.ok, blocked: e.blocked })),
     strategies, limitations,

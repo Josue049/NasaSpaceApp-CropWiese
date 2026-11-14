@@ -97,3 +97,19 @@ svg{max-width:100%;height:auto}
 .wrow i{font-style:normal;text-align:center;font-weight:700;padding:3px 0;border-radius:3px;color:var(--ink)}
 .wrow.wh i{font-weight:600;color:var(--muted)}
 .w-viable{background:color-mix(in srgb,var(--a) 45%,transparent)}.w-marginal{background:color-mix(in srgb,#d9a441 55%,transparent)}.w-no_viable{background:color-mix(in srgb,var(--bad) 25%,transparent);color:var(--muted)}
+
+/* ---- demo reducida: arroz Tinajones, Morropón ---- */
+.scope{border-left:5px solid var(--accent)}
+.note{padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--warn-ink);font-size:14px;margin:10px 0}
+.note.bad{background:color-mix(in srgb,var(--bad) 16%,var(--surface));color:var(--ink);border:1px solid var(--bad)}
+.note ul{margin:.4em 0 0;padding-left:1.2em}
+.cards{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.cardhead{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.big{font-size:32px;font-weight:700;line-height:1.1;margin:.2em 0}.big small{font-size:13px;font-weight:500;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;color:#fff;background:var(--muted)}
+.pill.ok{background:var(--ok)}.pill.warn{background:var(--accent)}.pill.bad{background:var(--bad)}
+.kv{padding-left:1.1em;margin:.4em 0;font-size:14px}.kv li{margin:.25em 0}
+.lim{padding-left:1.1em;font-size:14px}.lim li{margin:.35em 0}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+details{margin:.6em 0}summary{cursor:pointer;font-weight:600}

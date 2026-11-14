@@ -50,6 +50,7 @@ function et0Day({ tmean, tmax, tmin, rh, ws, rs, lat, doy, z }) {
  */
 function buildClimate(raw, opts = {}) {
   const sc = Object.assign({ precip_factor: 1, temp_delta: 0 }, opts.scenario || {});
+  const off = Object.assign({ T: 0, Tx: 0, Tn: 0 }, sc.temp_offsets || {}); // corrección empírica local OPCIONAL (demo de arroz): sesgo medido contra temperaturas SENAMHI de una temporada
   const p = raw.properties.parameter;
   const [lon, lat, zCell] = raw.geometry.coordinates;
   // SUPUESTO: gradiente térmico estándar −6,5 °C/km entre la celda POWER y la parcela (SRTM). Humedad relativa sin corregir.
@@ -62,7 +63,7 @@ function buildClimate(raw, opts = {}) {
     const v = { P: rainVal === undefined ? -999 : rainVal, T: p.T2M[k], Tx: p.T2M_MAX[k], Tn: p.T2M_MIN[k], RH: p.RH2M[k], WS: p.WS2M[k], RS: p.ALLSKY_SFC_SW_DWN[k] };
     if (Object.values(v).some((x) => x === -999 || x == null || Number.isNaN(x))) continue; // día con dato faltante: se omite
     const y = +k.slice(0, 4), m = +k.slice(4, 6), d = +k.slice(6, 8);
-    const T = v.T + lapse + sc.temp_delta, Tx = v.Tx + lapse + sc.temp_delta, Tn = v.Tn + lapse + sc.temp_delta;
+    const T = v.T + lapse + sc.temp_delta + off.T, Tx = v.Tx + lapse + sc.temp_delta + off.Tx, Tn = v.Tn + lapse + sc.temp_delta + off.Tn;
     // SUPUESTO del escenario térmico: la humedad relativa se mantiene constante (aumenta el déficit de vapor)
     const et0 = et0Day({ tmean: T, tmax: Tx, tmin: Tn, rh: Math.min(100, v.RH), ws: v.WS, rs: v.RS, lat, doy: dayOfYear(y, m, d), z: zElev });
     const rec = { key: k, y, m, d, P: v.P * sc.precip_factor, T, Tx, Tn, et0 };
