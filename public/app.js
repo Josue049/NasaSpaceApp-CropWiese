@@ -87,3 +87,41 @@ function limHtml(j) {
 }
 
 $('form').addEventListener('submit', (e) => { e.preventDefault(); run(); });
+
+// ---------- rotación (arroz Tinajones + frijol) ----------
+const CROP_ES = { arroz: 'Arroz', frijol: 'Frijol' };
+const LEVEL = { claramente_preferible: 'claramente preferible', probablemente_preferible: 'probablemente preferible', practicamente_equivalentes: 'prácticamente equivalentes', indistinguibles: 'indistinguibles' };
+async function runRot() {
+  const lat = Number($('lat').value), lon = Number($('lon').value);
+  const box = $('rotOut'); box.hidden = false; box.innerHTML = '<p class="hint">Calculando rotaciones…</p>'; $('btnRot').disabled = true;
+  try {
+    const r = await fetch('/api/rotation/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon, area_ha: $('area').value, history: [$('h0').value, $('h1').value], start_slot: $('slot').value, irrigation: $('irr').checked }) });
+    const j = await r.json();
+    if (!r.ok) { box.innerHTML = '<p class="note bad">' + esc((j.error || 'Error') + (j.details ? ': ' + j.details.join('; ') : '')) + '</p>'; return; }
+    if (j.unsupported) { box.innerHTML = j.support.blockers.map((b) => '<p class="note bad">' + esc(b) + '</p>').join(''); return; }
+    box.innerHTML = rotHtml(j);
+  } catch (e) { box.innerHTML = '<p class="note bad">No se pudo conectar: ' + esc(e.message) + '</p>'; } finally { $('btnRot').disabled = false; }
+}
+function rotHtml(j) {
+  const cmp = j.sensitivity && j.sensitivity.comparisons;
+  const cards = j.strategies.map((s) => {
+    const seq = s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + esc(t.slot_label) + ' · ciclo ' + (t.duration_days ?? '—') + ' d · agua ' + t.water_coverage_pct + ' % · calor ' + Math.round(t.heat_stress_frac * 100) + ' %</li>').join('');
+    const risks = s.risks.slice(0, 4).map((x) => '<li>' + esc(x) + '</li>').join('');
+    const viol = (s.violations || []).map((x) => '<li>' + esc(x) + '</li>').join('');
+    const v = s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null;
+    return '<li class="card"><div class="cardhead"><strong>' + esc(s.label) + '</strong></div><div class="big">' + s.score + '<small> / 100 (relativo)</small></div>'
+      + '<p class="mono">' + s.sequence.map((c) => esc(CROP_ES[c] || c)).join(' → ') + '</p><ul class="kv">' + seq + '</ul>'
+      + (v ? '<p class="hint">Frente a la actual: <b>' + esc(LEVEL[v.level] || v.level) + '</b> (' + esc(v.text) + ')</p>' : '')
+      + (viol ? '<div class="note bad"><b>Reglas que incumple</b><ul>' + viol + '</ul></div>' : '')
+      + (risks ? '<div class="note warn"><b>Riesgos</b><ul>' + risks + '</ul></div>' : '') + '</li>';
+  }).join('');
+  const caut = j.support.cautions.map((c) => '<li>' + esc(c) + '</li>').join('');
+  return '<ol class="cards">' + cards + '</ol>'
+    + '<div class="note warn"><b>Lectura crítica</b><ul>'
+    + '<li>Con solo dos cultivos, la «mejor» rotación es en gran parte <b>alternar</b> (reglas de plagas y repetición); no es evidencia agronómica de que el frijol mejore el arroz en Morropón.</li>'
+    + '<li>El frijol común aparece con mucho calor en su etapa media en la campaña grande; la práctica local observada (arroz en la grande, frijol en agosto–septiembre) no coincide necesariamente con el orden propuesto.</li>'
+    + '<li>La rotación usa los criterios del motor genérico (incluye mercado, costo, suelo y plagas con escalas <b>ordinales provisionales</b>); no usa todavía los pesos 50/40/10 de <code>docs/CRITERIOS_ARROZ.md</code>.</li>'
+    + '<li>Las campañas (21‑ene y 15‑jul) son un supuesto con evidencia débil.</li></ul></div>'
+    + (caut ? '<div class="note warn"><b>Advertencias de los datos</b><ul>' + caut + '</ul></div>' : '');
+}
+$('rotForm').addEventListener('submit', (e) => { e.preventDefault(); runRot(); });

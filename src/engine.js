@@ -41,7 +41,7 @@ function buildContext(input, data) {
   const slotOrder = input.start_slot === 'B' ? ['B', 'A', 'B', 'A'] : ['A', 'B', 'A', 'B'];
   return {
     input, crops, cropList: data.crops, climates: data.climates, slope: data.slope ?? null, soil: data.soil ?? null,
-    slotOrder, slotById: Object.fromEntries(SLOTS.map((s) => [s.id, s])), seasonCache: new Map(),
+    slotOrder, slotById: Object.fromEntries((data.slots || SLOTS).map((s) => [s.id, s])), seasonCache: new Map(),
     irrigated: !!input.irrigation, awc: awcFromSoil(data.soil),
     elev: (data.climates.find((c) => c.role === 'primary') || data.climates[0]).climate.elevation_m,
     dT: tempUncertainty((data.climates.find((c) => c.role === 'primary') || data.climates[0]).climate),

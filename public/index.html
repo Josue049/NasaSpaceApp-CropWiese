@@ -37,6 +37,21 @@
     <div id="msg" class="note" role="status" aria-live="polite" hidden></div>
   </section>
 
+  <section class="panel" aria-labelledby="rotTitle">
+    <h2 id="rotTitle">Rotación con cultivos alternativos</h2>
+    <p class="hint">Cultivos considerados por ahora: <strong>arroz (Tinajones)</strong> y <strong>frijol</strong>, los únicos con base y referencias. Se evalúan 4 campañas (2 años): grande (siembra ≈ 21 ene) y chica (≈ 15 jul).</p>
+    <form id="rotForm" novalidate>
+      <div class="grid2">
+        <label>Cultivo de la última campaña<select id="h1"><option value="arroz" selected>Arroz</option><option value="frijol">Frijol</option></select></label>
+        <label>Cultivo de la campaña anterior<select id="h0"><option value="arroz" selected>Arroz</option><option value="frijol">Frijol</option></select></label>
+      </div>
+      <label>Próxima campaña a sembrar<select id="slot"><option value="A">Grande (≈ 21 ene)</option><option value="B">Chica (≈ 15 jul)</option></select></label>
+      <label class="check"><input id="irr" type="checkbox" checked> La parcela dispone de riego (necesario para arroz)</label>
+      <div class="row"><button id="btnRot" class="primary" type="submit">Proponer rotación</button></div>
+    </form>
+    <div id="rotOut" hidden></div>
+  </section>
+
   <div id="out" hidden>
     <section class="panel" id="secTop"></section>
     <section class="panel" id="secChart"></section>

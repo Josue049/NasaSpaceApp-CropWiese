@@ -87,6 +87,20 @@ function validateRiceInput(b) {
 async function handleApi(req, res, url) {
   const p = url.pathname;
   if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS });
+  if (req.method === 'POST' && p === '/api/rotation/analyze') {
+    const b = await readBody(req);
+    const { ROTATION_CROPS } = require('./src/morropon');
+    if (!Array.isArray(b.history) || !b.history.length || b.history.some((h) => !ROTATION_CROPS.includes(h))) return send(res, 400, { error: 'Entrada inválida', details: ['el historial solo admite: ' + ROTATION_CROPS.join(', ')] });
+    const v = validateInput({ ...b, irrigation: b.irrigation !== false, excluded_crops: [] });
+    if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });
+    const g = await gatherData(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon);
+    const job = ensureImerg(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon, g.imergMissing);
+    let result;
+    try { result = analyze(v.input, g, v.scenario); } catch (e) { return send(res, 422, { error: e.message }); }
+    result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };
+    result.input = v.input;
+    return send(res, 200, result);
+  }
   if (req.method === 'POST' && p === '/api/rice/analyze') {
     const v = validateRiceInput(await readBody(req));
     if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });

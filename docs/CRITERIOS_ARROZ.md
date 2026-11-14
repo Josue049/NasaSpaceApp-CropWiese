@@ -53,7 +53,7 @@ Rama `bajo-piura-arroz`. Documento de **diseño**: define la estructura de crite
 | 7.1 Efecto precultivo | +0,08 por leguminosa previa | Regla de diseño | ✅ [S] |
 | 7.2 Repetición de cultivo/familia | Penalización por repetir | Regla de diseño | ✅ [S] |
 | 7.3 Descanso / barbecho | Campañas sin cultivo | Estaciones SENAMHI reportan «descanso» | 🟡 |
-| 7.4 Cultivos alternos propios del Alto Piura | Lista local de cultivos | Evidencia parcial: frijol (SENAMHI 2024), caupí (regional), maíz (nota 2015); **lista pendiente de confirmar** | 🟡 |
+| 7.4 Cultivos alternos propios del Alto Piura | Por ahora **solo arroz (Tinajones) y frijol** (decisión del equipo, 2026-11-14), por las bases y referencias disponibles; caupí, maíz y otros se evaluarán después | Frijol: SENAMHI 2024 (Valle Alto Piura); arroz: SENAMHI 2026 | 🟡 |
 
 ---
 

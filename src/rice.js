@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const { devRate, kcAt, cycleLength, tempUncertainty } = require('./climate');
 const { buildClimates, SCENARIOS } = require('./pipeline');
+const { temperatureCheck, offsetsFrom } = require('./morropon');
 
 const PROFILE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'rice_tinajones.json'), 'utf8'));
 const OBS_CSV = path.join(__dirname, '..', 'docs', 'evidence', 'rice_morropon_2026_senamhi.csv');
@@ -83,24 +84,6 @@ function evaluateDate(climates, m, d, dT) {
   };
 }
 
-/** Contraste del modelo de temperatura con las temperaturas reportadas por SENAMHI (clima 2026 vs climatología 2015–2023). */
-function temperatureCheck(clim) {
-  if (!fs.existsSync(OBS_CSV)) return null;
-  const lines = fs.readFileSync(OBS_CSV, 'utf8').replace(/^﻿/, '').trim().split(/\r?\n/);
-  const head = lines[0].split(','); const ix = (n) => head.indexOf(n);
-  const rows = lines.slice(1).map((l) => l.split(',')).filter((c) => c.length >= head.length).map((c) => ({ date: c[ix('event_date')], ev: c[ix('event_name_es')], tmean: Number(c[ix('reported_tmean_c')]), tmax: Number(c[ix('reported_tmax_c')]), tmin: Number(c[ix('reported_tmin_c')]) }));
-  const out = [];
-  for (const r of rows) {
-    const [, mm, dd] = r.date.split('-').map(Number); const sel = [];
-    for (const y of clim.years) for (let k = -3; k <= 3; k++) { const day = clim.byKey.get(ymd(Date.UTC(y, mm - 1, dd + k))); if (day) sel.push(day); }
-    if (!sel.length) continue;
-    out.push({ event: r.ev, date: r.date, reported_tmean_c: r.tmean, model_tmean_c: r1(mean(sel.map((x) => x.T))), reported_tmax_c: r.tmax, model_tmax_c: r1(mean(sel.map((x) => x.Tx))), reported_tmin_c: r.tmin, model_tmin_c: r1(mean(sel.map((x) => x.Tn))) });
-  }
-  const bias = (a, b) => r1(mean(out.map((o) => o[a] - o[b])));
-  return { n: out.length, rows: out, bias_tmean_c: bias('model_tmean_c', 'reported_tmean_c'), bias_tmax_c: bias('model_tmax_c', 'reported_tmax_c'), bias_tmin_c: bias('model_tmin_c', 'reported_tmin_c'),
-    note: 'Compara climatología 2015–2023 (±3 días) con valores reportados de una sola temporada (2026): sirve para detectar un sesgo grande, no para validar.' };
-}
-
 function assessSupport(input, g, climates) {
   const blockers = [], cautions = [];
   if (!inBox(input.lat, input.lon)) blockers.push(`Fuera del alcance de la demo (${DOMAIN.label}): lat ${DOMAIN.box.latMin} a ${DOMAIN.box.latMax}, lon ${DOMAIN.box.lonMin} a ${DOMAIN.box.lonMax} (caja aproximada de diseño).`);
@@ -130,7 +113,7 @@ function analyzeRice(input, g, scenario = SCENARIOS.base) {
   // Corrección EMPÍRICA de temperatura: el gradiente estándar sesga la temperatura (celda POWER ~930 m más alta). Se mide el sesgo contra las
   // temperaturas reportadas por SENAMHI (11 valores, una temporada) y se resta. SUPUESTO: el sesgo es estacionario. El contraste posterior es circular.
   const chk0 = temperatureCheck((first.climates.find((c) => c.role === 'primary') || first.climates[0]).climate);
-  const offsets = chk0 ? { T: -chk0.bias_tmean_c, Tx: -chk0.bias_tmax_c, Tn: -chk0.bias_tmin_c } : null;
+  const offsets = offsetsFrom(chk0);
   const { climates, problems } = offsets ? buildClimates(g, { ...scenario, temp_offsets: offsets }) : first;
   const support = assessSupport(input, g, climates);
   const base = { engine: 'rice-demo-0.1', generated_at: new Date().toISOString(), scope: { ...DOMAIN, variety: PROFILE.name, crop: 'Arroz' }, support, limitations: LIMITATIONS, status: PROFILE._meta.status, flags: PROFILE._meta.flags };

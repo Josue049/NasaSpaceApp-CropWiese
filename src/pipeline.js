@@ -5,6 +5,7 @@ const path = require('path');
 const ds = require('./datasources');
 const { buildClimate, sowingWindows, awcFromSoil, tempUncertainty, canopyCoverMean } = require('./climate');
 const engine = require('./engine');
+const morropon = require('./morropon');
 
 const CROPS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'crops.json'), 'utf8'));
 for (const c of CROPS.crops) c.canopy_cover = canopyCoverMean(c); // campo derivado (FAO-56 ec. 76); no está en el JSON
@@ -46,13 +47,13 @@ function buildClimates(g, scenario = SCENARIOS.base) {
  *  - limitada: se recomienda con advertencias visibles.
  *  - aceptable: no se detectó una limitación conocida (NO significa validado: ninguna ubicación está contrastada con pluviómetro local).
  */
-// Dominio de uso. Por defecto, el Bajo Piura (depto. Piura; distrito de estudio: Cura Morí). FIELDSHIFT_DOMAIN=peru restaura el dominio amplio de v0.2.
-// La caja es una APROXIMACIÓN de diseño (no un límite administrativo oficial); debe afinarse con el polígono del distrito/junta de usuarios.
+// Dominio de uso. Por defecto, la demo reducida: Morropón (Alto Piura), arroz Tinajones + frijol. FIELDSHIFT_DOMAIN=peru restaura el dominio amplio de v0.2.
+// La caja es una APROXIMACIÓN de diseño (≈ ±12 km de la estación SENAMHI Morropón), no un límite administrativo oficial.
 const DOMAINS = {
-  bajo_piura: { id: 'bajo_piura', label: 'Bajo Piura, Piura', box: { latMin: -5.75, latMax: -5.05, lonMin: -81.0, lonMax: -80.2 }, study_district: { name: 'Cura Morí', lat: -5.383, lon: -80.667 } },
+  morropon: { id: 'morropon', label: 'Morropón, Alto Piura (arroz Tinajones + frijol)', box: { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 }, center: { lat: -5.19, lon: -79.99 }, slots: morropon.SLOTS },
   peru: { id: 'peru', label: 'Perú', box: { latMin: -18.4, latMax: 0.1, lonMin: -81.4, lonMax: -68.6 } },
 };
-const activeDomain = () => DOMAINS[process.env.FIELDSHIFT_DOMAIN] || DOMAINS.bajo_piura;
+const activeDomain = () => DOMAINS[process.env.FIELDSHIFT_DOMAIN] || DOMAINS.morropon;
 const inBox = (lat, lon, b) => lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
 
 function assessSupport(input, g, climates) {
@@ -60,7 +61,7 @@ function assessSupport(input, g, climates) {
   const { lat, lon } = input;
   const dom = activeDomain();
   if (!inBox(lat, lon, dom.box)) {
-    if (dom.id === 'bajo_piura') blockers.push(`Fuera del dominio de Field Shift (${dom.label}): la herramienta se delimita al cultivo de arroz del Bajo Piura (caja aproximada de diseño: lat ${dom.box.latMin} a ${dom.box.latMax}, lon ${dom.box.lonMin} a ${dom.box.lonMax}).`);
+    if (dom.id === 'morropon') blockers.push(`Fuera del alcance de la demo (${dom.label}): lat ${dom.box.latMin} a ${dom.box.latMax}, lon ${dom.box.lonMin} a ${dom.box.lonMax} (caja aproximada de diseño).`);
     else cautions.push('Fuera del dominio probado (Perú): las reglas y la base de cultivos solo se han ejercitado en la selva alta peruana y en un caso andino.');
   }
   const elev = g.slope.ok ? g.slope.data.elevation_m : null;
@@ -84,25 +85,34 @@ function assessSupport(input, g, climates) {
 }
 
 function analyze(input, g, scenario = SCENARIOS.base) {
-  const { climates, problems } = buildClimates(g, scenario);
-  if (!climates.length) throw new Error(`Sin datos climáticos: ${problems.join(' | ')}`);
+  const dom = activeDomain();
+  let built = buildClimates(g, scenario);
+  if (!built.climates.length) throw new Error(`Sin datos climáticos: ${built.problems.join(' | ')}`);
+  let tempOffsets = null;
+  if (dom.id === 'morropon') { // corrección EMPÍRICA de temperatura con SENAMHI Morropón (una temporada); ver src/morropon.js
+    tempOffsets = morropon.offsetsFrom(morropon.temperatureCheck((built.climates.find((c) => c.role === 'primary') || built.climates[0]).climate));
+    if (tempOffsets) built = buildClimates(g, { ...scenario, temp_offsets: tempOffsets });
+  }
+  const { climates, problems } = built;
+  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops) : CROPS.crops;
   const support = assessSupport(input, g, climates);
   const res = support.level === 'no_recomendable'
     ? { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [...support.blockers, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {}, weights_status: '', candidates_evaluated: 0,
       context: { slope_pct: g.slope.ok ? g.slope.data.slope_pct : null, soil: g.soil.ok ? g.soil.data : null, irrigated: !!input.irrigation, start_slot: input.start_slot || 'A', history: input.history || [] } }
     : engine.run(input, {
-      crops: CROPS.crops, climates,
+      crops: cropList, slots: dom.slots, climates,
       slope: g.slope.ok ? g.slope.data.slope_pct : null,
       soil: g.soil.ok ? g.soil.data : null,
     });
   res.support = support;
+  res.domain = { id: dom.id, label: dom.label, temp_offsets_c: tempOffsets, crops: cropList.map((c) => c.id), slots: dom.slots || null };
   if (!res.unsupported) {
     const prim = climates.find((c) => c.role === 'primary') || climates[0];
     const awc = awcFromSoil(g.soil.ok ? g.soil.data : null), dT = tempUncertainty(prim.climate);
     res.sowing_windows = {
       source: prim.id, step_days: 15, temperature_uncertainty_c: +dT.toFixed(2),
       note: 'Fecha de inicio cada 15 días. viable = completa el ciclo ≥90 % de los años aun con T−δ y ETa/ETc ≥ 0,8; marginal = completa ≥50 % de los años; no_viable = menos. Umbrales de diseño; no es calendario agronómico validado.',
-      crops: Object.fromEntries(CROPS.crops.map((c) => {
+      crops: Object.fromEntries(cropList.map((c) => {
         const w = sowingWindows(prim.climate, c, !!input.irrigation, awc, { step: 15, dT });
         // mismas reglas de capacidad que el motor: riego obligatorio y altitud máxima EcoCrop
         const blocked = (c.regime === 'irrigated_required' && !input.irrigation) || (c.eco?.altmx != null && prim.climate.elevation_m > c.eco.altmx);
