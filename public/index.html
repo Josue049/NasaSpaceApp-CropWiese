@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#2b5d34">
 <title>Field Shift · Arroz Tinajones, Morropón</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,22 +17,25 @@
 <main>
   <section class="panel scope" aria-labelledby="scopeTitle">
     <h2 id="scopeTitle">Alcance de esta demo</h2>
-    <p>Compara <strong>fechas de siembra</strong> para una <strong>parcela de arroz</strong>, variedad <strong>Tinajones</strong>, en <strong>Morropón (Alto Piura)</strong>. No analiza otros cultivos, variedades ni localidades.</p>
+    <p>Compara <strong>fechas de siembra</strong> y propone una <strong>rotación</strong> para una <strong>parcela de arroz</strong>, variedad <strong>Tinajones</strong>, en <strong>Morropón (Alto Piura)</strong>. Cultivos alternativos considerados: solo <strong>frijol</strong>. No analiza otras variedades ni localidades.</p>
     <p class="hint">Resultados = índices relativos con datos satelitales de baja resolución y un ciclo calibrado con <strong>una sola temporada</strong> de SENAMHI. No son rendimientos ni lámina de riego real, y no están validados por un agrónomo.</p>
   </section>
 
   <section class="panel" aria-labelledby="formTitle">
     <h2 id="formTitle">Su parcela de arroz</h2>
+    <p class="hint">Toque el mapa para ubicar su parcela dentro del recuadro verde (zona de la demo). Los datos satelitales describen la <strong>zona</strong>, no el detalle de su terreno.</p>
+    <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
+    <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
     <form id="form" novalidate>
       <div class="grid2">
-        <label>Latitud<input id="lat" type="number" step="0.0001" inputmode="decimal" value="-5.1944" required></label>
-        <label>Longitud<input id="lon" type="number" step="0.0001" inputmode="decimal" value="-79.9867" required></label>
+        <label>Latitud<input id="lat" type="number" step="0.0001" inputmode="decimal" value="-5.1944" required readonly></label>
+        <label>Longitud<input id="lon" type="number" step="0.0001" inputmode="decimal" value="-79.9867" required readonly></label>
       </div>
       <div class="grid2">
         <label>Área (ha)<input id="area" type="number" step="0.1" min="0" inputmode="decimal" value="1"></label>
         <label>Fecha de siembra prevista (opcional)<input id="sow" type="date"></label>
       </div>
-      <p class="hint">Valores iniciales: estación SENAMHI Morropón. Fuera de unos ±12 km de ese punto la demo no emite resultados.</p>
+      <p class="hint">Las coordenadas se llenan al tocar el mapa. Valor inicial: estación SENAMHI Morropón. Fuera del recuadro la demo no emite resultados.</p>
       <div class="row"><button id="btn" class="primary" type="submit">Analizar fechas de siembra</button></div>
     </form>
     <div id="msg" class="note" role="status" aria-live="polite" hidden></div>
@@ -60,6 +64,7 @@
     <section class="panel" id="secLim"></section>
   </div>
 </main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

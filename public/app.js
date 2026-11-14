@@ -125,3 +125,30 @@ function rotHtml(j) {
     + (caut ? '<div class="note warn"><b>Advertencias de los datos</b><ul>' + caut + '</ul></div>' : '');
 }
 $('rotForm').addEventListener('submit', (e) => { e.preventDefault(); runRot(); });
+
+// ---------- mapa de selección de parcela ----------
+async function initMap() {
+  const msg = $('mapMsg');
+  if (typeof L === 'undefined') { // sin Leaflet (sin conexión a unpkg): se habilitan los campos numéricos
+    $('lat').readOnly = false; $('lon').readOnly = false; $('map').hidden = true;
+    msg.textContent = 'No se pudo cargar el mapa: escriba las coordenadas manualmente.'; return;
+  }
+  let meta;
+  try { meta = await (await fetch('/api/rice/meta')).json(); } catch { meta = null; }
+  const b = meta && meta.scope && meta.scope.box ? meta.scope.box : { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 };
+  const c = meta && meta.scope && meta.scope.center ? meta.scope.center : { lat: -5.1944, lon: -79.9867 };
+  const bounds = [[b.latMin, b.lonMin], [b.latMax, b.lonMax]];
+  const map = L.map('map', { maxBounds: L.latLngBounds(bounds).pad(1.5), minZoom: 9 }).fitBounds(bounds);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
+  L.rectangle(bounds, { color: '#2b5d34', weight: 2, fillOpacity: 0.05 }).addTo(map).bindTooltip('Zona de la demo (Morropón, aprox.)');
+  L.circleMarker([c.lat, c.lon], { radius: 5, color: '#c9822b', weight: 2, fillOpacity: 0.9 }).addTo(map).bindTooltip('Estación SENAMHI Morropón');
+  const inside = (lat, lon) => lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
+  let marker = L.marker([Number($('lat').value) || c.lat, Number($('lon').value) || c.lon]).addTo(map);
+  map.on('click', (e) => {
+    const lat = +e.latlng.lat.toFixed(4), lon = +e.latlng.lng.toFixed(4);
+    if (!inside(lat, lon)) { msg.textContent = 'Ese punto está fuera de la zona de la demo (recuadro verde). Elija un punto dentro del recuadro.'; return; }
+    marker.setLatLng([lat, lon]); $('lat').value = lat; $('lon').value = lon;
+    msg.textContent = 'Parcela ubicada en ' + lat + ', ' + lon + '.';
+  });
+}
+initMap();

@@ -3,3 +3,4 @@ data/cache/
 data/raw/
 data/parcels.json
 *.log
+.shots/
