@@ -13,6 +13,7 @@
  *
  * Nada aquí predice rendimientos ni cantidades de N: son índices relativos para comparar.
  */
+
 const { evaluateSeason, SLOTS, cycleLength, awcFromSoil, tempUncertainty, coverOf } = require('./climate');
 
 const ENGINE_VERSION = '0.2.0';
