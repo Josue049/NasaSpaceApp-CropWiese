@@ -32,7 +32,7 @@ function getConfig(env = process.env) {
     model: String(env.GROQ_MODEL || '').trim() || 'openai/gpt-oss-120b',
     timeoutMs: int(env.GROQ_TIMEOUT_MS, 30000, 1000, 120000),
     maxOutputTokens: int(env.GROQ_MAX_OUTPUT_TOKENS, 1200, 100, 8000),
-    reasoningEffort: ['low', 'medium', 'high'].includes(effort) ? effort : null,
+    reasoningEffort: ['low', 'medium', 'high'].includes(effort) ? effort : (/gpt-oss/i.test(String(env.GROQ_MODEL || 'openai/gpt-oss-120b')) ? 'low' : null), // gpt-oss gasta tokens de salida razonando: por defecto esfuerzo bajo para que quepa la respuesta
     temperature: 0.3,               // la guía de Groq recomienda 0,0–0,5 para tool calling
     maxToolIterations: 4,           // vueltas máximas modelo → herramientas → modelo
     toolTimeoutMs: 15000,           // tiempo máximo de una herramienta (la simulación puede consultar caché y recalcular)

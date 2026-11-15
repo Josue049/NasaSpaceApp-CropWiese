@@ -24,7 +24,7 @@ Navegador (public/fieldi.js)  ──►  server.js /api/assistant/*  ──►  
                                                                           └─ groq-sdk (groqClient.js)  ─► Groq (solo servidor)
 ```
 
-Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `cropi-1.2.1`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
+Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `cropi-1.3.0`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
 
 El motor agrícola **no se modificó**: `server.js` solo guarda en memoria el resultado de `/api/rotation/analyze` y le añade `analysis_id`.
 
@@ -53,6 +53,10 @@ Códigos de error: 400 mensaje inválido/largo · 403 origen distinto · 429 lí
 - Lista blanca cerrada; argumentos validados con esquema estricto (propiedad no declarada = rechazo); ninguna acepta ids de análisis, rutas ni código; operan sobre el análisis que el **servidor** asocia a la sesión.
 - Máximo 4 vueltas modelo⇄herramientas (la última sin herramientas), 6 llamadas por vuelta, 15 s por herramienta; resultados acotados a 6000 caracteres y marcados como *datos, no instrucciones*.
 - `simulate_scenario` re-ejecuta el motor real sobre una **copia** de la entrada con cambios permitidos (riego, volumen de agua, percolación, textura/pH, fecha de siembra, ciclos, campaña inicial, cultivo a conservar), máx. 2 por mensaje, y **no altera** el análisis activo (verificado por prueba).
+
+## Estilo de las respuestas
+
+Cropi habla a alto nivel y con palabras cotidianas: máximo ~70 palabras, sin jerga (nada de «demanda neta», «incertidumbre», «puntaje relativo»…), sin tablas salvo que la persona las pida, con 1–2 cifras redondeadas y una pregunta final corta. Las reglas están en `src/assistant/prompt.js` (versión `cropi-1.3.0`). Es una instrucción al modelo: en pruebas reales se cumple casi siempre, pero no está garantizada (aún puede colarse alguna palabra técnica). Para `gpt-oss` el esfuerzo de razonamiento es «low» por defecto; con un esfuerzo mayor el modelo gastaba el límite de salida razonando y no llegaba a responder. Si Groq rechaza una solicitud, se reintenta una vez y después se responde sin herramientas.
 
 ## Seguridad
 
