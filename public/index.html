@@ -11,19 +11,50 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- Iconos (trazo, estilo Lucide). Se usan con <svg class="i"><use href="#i-nombre"/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+    <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-9"/><path d="M12 12C12 8 9 6 4 6c0 4 3 6 8 6Z"/><path d="M12 14c0-3.5 2.5-6 8-6 0 3.5-3 6-8 6Z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20v-7"/><path d="M12 20V5"/><path d="M19 20v-10"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2Z"/><path d="M12 6v14"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6.9c0 1.9-2.8 2.3-2.8 4"/><path d="M12 17.4v.1"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.800 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-area" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/><path d="M3 3v4M3 3h4M21 3v4M21 3h-4M3 21v-4M3 21h4M21 21v-4M21 21h-4"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M10 4l1.8 4.7L16.500 10.500l-4.700 1.800L10 17l-1.800-4.700L3.500 10.500l4.700-1.800Z"/><path d="M18 3v4M16 5h4"/><path d="M18 16v4M16 18h4"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19C4 11 9 5 20 4c0 11-5 16-13 15"/><path d="M5 19c3-5 6-8 10-11"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.700 5.600 6.100.8-4.500 4.200 1.100 6-5.400-3-5.400 3 1.100-6L3.200 9.400l6.100-.8Z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.500" width="16" height="15" rx="2.500"/><path d="M4 10h16M8.500 3.500v4M15.500 3.500v4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.6-7.900A5.500 5.500 0 0 1 17 9.500a4.300 4.300 0 0 1 .5 8.500Z"/><path d="M9 21l.8-1.800M13 21l.8-1.800"/></symbol>
+    <symbol id="i-heartleaf" viewBox="0 0 24 24"><path d="M12 20.500C6 16 3 12.500 3 9a4.800 4.800 0 0 1 9-2.300A4.800 4.800 0 0 1 21 9c0 3.500-3 7-9 11.500Z"/><path d="M12 17c0-3 1.500-5 4-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 2.500 20h19Z"/><path d="M12 10v4.500M12 17.500v.1"/></symbol>
+    <symbol id="i-grain" viewBox="0 0 24 24"><path d="M12 21V8"/><path d="M12 8c-2-.5-3-2-3-4 2 .5 3 2 3 4Zm0 0c2-.5 3-2 3-4-2 .5-3 2-3 4Z"/><path d="M12 13c-2.500-.5-4-2-4-4.500M12 13c2.500-.5 4-2 4-4.500M12 17.500c-2.500-.5-4-2-4-4.500m4 4.500c2.500-.5 4-2 4-4.500"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-thermo" viewBox="0 0 24 24"><path d="M14 14.800V5a2 2 0 0 0-4 0v9.800a4 4 0 1 0 4 0Z"/><path d="M12 9v7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v5.500M12 7.800v.1"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.500 6h.1M4.500 12h.1M4.500 18h.1"/></symbol>
+  </defs>
+</svg>
+
 <header class="topbar">
   <a class="brand" href="#inicio" aria-label="Field Shift, inicio">
     <svg class="brand-leaf" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 40C8 20 20 8 42 6c0 22-10 34-30 34" fill="#3fa34d"/><path d="M8 40C16 28 24 20 36 12" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
     <span><b>Field Shift</b><small>Rotación de cultivos con datos satelitales</small></span>
   </a>
-  <nav class="tabs" aria-label="Secciones">
-    <button class="tab on" data-view="inicio"><span aria-hidden="true">🏠</span> Inicio</button>
-    <button class="tab" data-view="recomendacion"><span aria-hidden="true">🌱</span> Recomendación</button>
-    <button class="tab" data-view="indicadores"><span aria-hidden="true">📊</span> Indicadores</button>
-    <button class="tab" data-view="aprende"><span aria-hidden="true">📖</span> Aprende</button>
+  <button class="menu-btn" id="btnMenu" aria-label="Abrir menú" aria-expanded="false" aria-controls="tabs"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <nav class="tabs" id="tabs" aria-label="Secciones">
+    <button class="tab on" data-view="inicio"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg> Inicio</button>
+    <button class="tab" data-view="recomendacion"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Recomendación</button>
+    <button class="tab" data-view="indicadores"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg> Indicadores</button>
+    <button class="tab" data-view="aprende"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg> Aprende</button>
   </nav>
   <div class="top-actions">
-    <button class="icon-btn" id="btnHelp" aria-label="Ayuda: ¿qué es esta demo?">?</button>
+    <button class="icon-btn" id="btnHelp" aria-label="Ayuda: ¿qué es esta demo?"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></button>
     <span class="chip" id="chipMode">Demo · Instantánea</span>
   </div>
 </header>
@@ -31,43 +62,41 @@
 <main>
 <!-- ============ INICIO ============ -->
 <section id="view-inicio" class="view">
-  <div class="hero">
+  <div class="hero" style="background-image:url(img/hero-paisaje.png)">
     <div class="hero-text">
       <h1>Tu aliado para una rotación de cultivos más <span class="hl">informada y sostenible</span></h1>
       <p>Combinamos datos satelitales, clima y suelo de la zona para comparar rotaciones de <b>arroz</b> y <b>frijol</b> en <b>Morropón (Alto Piura)</b>.</p>
     </div>
     <div class="hero-mascot">
-      <div class="bubble"><b>¡Hola! 👋</b> Soy <b>Fieldi</b>, tu guía en el campo. Te ayudo a comparar rotaciones para tu parcela.</div>
-      <div id="mascot" class="mascot" aria-hidden="true"></div>
+      <img src="img/fieldi-hola.png" alt="Fieldi, la llama guía, saluda: «¡Hola! Soy Fieldi, tu guía en el campo. Te ayudo a elegir la mejor rotación para tu parcela.»">
     </div>
-    <svg class="hills" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true"><path d="M0 110 C200 60 360 130 560 90 C760 50 940 120 1200 70 L1200 160 L0 160Z" fill="#cfe7a8"/><path d="M0 130 C240 100 420 150 640 125 C860 100 1000 140 1200 115 L1200 160 L0 160Z" fill="#f6f8ef"/></svg>
   </div>
 
   <div class="grid-top">
     <section class="card" aria-labelledby="t1">
-      <div class="card-head"><span class="badge-ico">📍</span><div><h2 id="t1">1. Define tu parcela</h2><p>Toca el mapa y indica el cultivo actual.</p></div></div>
+      <div class="card-head"><span class="badge-ico"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg></span><div><h2 id="t1">1. Define tu parcela</h2><p>Toca el mapa e indica el cultivo actual.</p></div></div>
       <div class="define">
         <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
         <dl class="facts">
-          <div><dt>📍 Ubicación</dt><dd id="coords">-5.1944, -79.9867</dd></div>
-          <div><dt>⬜ Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" value="1" inputmode="decimal" aria-label="Área en hectáreas"></dd></div>
-          <div><dt>🌱 Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="arroz" selected>🌾 Arroz</option><option value="frijol">🫘 Frijol</option></select></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg> Ubicación</dt><dd id="coords">-5.1944, -79.9867</dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-area"/></svg> Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" value="1" inputmode="decimal" aria-label="Área en hectáreas"></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="arroz" selected>Arroz</option><option value="frijol">Frijol</option></select></dd></div>
         </dl>
       </div>
       <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
       <input id="lat" type="hidden" value="-5.1944"><input id="lon" type="hidden" value="-79.9867">
     </section>
 
-    <section class="card card-green" aria-labelledby="t2">
-      <div class="card-head"><span class="badge-ico green">🌱</span><div><h2 id="t2">2. Obtén tu recomendación</h2><p>Analizamos tu parcela y te mostramos las opciones de rotación.</p></div></div>
-      <button id="btnGo" class="cta" type="button">✨ Generar recomendación</button>
+    <section class="card card-green" aria-labelledby="t2" style="background-image:url(img/fondo-verde.png)">
+      <div class="card-head"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2 id="t2">2. Obtén tu recomendación</h2><p>Analizamos tu parcela y te mostramos las opciones de rotación.</p></div></div>
+      <button id="btnGo" class="cta" type="button"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg> Generar recomendación</button>
       <p id="msg" class="status" role="status" aria-live="polite" hidden></p>
       <p class="mini">Modo actual: <b id="modeLabel">Instantánea</b> · <a href="#" id="linkAdjust">ajustar datos de mi parcela</a></p>
     </section>
   </div>
 
   <div id="rotWrap" hidden>
-    <div class="sec-title"><span class="badge-ico green">🍃</span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Comparamos tu rotación actual con dos alternativas según suelo, clima y alternancia de cultivos.</p></div></div>
+    <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg></span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Comparamos tu rotación actual con dos alternativas según suelo, clima y alternancia de cultivos.</p></div></div>
     <div id="rotCards" class="rot-grid"></div>
     <div id="rotNotes"></div>
   </div>
@@ -75,32 +104,32 @@
   <div class="tiles" id="tiles"></div>
 
   <section class="next" aria-labelledby="t3">
-    <div class="next-mascot" id="mascot2" aria-hidden="true"></div>
+    <div class="next-mascot"><img src="img/fieldi-tablet.png" alt="" aria-hidden="true"></div>
     <div class="next-text"><h2 id="t3">¿Qué sigue?</h2><p>Puedes ajustar tus datos, explorar los indicadores o aprender más sobre la rotación de cultivos.</p></div>
     <div class="next-btns">
-      <button class="pill-btn" id="btnAdjust">🌱 Ajustar datos</button>
-      <button class="pill-btn" data-go="indicadores">📊 Ver indicadores</button>
-      <button class="pill-btn" data-go="aprende">📖 Aprender</button>
+      <button class="pill-btn" id="btnAdjust"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Ajustar datos</button>
+      <button class="pill-btn" data-go="indicadores"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg> Ver indicadores</button>
+      <button class="pill-btn" data-go="aprende"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg> Aprender</button>
     </div>
   </section>
 </section>
 
 <!-- ============ RECOMENDACIÓN (detalle) ============ -->
 <section id="view-recomendacion" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico green">🌱</span><div><h2>Recomendación en detalle</h2><p>Fechas de siembra, fenología y agua de tu parcela.</p></div></div>
+  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2>Recomendación en detalle</h2><p>Fechas de siembra, fenología y agua de tu parcela.</p></div></div>
   <div id="detail"><p class="empty">Aún no hay resultados. Ve a <a href="#inicio" data-go="inicio">Inicio</a> y pulsa «Generar recomendación».</p></div>
 </section>
 
 <!-- ============ INDICADORES ============ -->
 <section id="view-indicadores" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico blue">📊</span><div><h2>Indicadores</h2><p>Qué tan confiable es el análisis y de dónde salen los datos.</p></div></div>
+  <div class="sec-title"><span class="badge-ico blue"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span><div><h2>Indicadores</h2><p>Qué tan confiable es el análisis y de dónde salen los datos.</p></div></div>
   <div id="indic"><p class="empty">Genera una recomendación en Inicio para ver los indicadores de tu parcela.</p></div>
   <div id="valid"></div>
 </section>
 
 <!-- ============ APRENDE ============ -->
 <section id="view-aprende" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico green">📖</span><div><h2>Aprende</h2><p>Cómo funciona Field Shift y qué debes tener en cuenta.</p></div></div>
+  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span><div><h2>Aprende</h2><p>Cómo funciona Field Shift y qué debes tener en cuenta.</p></div></div>
   <div id="learn"></div>
 </section>
 </main>
@@ -108,7 +137,7 @@
 <!-- ============ AJUSTAR DATOS (modos) ============ -->
 <dialog id="dlg" aria-labelledby="dlgT">
   <form method="dialog" id="dlgForm">
-    <div class="dlg-head"><h2 id="dlgT">Ajustar datos de mi parcela</h2><button class="icon-btn" value="close" aria-label="Cerrar">✕</button></div>
+    <div class="dlg-head"><h2 id="dlgT">Ajustar datos de mi parcela</h2><button class="icon-btn" value="close" aria-label="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <fieldset class="modes">
       <legend>Modo de análisis</legend>
       <label class="check"><input type="radio" name="mode" value="instantanea" checked> <span><b>Instantánea</b> — solo datos satelitales y de reanálisis de la zona. No necesita nada de tu parte.</span></label>
@@ -143,6 +172,10 @@
     </div>
     <div class="dlg-foot"><button class="cta" id="dlgApply" value="apply">Aplicar y recalcular</button></div>
   </form>
+</dialog>
+
+<dialog id="dlgRot" aria-labelledby="dlgRotT">
+  <div id="dlgRotBody"></div>
 </dialog>
 
 <footer class="foot">Field Shift · demo de investigación independiente. Resultados = índices relativos con datos de baja resolución y un ciclo calibrado con una sola temporada; no son rendimientos ni lámina de riego real, y no están validados por un agrónomo.</footer>

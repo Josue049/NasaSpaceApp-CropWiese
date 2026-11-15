@@ -4,7 +4,8 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const MES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
-const CROP = { arroz: { name: 'Arroz', ico: '🌾' }, frijol: { name: 'Frijol', ico: '🫘' } };
+const CROP = { arroz: { name: 'Arroz' }, frijol: { name: 'Frijol' } };
+const ico = (n) => '<svg class="i" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
 const fmtMD = (m, d) => `${d} ${MES[m - 1]}`;
 const fmtISO = (md) => { const [m, d] = md.split('-').map(Number); return fmtMD(m, d); };
 const fmtLong = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d} de ${MES_LARGO[m - 1]} de ${y}`; };
@@ -13,24 +14,6 @@ const STATUS = { viable: ['Sin impedimento térmico', 'ok'], marginal: ['Dudosa'
 const LEVEL = { claramente_preferible: 'claramente preferible', probablemente_preferible: 'probablemente preferible', practicamente_equivalentes: 'prácticamente equivalentes', indistinguibles: 'indistinguibles' };
 const state = { rot: null, rice: null, sat: null, valid: null, meta: null };
 let pollTimer = null;
-
-// ---------- mascota (SVG propio; si existe public/img/fieldi.png se usa esa ilustración) ----------
-const MASCOT_SVG = `<svg viewBox="0 0 200 200" role="img" aria-label="Fieldi, la llama guía">
-  <ellipse cx="100" cy="190" rx="62" ry="8" fill="#000" opacity=".08"/>
-  <path d="M52 200 C54 150 76 138 100 138 C124 138 146 150 148 200Z" fill="#2e8b3d"/>
-  <path d="M82 140 L100 170 L118 140Z" fill="#fff" opacity=".9"/><circle cx="100" cy="160" r="9" fill="#fff"/><path d="M96 164c0-8 4-11 10-12-1 7-4 11-10 12Z" fill="#2e8b3d"/>
-  <ellipse cx="68" cy="52" rx="13" ry="30" fill="#f1d9b8" transform="rotate(-12 68 52)"/><ellipse cx="132" cy="52" rx="13" ry="30" fill="#f1d9b8" transform="rotate(12 132 52)"/>
-  <ellipse cx="100" cy="98" rx="46" ry="44" fill="#fbeeda"/>
-  <circle cx="72" cy="108" r="9" fill="#f6b4a8" opacity=".7"/><circle cx="128" cy="108" r="9" fill="#f6b4a8" opacity=".7"/>
-  <path d="M78 94 q8-9 16 0" stroke="#4a3426" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M106 94 q8-9 16 0" stroke="#4a3426" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <ellipse cx="100" cy="108" rx="7" ry="5" fill="#d99a8a"/><path d="M88 118 q12 14 24 0" stroke="#4a3426" stroke-width="3.5" fill="#fff" stroke-linecap="round"/>
-  <ellipse cx="100" cy="62" rx="62" ry="13" fill="#d98c2b"/><path d="M66 60 C66 28 134 28 134 60Z" fill="#e8a64a"/><rect x="66" y="50" width="68" height="9" fill="#b8342d"/><path d="M70 55h60" stroke="#f6d77a" stroke-width="2" stroke-dasharray="5 4"/>
-</svg>`;
-function mountMascot(el) {
-  if (!el) return;
-  el.innerHTML = MASCOT_SVG;
-  const img = new Image(); img.alt = ''; img.onload = () => { el.innerHTML = ''; el.appendChild(img); }; img.src = 'img/fieldi.png';
-}
 
 // ---------- vistas ----------
 function showView(name) {
@@ -42,7 +25,10 @@ function showView(name) {
   if (name === 'aprende') renderLearn();
   window.scrollTo({ top: 0 });
 }
-document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => showView(t.dataset.view)));
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => { showView(t.dataset.view); setMenu(false); }));
+function setMenu(open) { document.body.classList.toggle('menu-open', open); const b = $('btnMenu'); b.setAttribute('aria-expanded', String(open)); b.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú'); }
+$('btnMenu').addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+$('dlgRot').addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === $('dlgRot')) $('dlgRot').close(); });
 document.addEventListener('click', (e) => { const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); showView(g.dataset.go); } });
 $('btnHelp').addEventListener('click', () => showView('aprende'));
 
@@ -110,33 +96,66 @@ async function fetchSat(lat, lon) {
 }
 
 // ---------- tarjetas de rotación ----------
-function seqHtml(seq) { return seq.map((c, i) => (i ? '<span class="arrow">→</span>' : '') + '<span class="crop"><span>' + (CROP[c] ? CROP[c].ico : '🌱') + '</span>' + esc(CROP[c] ? CROP[c].name : c) + '</span>').join(''); }
+const cropName = (c) => (CROP[c] ? CROP[c].name : c);
+// Ilustración según los cultivos reales de la secuencia (solo arroz y frijol).
+function cropArt(seq) {
+  const set = [...new Set(seq)], img = (c, cls) => '<img class="' + cls + '" src="images/crops/' + c + '.png" alt="' + esc(cropName(c)) + '" loading="lazy">';
+  if (set.length === 1) return '<div class="crop-art solo">' + img(set[0], 'a') + '</div>';
+  return '<div class="crop-art duo">' + img('arroz', 'a') + img('frijol', 'b') + '</div>';
+}
+// Título resumido (primeras dos campañas); la secuencia completa está en el análisis detallado.
+const seqTitle = (seq) => seq.slice(0, 2).map(cropName).join(' – ');
+const seqFull = (seq) => seq.map(cropName).join(' → ');
+function rotDetailHtml(s, v) {
+  const li = (a, cls) => (a || []).map((x) => '<li' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(x) + '</li>').join('');
+  const heat = s.timeline.length ? s.timeline.reduce((a, t) => a + t.heat_stress_frac, 0) / s.timeline.length : 0;
+  return '<div class="dlg-head"><h2 id="dlgRotT">' + esc(s.label) + '</h2><button class="icon-btn" data-close aria-label="Cerrar">' + ico('x') + '</button></div>'
+    + '<p class="hint"><b>Secuencia completa (' + s.sequence.length + ' campañas):</b> ' + esc(seqFull(s.sequence)) + '</p>'
+    + '<div class="rot-stats"><div><span><b>' + s.score + '</b><small>Puntaje relativo (0–100), no es rendimiento</small></span></div><div><span><b>' + Math.round(heat * 100) + ' %</b><small>Días de calor en la etapa media (promedio)</small></span></div></div>'
+    + (v ? '<p class="verdict">Frente a la actual: <b>' + esc(LEVEL[v.level] || v.level) + '</b> (' + esc(v.text) + ')</p>' : '')
+    + ((s.reasons || []).length ? '<h3>Por qué puntúa así</h3><ul class="checks">' + li(s.reasons) + '</ul>' : '')
+    + ((s.risks || []).length || (s.violations || []).length ? '<h3>Riesgos y advertencias</h3><ul class="checks">' + li(s.risks, 'warn') + li(s.violations, 'warn') + '</ul>' : '')
+    + '<h3>Campaña por campaña</h3><ul class="kv">' + s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + esc(t.slot_label) + ' · ciclo ' + (t.duration_days ?? '—') + ' d · agua ' + t.water_coverage_pct + ' % · calor ' + Math.round(t.heat_stress_frac * 100) + ' %</li>').join('') + '</ul>';
+}
 function renderRot() {
   const r = state.rot, wrap = $('rotWrap'); wrap.hidden = false;
   if (r.unsupported) { $('rotCards').innerHTML = '<div class="panel" style="grid-column:1/-1">' + r.support.blockers.map((b) => '<p class="note bad">' + esc(b) + '</p>').join('') + '</div>'; $('rotNotes').innerHTML = ''; return; }
   const cmp = r.sensitivity && r.sensitivity.comparisons, alts = r.strategies.filter((s) => s.id !== 'current');
   const bestId = alts.length ? alts.reduce((m, s) => (s.score > m.score ? s : m), alts[0]).id : null;
-  const cards = r.strategies.map((s) => {
+  const vOf = (s) => (s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null);
+  const cards = r.strategies.map((s, idx) => {
     const heat = s.timeline.length ? s.timeline.reduce((a, t) => a + t.heat_stress_frac, 0) / s.timeline.length : 0;
     const name = s.id === 'alt_a' ? 'Alternativa A' : s.id === 'alt_b' ? 'Alternativa B' : s.label.split(' · ')[0];
     const desc = (s.label.split(' · ')[1] || '').trim();
-    const tag = s.id === 'current' ? '⏲ Rotación actual' : s.id === bestId ? '★ ' + name + ' (mayor puntaje)' : '🌱 ' + name;
-    const checks = (s.reasons || []).slice(0, 2).map((x) => '<li>' + esc(x) + '</li>').join('') + (s.risks || []).slice(0, 2).map((x) => '<li class="warn">' + esc(x) + '</li>').join('') + (s.violations || []).slice(0, 1).map((x) => '<li class="warn">' + esc(x) + '</li>').join('');
-    const v = s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null;
-    return '<article class="rot ' + (s.id === bestId ? 'best' : s.id === 'current' ? '' : 'alt') + '"><span class="rot-tag">' + esc(tag) + '</span>'
-      + '<div class="rot-seq">' + seqHtml(s.sequence) + '</div>'
-      + '<p class="rot-sub">' + (s.id === 'current' ? 'Tu rotación actual proyectada: sirve como punto de comparación.' : (desc ? esc(desc.charAt(0).toUpperCase() + desc.slice(1)) + '. ' : '') + 'Cuatro campañas (dos años): ' + s.timeline.map((t) => t.slot === 'A' ? 'grande' : 'chica').join(' → ') + '.') + '</p>'
-      + '<ul class="checks">' + checks + '</ul>'
-      + '<div class="rot-stats"><div><b>' + s.score + '</b><small>Puntaje relativo (0–100), no es rendimiento</small></div><div><b>' + Math.round(heat * 100) + ' %</b><small>Días de calor en la etapa media (promedio)</small></div></div>'
-      + (v ? '<p class="verdict">Frente a la actual: <b>' + esc(LEVEL[v.level] || v.level) + '</b> (' + esc(v.text) + ')</p>' : '') + '</article>';
+    const tag = s.id === 'current' ? ico('clock') + ' Rotación actual' : s.id === bestId ? ico('star') + ' ' + esc(name) + ' (mayor puntaje)' : ico('sprout') + ' ' + esc(name);
+    // máximo tres puntos visibles: razones primero, luego riesgos; el resto va en el análisis detallado
+    const pts = [...(s.reasons || []).map((x) => [x, false]), ...(s.risks || []).map((x) => [x, true]), ...(s.violations || []).map((x) => [x, true])].slice(0, 3);
+    const checks = pts.map(([x, w]) => '<li' + (w ? ' class="warn"' : '') + '>' + esc(x) + '</li>').join('');
+    return '<article class="rot ' + (s.id === bestId ? 'best' : s.id === 'current' ? '' : 'alt') + '"><span class="rot-tag">' + tag + '</span>'
+      + '<div class="rot-top">' + cropArt(s.sequence)
+      + '<div class="rot-body"><h3 class="rot-name">' + esc(seqTitle(s.sequence)) + '</h3>'
+      + '<p class="rot-sub">' + (s.id === 'current' ? 'Tu rotación actual proyectada: sirve como punto de comparación.' : (desc ? esc(desc.charAt(0).toUpperCase() + desc.slice(1)) + '.' : 'Alternativa de rotación.')) + '</p>'
+      + (checks ? '<ul class="checks">' + checks + '</ul>' : '') + '</div></div>'
+      + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100)</small></span></div><div>' + ico('thermo') + '<span><b>' + Math.round(heat * 100) + ' %</b><small>Días de calor, etapa media</small></span></div></div>'
+      + '<button type="button" class="link-btn" data-rot="' + idx + '">' + ico('list') + ' Ver análisis detallado</button></article>';
   }).join('');
   $('rotCards').innerHTML = cards;
+  $('rotCards').onclick = (e) => {
+    const b = e.target.closest('[data-rot]'); if (!b) return;
+    const st = r.strategies[+b.dataset.rot];
+    $('dlgRotBody').innerHTML = rotDetailHtml(st, vOf(st));
+    const d = $('dlgRot'); if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+  };
   const caut = r.support.cautions.map((c) => '<li>' + esc(c) + '</li>').join('');
-  $('rotNotes').innerHTML = modeBadge(r) + '<div class="note warn"><b>Lectura crítica</b><ul>'
-    + '<li>Con solo dos cultivos, el mayor puntaje es en gran parte <b>alternar</b> (reglas de plagas y repetición); no es evidencia agronómica de que el frijol mejore el arroz en Morropón.</li>'
-    + '<li>El frijol común aparece con mucho calor en su etapa media en la campaña grande; la práctica local observada (arroz en la grande, frijol en agosto–septiembre) no necesariamente coincide con el orden propuesto.</li>'
-    + '<li>No se estima rendimiento ni salud del suelo: el puntaje combina criterios con escalas ordinales provisionales.</li></ul></div>'
-    + (caut ? '<div class="note warn"><b>Advertencias de los datos</b><ul>' + caut + '</ul></div>' : '');
+  const acc = (icon, title, body, open) => '<details class="acc"' + (open ? ' open' : '') + '><summary>' + ico(icon) + '<span>' + title + '</span>' + ico('chev') + '</summary><div class="acc-body">' + body + '</div></details>';
+  $('rotNotes').innerHTML = '<section class="interp" aria-labelledby="interpT"><h2 id="interpT">' + ico('info') + ' Conoce cómo interpretamos tu recomendación</h2>'
+    + acc('sprout', 'Modo de análisis', modeBadge(r) || '<p>Modo Instantánea.</p>', false)
+    + acc('alert', 'Lectura crítica', '<ul>'
+      + '<li>Con solo dos cultivos, el mayor puntaje es en gran parte <b>alternar</b> (reglas de plagas y repetición); no es evidencia agronómica de que el frijol mejore el arroz en Morropón.</li>'
+      + '<li>El frijol común aparece con mucho calor en su etapa media en la campaña grande; la práctica local observada (arroz en la grande, frijol en agosto–septiembre) no necesariamente coincide con el orden propuesto.</li>'
+      + '<li>No se estima rendimiento ni salud del suelo: el puntaje combina criterios con escalas ordinales provisionales.</li></ul>', true)
+    + (caut ? acc('cloud', 'Advertencias de los datos', '<ul>' + caut + '</ul>', false) : '')
+    + '</section>';
 }
 
 // ---------- mosaicos ----------
@@ -158,9 +177,9 @@ function renderTiles() {
     ndvi = last ? '<p class="big">' + last.ndvi.toFixed(2) + ' <small style="font-size:14px;font-weight:700">NDVI</small></p><p>Última imagen sin nubes: ' + esc(fmtLong(last.date)) + '</p><p class="src">' + esc(c.message) + '</p>' : '<p class="big">—</p><p>Sin imágenes despejadas en el periodo.</p>';
   }
   $('tiles').innerHTML =
-    '<div class="tile sky"><div class="ico">📅</div><div><h3>' + (mine ? 'Tu siembra declarada' : 'Próxima campaña de referencia') + '</h3><p class="big">' + esc(mine ? fmtLong(mine) : nc.text) + '</p><p>' + (mine ? 'Fecha que ingresaste en modo Precisa.' : 'Campaña ' + nc.kind + ' de la zona.') + '</p><p class="src">' + (mine ? 'Dato declarado, no verificado.' : 'La grande (21 ene) se observó en 2026 por SENAMHI; la chica (15 jul) es un supuesto.') + '</p></div></div>'
-    + '<div class="tile cloud"><div class="ico">⛅</div><div><h3>Clima de la zona</h3>' + (m ? '<p>T° media de ' + MES_LARGO[new Date().getMonth()] + ': <b>' + m.tmean.toFixed(1) + ' °C</b></p><p>Lluvia media del mes: <b>' + Math.round(m.precip_mm) + ' mm</b></p><p class="src">Climatología 2015–2023 (NASA POWER corregido + IMERG); no es el clima de esta semana.</p>' : '<p>Genera la recomendación para ver el clima típico del mes.</p>') + '</div></div>'
-    + '<div class="tile leaf"><div class="ico">🌿</div><div><h3>Vegetación del punto (NDVI)</h3>' + ndvi + '<p class="src">Sentinel‑2, píxel de 10 m. No identifica la especie.</p></div></div>';
+    '<div class="tile sky"><img class="tile-art" src="img/brote-siembra.png" alt=""><div class="ico">' + ico('calendar') + '</div><div><h3>' + (mine ? 'Tu siembra declarada' : 'Próxima campaña de referencia') + '</h3><p class="big">' + esc(mine ? fmtLong(mine) : nc.text) + '</p><p>' + (mine ? 'Fecha que ingresaste en modo Precisa.' : 'Campaña ' + nc.kind + ' de la zona.') + '</p><p class="src">' + (mine ? 'Dato declarado, no verificado.' : 'La grande (21 ene) se observó en 2026 por SENAMHI; la chica (15 jul) es un supuesto.') + '</p></div></div>'
+    + '<div class="tile cloud"><img class="tile-art" src="img/montana-clima.png" alt=""><div class="ico">' + ico('cloud') + '</div><div><h3>Clima de la zona</h3>' + (m ? '<p>T° media de ' + MES_LARGO[new Date().getMonth()] + ': <b>' + m.tmean.toFixed(1) + ' °C</b></p><p>Lluvia media del mes: <b>' + Math.round(m.precip_mm) + ' mm</b></p><p class="src">Climatología 2015–2023 (NASA POWER corregido + IMERG); no es el clima de esta semana.</p>' : '<p>Genera la recomendación para ver el clima típico del mes.</p>') + '</div></div>'
+    + '<div class="tile leaf"><img class="tile-art" src="img/brote-suelo.png" alt=""><div class="ico">' + ico('heartleaf') + '</div><div><h3>Vegetación del punto (NDVI)</h3>' + ndvi + '<p class="src">Sentinel‑2, píxel de 10 m. No identifica la especie.</p></div></div>';
 }
 
 // ---------- gráfico y detalle (fechas de siembra) ----------
@@ -297,7 +316,6 @@ async function initMap() {
 }
 
 // ---------- arranque ----------
-mountMascot($('mascot')); mountMascot($('mascot2'));
 syncMode(); renderTiles(); initMap();
 showView((location.hash || '#inicio').slice(1));
 window.addEventListener('hashchange', () => showView((location.hash || '#inicio').slice(1)));
