@@ -195,8 +195,8 @@
     [/^Pide unos ([\d.,\s]+) mm más de riego que tu rotación actual\.$/, (m) => `Needs about ${m[1]} mm more irrigation than your current rotation.`],
     [/^Respeta (.+) como cultivo principal\.$/, (m) => `Respects ${cropTr(m[1])} as the main crop.`],
     [/^(.+) continuo$/, (m) => `${cropTr(m[1])} continuous`],
-    [/^Alterna (.+) y (.+)$/, (m) => `Alternates ${cropTr(m[1])} and ${cropTr(m[2])}`],
-    [/^(.+) y (.+) combinados$/, (m) => `${cropTr(m[1])} and ${cropTr(m[2])} combined`],
+    [/^Alterna ((?:Arroz|Frijol Loctao|Frijol común)[^:.;]{0,20}) y ((?:Arroz|Frijol Loctao|Frijol común)[^:.;]{0,20})$/, (m) => `Alternates ${cropTr(m[1])} and ${cropTr(m[2])}`],
+    [/^((?:Arroz|Frijol Loctao|Frijol común)[^:.;]{0,20}) y ((?:Arroz|Frijol Loctao|Frijol común)[^:.;]{0,20}) combinados$/, (m) => `${cropTr(m[1])} and ${cropTr(m[2])} combined`],
     [/^Alternativa ([AB])$/, (m) => `Alternative ${m[1]}`],
     [/^Secuencia \((\d+) campañas\):$/, (m) => `Sequence (${m[1]} seasons):`],
     [/^Próxima campaña (grande|chica)$/, (m) => `Next ${m[1] === 'grande' ? 'large' : 'small'} season`],
@@ -204,14 +204,18 @@
     [/^Últimos (\d+) días registrados$/, (m) => `Last ${m[1]} days recorded`],
     [/^Descargando la lluvia satelital IMERG de la celda de tu punto \((\d+)\/(\d+) años\)\. Mientras tanto la lluvia sale de ERA5\/POWER y el resultado se actualizará solo\.$/, (m) => `Downloading IMERG satellite rainfall for your point’s cell (${m[1]}/${m[2]} years). Meanwhile rainfall comes from ERA5/POWER and the result will update by itself.`],
     [/^No se pudo conectar con el servidor: (.*)$/, (m) => `Could not connect to the server: ${m[1]}`],
-    [/^Siembra hacia el (.+)$/, (m) => `Sowing around ${m[1]}`],
-    [/^Última imagen sin nubes: (.+)$/, (m) => `Latest cloud-free image: ${m[1]}`],
+    [/^(?:(\d+)\. )?Siembra hacia el (.+)$/, (m) => `${m[1] ? m[1] + '. ' : ''}Sowing around ${tr(m[2])}`],
+    [/^Tu fecha de siembra: (.+)$/, (m) => `Your sowing date: ${tr(m[1])}`],
+    [/^\((\d+) %\): sin puntuar — faltan (.+)$/, (m) => `(${m[1]} %): not scored — missing ${m[2].split('; ').map(tr).join('; ')}`],
+    [/^(.+?) · ((?:Arroz|Frijol Loctao|Frijol común)(?: → (?:Arroz|Frijol Loctao|Frijol común))*) · ([\d.]+)\/100$/, (m) => `${tr(m[1])} · ${cropTr(m[2])} · ${m[3]}/100`],
+    [/^Última imagen sin nubes: (.+)$/, (m) => `Latest cloud-free image: ${tr(m[1])}`],
   ];
 
   // ---------- glosario por frases (se aplica a texto compuesto, de mayor a menor) ----------
   const MONTHS_L = { enero: 'January', febrero: 'February', marzo: 'March', abril: 'April', mayo: 'May', junio: 'June', julio: 'July', agosto: 'August', setiembre: 'September', septiembre: 'September', octubre: 'October', noviembre: 'November', diciembre: 'December' };
   const MONTHS_S = { ene: 'Jan', feb: 'Feb', mar: 'Mar', abr: 'Apr', may: 'May', jun: 'Jun', jul: 'Jul', ago: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dic: 'Dec' };
   const GLOSS = [
+    [/Sin impedimento térmico/g, 'No thermal constraint'], [/\bDudosa\b/g, 'Doubtful'], [/mm\/año/g, 'mm/year'], [/Campaña grande/g, 'Large season'], [/Campaña chica/g, 'Small season'], [/Campaña (\d)/g, 'Season $1'], [/siembra prevista/g, 'planned sowing'], [/\bsiembra ≈/g, 'sowing ≈'], [/\bCondicionada\b/g, 'Conditional'], [/\bNo viable\b/g, 'Not viable'], [/\bRiesgo alto\b/g, 'High risk'], [/\bíndice\b/g, 'index'],
     [/(\d{1,2}) de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre) de (\d{4})/g, (_, d, mo, y) => `${MONTHS_L[mo]} ${d}, ${y}`],
     [/\b(\d{1,2}) (ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\b/g, (_, d, mo) => `${d} ${MONTHS_S[mo]}`],
     [/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre)\b/g, (_, mo) => MONTHS_L[mo]],
@@ -231,15 +235,52 @@
   function tr(text) {
     const lead = /^\s*/.exec(text)[0], trail = /\s*$/.exec(text)[0], core = N(text);
     if (!core) return text;
-    let out;
-    if (Object.prototype.hasOwnProperty.call(EXACT, core)) out = EXACT[core];
-    else {
+    let out = one(core);
+    if (out == null) {
       const parts = core.split(/(?<=[.!?]) +/);
-      if (parts.length > 1) { const ts = parts.map((p) => (Object.prototype.hasOwnProperty.call(EXACT, p) ? EXACT[p] : (PATTERNS.map(([re, fn]) => { const m = re.exec(p); return m ? fn(m) : null; }).find(Boolean) || null))); if (ts.every((x) => x != null)) out = ts.join(' '); }
-      if (out == null) for (const [re, fn] of PATTERNS) { const m = re.exec(core); if (m) { out = fn(m); break; } }
-      if (out == null) { let s = core; for (const [re, rep] of GLOSS) s = s.replace(re, rep); out = STILL_ES.test(s) ? core : s; }
+      if (parts.length > 1) { const ts = parts.map(one); if (ts.every((x) => x != null)) out = ts.join(' '); }
     }
+    if (out == null) { let s = core; for (const [re, rep] of GLOSS) s = s.replace(re, rep); out = STILL_ES.test(s) ? core : s; }
     return out === core ? text : lead + out + trail;
+  }
+  // Traducción de una frase: exacta → patrones → plantillas del servidor (números y cultivos como marcadores).
+  const TPL = window.FSI18N_TPL || {};
+  Object.assign(EXACT, window.FSI18N_EXTRA || {});
+  const ENT_RE = /(Frijol Loctao \(mungo\)|[Aa]rroz Tinajones|[Ff]rijol Loctao|[Ll]a alternativa [AB]|[Tt]u rotación actual)|((?<![\w])-?\d+(?:[.,]\d+)?)/g;
+  function entEn(s) {
+    if (/^Frijol Loctao \(mungo\)$/.test(s)) return 'Loctao bean (mung)';
+    if (/^[Aa]rroz Tinajones$/.test(s)) return 'Tinajones rice';
+    if (/^[Ff]rijol Loctao$/.test(s)) return 'Loctao bean';
+    if (/^[Ll]a alternativa [AB]$/.test(s)) return 'alternative ' + s.slice(-1);
+    return 'your current rotation';
+  }
+  function tplNorm(s, nums) {
+    const args = []; let i = 0;
+    const key = s.replace(ENT_RE, (m, ent) => { if (!ent && !nums) return m; args.push(ent ? (/^[A-ZÁ]/.test(m) ? entEn(m).replace(/^./, (c) => c.toUpperCase()) : entEn(m)) : m); return '{' + i++ + '}'; });
+    return { key, args };
+  }
+  function one(p) {
+    const r = base(p); if (r != null) return r;
+    if (p.length > 2 && p[0] === '(' && p.endsWith(')')) { const q = one(p.slice(1, -1)); if (q != null) return '(' + q + ')'; } // «(texto)»
+    if (p.length > 2 && p.endsWith(':')) { const q = one(p.slice(0, -1)); if (q != null) return q + ':'; } // «texto:»
+    if (/^[a-záéíóúñ]/.test(p)) { const q = base(p[0].toUpperCase() + p.slice(1)); if (q != null) return q[0].toLowerCase() + q.slice(1); } // misma frase con minúscula inicial
+    for (const sep of [' → ', ' · ']) { // «a → b», «a · b»: se traduce cada tramo
+      if (p.includes(sep)) { // solo si ningún tramo queda en español (si no, lo resuelve el glosario sobre la frase completa)
+        const parts = p.split(sep), ts = parts.map((x) => { const y = one(x); return y == null ? x : y; });
+        if (ts.some((x, i) => x !== parts[i]) && !ts.some((x, i) => x === parts[i] && /[a-záéíóúñ]{4,}/i.test(x))) return ts.join(sep);
+      }
+    }
+    return null;
+  }
+  function base(p) {
+    if (Object.prototype.hasOwnProperty.call(EXACT, p)) return EXACT[p];
+    if (/^(Frijol Loctao \(mungo\)|[Aa]rroz Tinajones|[Ff]rijol Loctao)$/.test(p)) return entEn(p);
+    for (const [re, fn] of PATTERNS) { const m = re.exec(p); if (m) return fn(m); }
+    for (const nums of [true, false]) {
+      const { key, args } = tplNorm(p, nums);
+      if (Object.prototype.hasOwnProperty.call(TPL, key)) return TPL[key].replace(/\{(\d+)\}/g, (_, n) => args[+n].replace(/^(-?\d+),(\d{1,2})$/, '$1.$2'));
+    }
+    return null;
   }
   const T = (s) => (lang === 'en' ? tr(String(s)) : String(s));
 
