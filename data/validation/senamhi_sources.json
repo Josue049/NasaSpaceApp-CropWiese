@@ -1,0 +1,2115 @@
+{
+ "generado": "2026-11-15T09:05:19.203Z",
+ "periodo_comun": {
+  "inicio": "2001-01-01",
+  "fin": "2014-06-30",
+  "bloque_A": "2001-01-01 → 2007-12-31",
+  "bloque_B": "2008-01-01 → 2014-06-30"
+ },
+ "fuentes_disponibles": [
+  "power",
+  "era5",
+  "imerg"
+ ],
+ "imerg_anios": [
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014
+ ],
+ "advertencia": "La serie SENAMHI termina en 2014-06-30: esta validación cubre 2001–2014; NO valida 2015–2023. Punto de las fuentes = referencia del proyecto (coordenadas de la estación no constan en el TXT).",
+ "precipitacion": {
+  "power": {
+   "diario": {
+    "A": {
+     "n": 2556,
+     "bias": -0.405,
+     "mae": 1.313,
+     "rmse": 6.074,
+     "r": 0.474,
+     "bias_pct": -37.319,
+     "obs_mean": 1.085,
+     "est_mean": 0.68
+    },
+    "B": {
+     "n": 2342,
+     "bias": -0.849,
+     "mae": 1.774,
+     "rmse": 7.892,
+     "r": 0.441,
+     "bias_pct": -53.296,
+     "obs_mean": 1.592,
+     "est_mean": 0.744
+    },
+    "ALL": {
+     "n": 4898,
+     "bias": -0.617,
+     "mae": 1.534,
+     "rmse": 7.002,
+     "r": 0.447,
+     "bias_pct": -46.483,
+     "obs_mean": 1.327,
+     "est_mean": 0.71
+    }
+   },
+   "mensual": {
+    "A": {
+     "n": 84,
+     "bias": -12.319,
+     "mae": 28.216,
+     "rmse": 61.035,
+     "r": 0.763,
+     "bias_pct": -37.319,
+     "obs_mean": 33.01,
+     "est_mean": 20.691,
+     "meses": 84,
+     "total_obs_mm": 2773,
+     "total_est_mm": 1738
+    },
+    "B": {
+     "n": 77,
+     "bias": -25.81,
+     "mae": 43.387,
+     "rmse": 105.088,
+     "r": 0.813,
+     "bias_pct": -53.296,
+     "obs_mean": 48.427,
+     "est_mean": 22.617,
+     "meses": 77,
+     "total_obs_mm": 3729,
+     "total_est_mm": 1742
+    },
+    "ALL": {
+     "n": 161,
+     "bias": -18.771,
+     "mae": 35.472,
+     "rmse": 85.001,
+     "r": 0.747,
+     "bias_pct": -46.483,
+     "obs_mean": 40.383,
+     "est_mean": 21.612,
+     "meses": 161,
+     "total_obs_mm": 6502,
+     "total_est_mm": 3480
+    }
+   },
+   "eventos": {
+    ">=1": {
+     "thr": 1,
+     "n": 4898,
+     "obs_events": 479,
+     "est_events": 840,
+     "hits": 274,
+     "pod": 0.572,
+     "far": 0.674,
+     "csi": 0.262
+    },
+    ">=20": {
+     "thr": 20,
+     "n": 4898,
+     "obs_events": 90,
+     "est_events": 5,
+     "hits": 3,
+     "pod": 0.033,
+     "far": 0.4,
+     "csi": 0.033
+    }
+   },
+   "desfase": {
+    "0": {
+     "n": 4898,
+     "r": 0.447,
+     "rmse": 7.002
+    },
+    "1": {
+     "n": 4897,
+     "r": 0.324,
+     "rmse": 7.251
+    },
+    "-1": {
+     "n": 4897,
+     "r": 0.324,
+     "rmse": 7.251
+    }
+   },
+   "estacional": [
+    {
+     "mes": "ene",
+     "meses": 14,
+     "obs_media_mm": 42.6,
+     "est_media_mm": 24.4,
+     "razon_est_obs": 0.57
+    },
+    {
+     "mes": "feb",
+     "meses": 14,
+     "obs_media_mm": 163.1,
+     "est_media_mm": 52.1,
+     "razon_est_obs": 0.32
+    },
+    {
+     "mes": "mar",
+     "meses": 14,
+     "obs_media_mm": 181.1,
+     "est_media_mm": 55.2,
+     "razon_est_obs": 0.3
+    },
+    {
+     "mes": "abr",
+     "meses": 14,
+     "obs_media_mm": 63.5,
+     "est_media_mm": 30.6,
+     "razon_est_obs": 0.48
+    },
+    {
+     "mes": "may",
+     "meses": 14,
+     "obs_media_mm": 2.5,
+     "est_media_mm": 11.2,
+     "razon_est_obs": 4.48
+    },
+    {
+     "mes": "jun",
+     "meses": 14,
+     "obs_media_mm": 0.6,
+     "est_media_mm": 7.7,
+     "razon_est_obs": 13.71
+    },
+    {
+     "mes": "jul",
+     "meses": 12,
+     "obs_media_mm": 0.2,
+     "est_media_mm": 6.8,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "ago",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 5.9,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "sep",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 5.9,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "oct",
+     "meses": 13,
+     "obs_media_mm": 3.9,
+     "est_media_mm": 14.4,
+     "razon_est_obs": 3.7
+    },
+    {
+     "mes": "nov",
+     "meses": 13,
+     "obs_media_mm": 3.8,
+     "est_media_mm": 18.6,
+     "razon_est_obs": 4.84
+    },
+    {
+     "mes": "dic",
+     "meses": 13,
+     "obs_media_mm": 4.1,
+     "est_media_mm": 21.5,
+     "razon_est_obs": 5.19
+    }
+   ],
+   "correcciones": {
+    "A->B": {
+     "meses_val": 77,
+     "rmse_sin_correccion": 105.1,
+     "rmse_factor_mensual": 75,
+     "rmse_factor_global": 93.2,
+     "rmse_climatologia_obs_calibracion": 100.6,
+     "factor_global": 1.6,
+     "mejora_factor_mensual": true,
+     "mejora_factor_global": true,
+     "supera_climatologia_sin_correccion": false,
+     "supera_climatologia_con_factor_mensual": true
+    },
+    "B->A": {
+     "meses_val": 84,
+     "rmse_sin_correccion": 61,
+     "rmse_factor_mensual": 69.8,
+     "rmse_factor_global": 52.6,
+     "rmse_climatologia_obs_calibracion": 69.3,
+     "factor_global": 2.14,
+     "mejora_factor_mensual": false,
+     "mejora_factor_global": true,
+     "supera_climatologia_sin_correccion": true,
+     "supera_climatologia_con_factor_mensual": false
+    }
+   },
+   "temporada_ene_abr": {
+    "anios": 14,
+    "n": 14,
+    "bias": -287.92,
+    "mae": 302.511,
+    "rmse": 422.581,
+    "r": 0.655,
+    "bias_pct": -63.955,
+    "obs_mean": 450.193,
+    "est_mean": 162.273,
+    "detalle": [
+     {
+      "y": 2001,
+      "obs": 709,
+      "est": 340
+     },
+     {
+      "y": 2002,
+      "obs": 760,
+      "est": 279
+     },
+     {
+      "y": 2003,
+      "obs": 136,
+      "est": 211
+     },
+     {
+      "y": 2004,
+      "obs": 180,
+      "est": 187
+     },
+     {
+      "y": 2005,
+      "obs": 142,
+      "est": 32
+     },
+     {
+      "y": 2006,
+      "obs": 592,
+      "est": 89
+     },
+     {
+      "y": 2007,
+      "obs": 176,
+      "est": 34
+     },
+     {
+      "y": 2008,
+      "obs": 1162,
+      "est": 312
+     },
+     {
+      "y": 2009,
+      "obs": 441,
+      "est": 92
+     },
+     {
+      "y": 2010,
+      "obs": 358,
+      "est": 100
+     },
+     {
+      "y": 2011,
+      "obs": 219,
+      "est": 149
+     },
+     {
+      "y": 2012,
+      "obs": 1181,
+      "est": 220
+     },
+     {
+      "y": 2013,
+      "obs": 181,
+      "est": 142
+     },
+     {
+      "y": 2014,
+      "obs": 65,
+      "est": 85
+     }
+    ]
+   },
+   "sensibilidad_regla": {
+    "5/3": {
+     "meses": 161,
+     "rmse": 85,
+     "bias_pct": -46.5,
+     "r": 0.75
+    },
+    "10/5": {
+     "meses": 161,
+     "rmse": 85,
+     "bias_pct": -46.5,
+     "r": 0.75
+    },
+    "15/10": {
+     "meses": 161,
+     "rmse": 85,
+     "bias_pct": -46.5,
+     "r": 0.75
+    }
+   }
+  },
+  "era5": {
+   "diario": {
+    "A": {
+     "n": 2556,
+     "bias": 1.918,
+     "mae": 2.726,
+     "rmse": 8.053,
+     "r": 0.505,
+     "bias_pct": 176.792,
+     "obs_mean": 1.085,
+     "est_mean": 3.003
+    },
+    "B": {
+     "n": 2342,
+     "bias": 1.652,
+     "mae": 3.197,
+     "rmse": 9.751,
+     "r": 0.421,
+     "bias_pct": 103.733,
+     "obs_mean": 1.592,
+     "est_mean": 3.244
+    },
+    "ALL": {
+     "n": 4898,
+     "bias": 1.791,
+     "mae": 2.951,
+     "rmse": 8.905,
+     "r": 0.457,
+     "bias_pct": 134.891,
+     "obs_mean": 1.327,
+     "est_mean": 3.118
+    }
+   },
+   "mensual": {
+    "A": {
+     "n": 84,
+     "bias": 58.358,
+     "mae": 59.682,
+     "rmse": 118.989,
+     "r": 0.948,
+     "bias_pct": 176.792,
+     "obs_mean": 33.01,
+     "est_mean": 91.368,
+     "meses": 84,
+     "total_obs_mm": 2773,
+     "total_est_mm": 7675
+    },
+    "B": {
+     "n": 77,
+     "bias": 50.235,
+     "mae": 57.266,
+     "rmse": 96.795,
+     "r": 0.854,
+     "bias_pct": 103.733,
+     "obs_mean": 48.427,
+     "est_mean": 98.662,
+     "meses": 77,
+     "total_obs_mm": 3729,
+     "total_est_mm": 7597
+    },
+    "ALL": {
+     "n": 161,
+     "bias": 54.473,
+     "mae": 58.527,
+     "rmse": 108.94,
+     "r": 0.865,
+     "bias_pct": 134.891,
+     "obs_mean": 40.383,
+     "est_mean": 94.857,
+     "meses": 161,
+     "total_obs_mm": 6502,
+     "total_est_mm": 15272
+    }
+   },
+   "eventos": {
+    ">=1": {
+     "thr": 1,
+     "n": 4898,
+     "obs_events": 479,
+     "est_events": 1703,
+     "hits": 427,
+     "pod": 0.891,
+     "far": 0.749,
+     "csi": 0.243
+    },
+    ">=20": {
+     "thr": 20,
+     "n": 4898,
+     "obs_events": 90,
+     "est_events": 159,
+     "hits": 43,
+     "pod": 0.478,
+     "far": 0.73,
+     "csi": 0.209
+    }
+   },
+   "desfase": {
+    "0": {
+     "n": 4898,
+     "r": 0.457,
+     "rmse": 8.905
+    },
+    "1": {
+     "n": 4897,
+     "r": 0.492,
+     "rmse": 8.639
+    },
+    "-1": {
+     "n": 4897,
+     "r": 0.325,
+     "rmse": 9.871
+    }
+   },
+   "estacional": [
+    {
+     "mes": "ene",
+     "meses": 14,
+     "obs_media_mm": 42.6,
+     "est_media_mm": 126.1,
+     "razon_est_obs": 2.96
+    },
+    {
+     "mes": "feb",
+     "meses": 14,
+     "obs_media_mm": 163.1,
+     "est_media_mm": 274,
+     "razon_est_obs": 1.68
+    },
+    {
+     "mes": "mar",
+     "meses": 14,
+     "obs_media_mm": 181.1,
+     "est_media_mm": 411.3,
+     "razon_est_obs": 2.27
+    },
+    {
+     "mes": "abr",
+     "meses": 14,
+     "obs_media_mm": 63.5,
+     "est_media_mm": 141.9,
+     "razon_est_obs": 2.24
+    },
+    {
+     "mes": "may",
+     "meses": 14,
+     "obs_media_mm": 2.5,
+     "est_media_mm": 29.8,
+     "razon_est_obs": 11.91
+    },
+    {
+     "mes": "jun",
+     "meses": 14,
+     "obs_media_mm": 0.6,
+     "est_media_mm": 3.6,
+     "razon_est_obs": 6.34
+    },
+    {
+     "mes": "jul",
+     "meses": 12,
+     "obs_media_mm": 0.2,
+     "est_media_mm": 3.4,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "ago",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 1.6,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "sep",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 4,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "oct",
+     "meses": 13,
+     "obs_media_mm": 3.9,
+     "est_media_mm": 23.4,
+     "razon_est_obs": 6.03
+    },
+    {
+     "mes": "nov",
+     "meses": 13,
+     "obs_media_mm": 3.8,
+     "est_media_mm": 40.3,
+     "razon_est_obs": 10.5
+    },
+    {
+     "mes": "dic",
+     "meses": 13,
+     "obs_media_mm": 4.1,
+     "est_media_mm": 39.8,
+     "razon_est_obs": 9.63
+    }
+   ],
+   "correcciones": {
+    "A->B": {
+     "meses_val": 77,
+     "rmse_sin_correccion": 96.8,
+     "rmse_factor_mensual": 74.1,
+     "rmse_factor_global": 78.2,
+     "rmse_climatologia_obs_calibracion": 100.6,
+     "factor_global": 0.36,
+     "mejora_factor_mensual": true,
+     "mejora_factor_global": true,
+     "supera_climatologia_sin_correccion": true,
+     "supera_climatologia_con_factor_mensual": true
+    },
+    "B->A": {
+     "meses_val": 84,
+     "rmse_sin_correccion": 119,
+     "rmse_factor_mensual": 35.1,
+     "rmse_factor_global": 29.9,
+     "rmse_climatologia_obs_calibracion": 69.3,
+     "factor_global": 0.49,
+     "mejora_factor_mensual": true,
+     "mejora_factor_global": true,
+     "supera_climatologia_sin_correccion": false,
+     "supera_climatologia_con_factor_mensual": true
+    }
+   },
+   "temporada_ene_abr": {
+    "anios": 14,
+    "n": 14,
+    "bias": 503.079,
+    "mae": 503.079,
+    "rmse": 574.077,
+    "r": 0.874,
+    "bias_pct": 111.747,
+    "obs_mean": 450.193,
+    "est_mean": 953.271,
+    "detalle": [
+     {
+      "y": 2001,
+      "obs": 709,
+      "est": 1792
+     },
+     {
+      "y": 2002,
+      "obs": 760,
+      "est": 1854
+     },
+     {
+      "y": 2003,
+      "obs": 136,
+      "est": 463
+     },
+     {
+      "y": 2004,
+      "obs": 180,
+      "est": 470
+     },
+     {
+      "y": 2005,
+      "obs": 142,
+      "est": 530
+     },
+     {
+      "y": 2006,
+      "obs": 592,
+      "est": 952
+     },
+     {
+      "y": 2007,
+      "obs": 176,
+      "est": 625
+     },
+     {
+      "y": 2008,
+      "obs": 1162,
+      "est": 1495
+     },
+     {
+      "y": 2009,
+      "obs": 441,
+      "est": 1032
+     },
+     {
+      "y": 2010,
+      "obs": 358,
+      "est": 1153
+     },
+     {
+      "y": 2011,
+      "obs": 219,
+      "est": 518
+     },
+     {
+      "y": 2012,
+      "obs": 1181,
+      "est": 1669
+     },
+     {
+      "y": 2013,
+      "obs": 181,
+      "est": 424
+     },
+     {
+      "y": 2014,
+      "obs": 65,
+      "est": 367
+     }
+    ]
+   },
+   "sensibilidad_regla": {
+    "5/3": {
+     "meses": 161,
+     "rmse": 108.9,
+     "bias_pct": 134.9,
+     "r": 0.87
+    },
+    "10/5": {
+     "meses": 161,
+     "rmse": 108.9,
+     "bias_pct": 134.9,
+     "r": 0.87
+    },
+    "15/10": {
+     "meses": 161,
+     "rmse": 108.9,
+     "bias_pct": 134.9,
+     "r": 0.87
+    }
+   }
+  },
+  "imerg": {
+   "diario": {
+    "A": {
+     "n": 2556,
+     "bias": 0.231,
+     "mae": 1.662,
+     "rmse": 6.942,
+     "r": 0.384,
+     "bias_pct": 21.271,
+     "obs_mean": 1.085,
+     "est_mean": 1.316
+    },
+    "B": {
+     "n": 2335,
+     "bias": 0.234,
+     "mae": 2.266,
+     "rmse": 8.526,
+     "r": 0.406,
+     "bias_pct": 14.66,
+     "obs_mean": 1.597,
+     "est_mean": 1.831
+    },
+    "ALL": {
+     "n": 4891,
+     "bias": 0.232,
+     "mae": 1.951,
+     "rmse": 7.739,
+     "r": 0.398,
+     "bias_pct": 17.48,
+     "obs_mean": 1.329,
+     "est_mean": 1.561
+    }
+   },
+   "mensual": {
+    "A": {
+     "n": 84,
+     "bias": 7.021,
+     "mae": 25.362,
+     "rmse": 40.717,
+     "r": 0.863,
+     "bias_pct": 21.271,
+     "obs_mean": 33.01,
+     "est_mean": 40.031,
+     "meses": 84,
+     "total_obs_mm": 2773,
+     "total_est_mm": 3363
+    },
+    "B": {
+     "n": 77,
+     "bias": 7.097,
+     "mae": 31.297,
+     "rmse": 56.735,
+     "r": 0.91,
+     "bias_pct": 14.66,
+     "obs_mean": 48.414,
+     "est_mean": 55.512,
+     "meses": 77,
+     "total_obs_mm": 3728,
+     "total_est_mm": 4274
+    },
+    "ALL": {
+     "n": 161,
+     "bias": 7.058,
+     "mae": 28.201,
+     "rmse": 49.035,
+     "r": 0.889,
+     "bias_pct": 17.48,
+     "obs_mean": 40.377,
+     "est_mean": 47.435,
+     "meses": 161,
+     "total_obs_mm": 6501,
+     "total_est_mm": 7637
+    }
+   },
+   "eventos": {
+    ">=1": {
+     "thr": 1,
+     "n": 4891,
+     "obs_events": 478,
+     "est_events": 936,
+     "hits": 297,
+     "pod": 0.621,
+     "far": 0.683,
+     "csi": 0.266
+    },
+    ">=20": {
+     "thr": 20,
+     "n": 4891,
+     "obs_events": 90,
+     "est_events": 84,
+     "hits": 29,
+     "pod": 0.322,
+     "far": 0.655,
+     "csi": 0.2
+    }
+   },
+   "desfase": {
+    "0": {
+     "n": 4891,
+     "r": 0.398,
+     "rmse": 7.739
+    },
+    "1": {
+     "n": 4890,
+     "r": 0.589,
+     "rmse": 6.433
+    },
+    "-1": {
+     "n": 4890,
+     "r": 0.233,
+     "rmse": 8.709
+    }
+   },
+   "estacional": [
+    {
+     "mes": "ene",
+     "meses": 14,
+     "obs_media_mm": 42.6,
+     "est_media_mm": 41.6,
+     "razon_est_obs": 0.98
+    },
+    {
+     "mes": "feb",
+     "meses": 14,
+     "obs_media_mm": 163.1,
+     "est_media_mm": 118.2,
+     "razon_est_obs": 0.72
+    },
+    {
+     "mes": "mar",
+     "meses": 14,
+     "obs_media_mm": 181.1,
+     "est_media_mm": 157.7,
+     "razon_est_obs": 0.87
+    },
+    {
+     "mes": "abr",
+     "meses": 14,
+     "obs_media_mm": 63.5,
+     "est_media_mm": 94,
+     "razon_est_obs": 1.48
+    },
+    {
+     "mes": "may",
+     "meses": 14,
+     "obs_media_mm": 2.5,
+     "est_media_mm": 20.7,
+     "razon_est_obs": 8.28
+    },
+    {
+     "mes": "jun",
+     "meses": 14,
+     "obs_media_mm": 0.5,
+     "est_media_mm": 8.8,
+     "razon_est_obs": 17.78
+    },
+    {
+     "mes": "jul",
+     "meses": 12,
+     "obs_media_mm": 0.2,
+     "est_media_mm": 8.5,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "ago",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 5.1,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "sep",
+     "meses": 13,
+     "obs_media_mm": 0,
+     "est_media_mm": 16.7,
+     "razon_est_obs": null
+    },
+    {
+     "mes": "oct",
+     "meses": 13,
+     "obs_media_mm": 3.9,
+     "est_media_mm": 28.1,
+     "razon_est_obs": 7.23
+    },
+    {
+     "mes": "nov",
+     "meses": 13,
+     "obs_media_mm": 3.8,
+     "est_media_mm": 25.4,
+     "razon_est_obs": 6.61
+    },
+    {
+     "mes": "dic",
+     "meses": 13,
+     "obs_media_mm": 4.1,
+     "est_media_mm": 29.4,
+     "razon_est_obs": 7.1
+    }
+   ],
+   "correcciones": {
+    "A->B": {
+     "meses_val": 77,
+     "rmse_sin_correccion": 56.7,
+     "rmse_factor_mensual": 46.9,
+     "rmse_factor_global": 64.4,
+     "rmse_climatologia_obs_calibracion": 100.6,
+     "factor_global": 0.82,
+     "mejora_factor_mensual": true,
+     "mejora_factor_global": false,
+     "supera_climatologia_sin_correccion": true,
+     "supera_climatologia_con_factor_mensual": true
+    },
+    "B->A": {
+     "meses_val": 84,
+     "rmse_sin_correccion": 40.7,
+     "rmse_factor_mensual": 36.5,
+     "rmse_factor_global": 41.4,
+     "rmse_climatologia_obs_calibracion": 69.3,
+     "factor_global": 0.87,
+     "mejora_factor_mensual": true,
+     "mejora_factor_global": false,
+     "supera_climatologia_sin_correccion": true,
+     "supera_climatologia_con_factor_mensual": true
+    }
+   },
+   "temporada_ene_abr": {
+    "anios": 14,
+    "n": 14,
+    "bias": -38.593,
+    "mae": 111.164,
+    "rmse": 140.358,
+    "r": 0.967,
+    "bias_pct": -8.573,
+    "obs_mean": 450.193,
+    "est_mean": 411.6,
+    "detalle": [
+     {
+      "y": 2001,
+      "obs": 709,
+      "est": 582
+     },
+     {
+      "y": 2002,
+      "obs": 760,
+      "est": 685
+     },
+     {
+      "y": 2003,
+      "obs": 136,
+      "est": 80
+     },
+     {
+      "y": 2004,
+      "obs": 180,
+      "est": 129
+     },
+     {
+      "y": 2005,
+      "obs": 142,
+      "est": 267
+     },
+     {
+      "y": 2006,
+      "obs": 592,
+      "est": 440
+     },
+     {
+      "y": 2007,
+      "obs": 176,
+      "est": 177
+     },
+     {
+      "y": 2008,
+      "obs": 1162,
+      "est": 891
+     },
+     {
+      "y": 2009,
+      "obs": 441,
+      "est": 461
+     },
+     {
+      "y": 2010,
+      "obs": 358,
+      "est": 425
+     },
+     {
+      "y": 2011,
+      "obs": 219,
+      "est": 348
+     },
+     {
+      "y": 2012,
+      "obs": 1181,
+      "est": 867
+     },
+     {
+      "y": 2013,
+      "obs": 181,
+      "est": 239
+     },
+     {
+      "y": 2014,
+      "obs": 65,
+      "est": 173
+     }
+    ]
+   },
+   "sensibilidad_regla": {
+    "5/3": {
+     "meses": 161,
+     "rmse": 49,
+     "bias_pct": 17.5,
+     "r": 0.89
+    },
+    "10/5": {
+     "meses": 161,
+     "rmse": 49,
+     "bias_pct": 17.5,
+     "r": 0.89
+    },
+    "15/10": {
+     "meses": 161,
+     "rmse": 49,
+     "bias_pct": 17.5,
+     "r": 0.89
+    }
+   }
+  }
+ },
+ "temperatura": {
+  "power": {
+   "Tmax": {
+    "diario": {
+     "A": {
+      "n": 2555,
+      "bias": -0.737,
+      "mae": 2.609,
+      "rmse": 3.222,
+      "r": 0.048,
+      "bias_pct": -2.32,
+      "obs_mean": 31.765,
+      "est_mean": 31.028
+     },
+     "B": {
+      "n": 2342,
+      "bias": -1.311,
+      "mae": 2.719,
+      "rmse": 3.359,
+      "r": 0.082,
+      "bias_pct": -4.075,
+      "obs_mean": 32.164,
+      "est_mean": 30.853
+     },
+     "ALL": {
+      "n": 4897,
+      "bias": -1.011,
+      "mae": 2.662,
+      "rmse": 3.289,
+      "r": 0.061,
+      "bias_pct": -3.165,
+      "obs_mean": 31.956,
+      "est_mean": 30.945
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -3.26,
+      "rmse": 4.02,
+      "obs": 33,
+      "est": 29.8
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -3.25,
+      "rmse": 4.1,
+      "obs": 32.8,
+      "est": 29.5
+     },
+     {
+      "mes": "mar",
+      "n": 433,
+      "sesgo": -2.54,
+      "rmse": 3.67,
+      "obs": 32.7,
+      "est": 30.1
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -1.55,
+      "rmse": 2.83,
+      "obs": 32.4,
+      "est": 30.9
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": 0.24,
+      "rmse": 2.36,
+      "obs": 31.3,
+      "est": 31.5
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": 1.71,
+      "rmse": 3.16,
+      "obs": 30.1,
+      "est": 31.8
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": 2.16,
+      "rmse": 3.23,
+      "obs": 29.8,
+      "est": 32
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": 1.75,
+      "rmse": 2.97,
+      "obs": 30.9,
+      "est": 32.7
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": 0.47,
+      "rmse": 2.2,
+      "obs": 32.1,
+      "est": 32.5
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": -1.45,
+      "rmse": 2.74,
+      "obs": 32.1,
+      "est": 30.7
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -2.68,
+      "rmse": 3.42,
+      "obs": 32.8,
+      "est": 30.1
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -3.44,
+      "rmse": 4.06,
+      "obs": 33.3,
+      "est": 29.8
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 3.36,
+      "rmse_offset_mensual": 2.46,
+      "rmse_offset_global": 3.15,
+      "rmse_climatologia_obs": 2.3,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.32,
+      "offset_global_c": 0.74
+     },
+     "B->A": {
+      "rmse_sin_correccion": 3.22,
+      "rmse_offset_mensual": 2.43,
+      "rmse_offset_global": 3.19,
+      "rmse_climatologia_obs": 2.19,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.31,
+      "offset_global_c": 1.31
+     }
+    },
+    "umbrales": {
+     ">=32": {
+      "thr": 32,
+      "n": 4897,
+      "obs_events": 2844,
+      "est_events": 1660,
+      "hits": 1011,
+      "pod": 0.355,
+      "far": 0.391,
+      "csi": 0.289,
+      "dias_obs": 2844,
+      "dias_est_en_dias_con_obs": 1660
+     },
+     ">=35": {
+      "thr": 35,
+      "n": 4897,
+      "obs_events": 522,
+      "est_events": 46,
+      "hits": 6,
+      "pod": 0.011,
+      "far": 0.87,
+      "csi": 0.011,
+      "dias_obs": 522,
+      "dias_est_en_dias_con_obs": 46
+     }
+    }
+   },
+   "Tmin": {
+    "diario": {
+     "A": {
+      "n": 2556,
+      "bias": -2.192,
+      "mae": 2.614,
+      "rmse": 3.16,
+      "r": 0.583,
+      "bias_pct": -11.405,
+      "obs_mean": 19.222,
+      "est_mean": 17.03
+     },
+     "B": {
+      "n": 2342,
+      "bias": -2.183,
+      "mae": 2.547,
+      "rmse": 3.04,
+      "r": 0.54,
+      "bias_pct": -11.324,
+      "obs_mean": 19.28,
+      "est_mean": 17.097
+     },
+     "ALL": {
+      "n": 4898,
+      "bias": -2.188,
+      "mae": 2.582,
+      "rmse": 3.103,
+      "r": 0.564,
+      "bias_pct": -11.366,
+      "obs_mean": 19.25,
+      "est_mean": 17.062
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -4.48,
+      "rmse": 4.65,
+      "obs": 21.9,
+      "est": 17.4
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -4.81,
+      "rmse": 4.92,
+      "obs": 22.8,
+      "est": 17.9
+     },
+     {
+      "mes": "mar",
+      "n": 434,
+      "sesgo": -4.25,
+      "rmse": 4.38,
+      "obs": 22.5,
+      "est": 18.2
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -3.15,
+      "rmse": 3.42,
+      "obs": 21.1,
+      "est": 17.9
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": -1.84,
+      "rmse": 2.32,
+      "obs": 19.2,
+      "est": 17.4
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": -1.08,
+      "rmse": 2.01,
+      "obs": 17.8,
+      "est": 16.7
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": -0.61,
+      "rmse": 1.82,
+      "obs": 17,
+      "est": 16.4
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": 0.05,
+      "rmse": 1.49,
+      "obs": 16.4,
+      "est": 16.5
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": 0.23,
+      "rmse": 1.39,
+      "obs": 16.4,
+      "est": 16.6
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": -0.72,
+      "rmse": 1.54,
+      "obs": 17.2,
+      "est": 16.4
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -1.87,
+      "rmse": 2.31,
+      "obs": 18.2,
+      "est": 16.3
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -3.27,
+      "rmse": 3.52,
+      "obs": 20,
+      "est": 16.8
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 3.04,
+      "rmse_offset_mensual": 1.45,
+      "rmse_offset_global": 2.12,
+      "rmse_climatologia_obs": 1.38,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.24,
+      "offset_global_c": 2.19
+     },
+     "B->A": {
+      "rmse_sin_correccion": 3.16,
+      "rmse_offset_mensual": 1.45,
+      "rmse_offset_global": 2.28,
+      "rmse_climatologia_obs": 1.42,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.28,
+      "offset_global_c": 2.18
+     }
+    },
+    "umbrales": {
+     ">=22": {
+      "thr": 22,
+      "n": 4898,
+      "obs_events": 1063,
+      "est_events": 0,
+      "hits": 0,
+      "pod": 0,
+      "far": null,
+      "csi": 0,
+      "dias_obs": 1063,
+      "dias_est_en_dias_con_obs": 0
+     },
+     ">=24": {
+      "thr": 24,
+      "n": 4898,
+      "obs_events": 79,
+      "est_events": 0,
+      "hits": 0,
+      "pod": 0,
+      "far": null,
+      "csi": 0,
+      "dias_obs": 79,
+      "dias_est_en_dias_con_obs": 0
+     }
+    }
+   },
+   "Tmedia (estimada en SENAMHI = (Tx+Tn)/2)": {
+    "diario": {
+     "A": {
+      "n": 2555,
+      "bias": -2.902,
+      "mae": 3.084,
+      "rmse": 3.619,
+      "r": 0.195,
+      "bias_pct": -11.385,
+      "obs_mean": 25.493,
+      "est_mean": 22.591
+     },
+     "B": {
+      "n": 2342,
+      "bias": -3.182,
+      "mae": 3.26,
+      "rmse": 3.721,
+      "r": 0.208,
+      "bias_pct": -12.372,
+      "obs_mean": 25.722,
+      "est_mean": 22.54
+     },
+     "ALL": {
+      "n": 4897,
+      "bias": -3.036,
+      "mae": 3.168,
+      "rmse": 3.668,
+      "r": 0.199,
+      "bias_pct": -11.859,
+      "obs_mean": 25.603,
+      "est_mean": 22.566
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -5.02,
+      "rmse": 5.17,
+      "obs": 27.5,
+      "est": 22.4
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -5.15,
+      "rmse": 5.31,
+      "obs": 27.8,
+      "est": 22.6
+     },
+     {
+      "mes": "mar",
+      "n": 433,
+      "sesgo": -4.6,
+      "rmse": 4.8,
+      "obs": 27.6,
+      "est": 23
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -3.68,
+      "rmse": 3.92,
+      "obs": 26.7,
+      "est": 23.1
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": -2.36,
+      "rmse": 2.72,
+      "obs": 25.2,
+      "est": 22.9
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": -1.34,
+      "rmse": 2.07,
+      "obs": 24,
+      "est": 22.6
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": -0.88,
+      "rmse": 1.66,
+      "obs": 23.4,
+      "est": 22.5
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": -0.8,
+      "rmse": 1.56,
+      "obs": 23.7,
+      "est": 22.9
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": -1.41,
+      "rmse": 1.91,
+      "obs": 24.2,
+      "est": 22.8
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": -2.64,
+      "rmse": 2.94,
+      "obs": 24.7,
+      "est": 22
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -3.64,
+      "rmse": 3.85,
+      "obs": 25.5,
+      "est": 21.8
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -4.59,
+      "rmse": 4.73,
+      "obs": 26.7,
+      "est": 22.1
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 3.72,
+      "rmse_offset_mensual": 1.35,
+      "rmse_offset_global": 1.95,
+      "rmse_climatologia_obs": 1.32,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.34,
+      "offset_global_c": 2.9
+     },
+     "B->A": {
+      "rmse_sin_correccion": 3.62,
+      "rmse_offset_mensual": 1.39,
+      "rmse_offset_global": 2.18,
+      "rmse_climatologia_obs": 1.34,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": false,
+      "correlacion_anomalias": 0.31,
+      "offset_global_c": 3.18
+     }
+    },
+    "umbrales": {}
+   }
+  },
+  "era5": {
+   "Tmax": {
+    "diario": {
+     "A": {
+      "n": 2555,
+      "bias": -4.171,
+      "mae": 4.244,
+      "rmse": 4.601,
+      "r": 0.612,
+      "bias_pct": -13.132,
+      "obs_mean": 31.765,
+      "est_mean": 27.594
+     },
+     "B": {
+      "n": 2342,
+      "bias": -4.595,
+      "mae": 4.652,
+      "rmse": 5.064,
+      "r": 0.527,
+      "bias_pct": -14.287,
+      "obs_mean": 32.164,
+      "est_mean": 27.569
+     },
+     "ALL": {
+      "n": 4897,
+      "bias": -4.374,
+      "mae": 4.439,
+      "rmse": 4.828,
+      "r": 0.57,
+      "bias_pct": -13.688,
+      "obs_mean": 31.956,
+      "est_mean": 27.582
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -3.99,
+      "rmse": 4.33,
+      "obs": 33,
+      "est": 29
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -3.94,
+      "rmse": 4.26,
+      "obs": 32.8,
+      "est": 28.8
+     },
+     {
+      "mes": "mar",
+      "n": 433,
+      "sesgo": -3.78,
+      "rmse": 4.09,
+      "obs": 32.7,
+      "est": 28.9
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -3.57,
+      "rmse": 3.92,
+      "obs": 32.4,
+      "est": 28.9
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": -3.39,
+      "rmse": 3.9,
+      "obs": 31.3,
+      "est": 27.9
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": -3.44,
+      "rmse": 4.1,
+      "obs": 30.1,
+      "est": 26.7
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": -4.17,
+      "rmse": 4.67,
+      "obs": 29.8,
+      "est": 25.7
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": -5.11,
+      "rmse": 5.52,
+      "obs": 30.9,
+      "est": 25.8
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": -5.72,
+      "rmse": 5.98,
+      "obs": 32.1,
+      "est": 26.4
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": -5.25,
+      "rmse": 5.65,
+      "obs": 32.1,
+      "est": 26.9
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -5.49,
+      "rmse": 5.82,
+      "obs": 32.8,
+      "est": 27.3
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -4.92,
+      "rmse": 5.25,
+      "obs": 33.3,
+      "est": 28.3
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 5.06,
+      "rmse_offset_mensual": 2.01,
+      "rmse_offset_global": 2.17,
+      "rmse_climatologia_obs": 2.3,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.52,
+      "offset_global_c": 4.17
+     },
+     "B->A": {
+      "rmse_sin_correccion": 4.6,
+      "rmse_offset_mensual": 1.88,
+      "rmse_offset_global": 1.99,
+      "rmse_climatologia_obs": 2.19,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.55,
+      "offset_global_c": 4.6
+     }
+    },
+    "umbrales": {
+     ">=32": {
+      "thr": 32,
+      "n": 4897,
+      "obs_events": 2844,
+      "est_events": 35,
+      "hits": 35,
+      "pod": 0.012,
+      "far": 0,
+      "csi": 0.012,
+      "dias_obs": 2844,
+      "dias_est_en_dias_con_obs": 35
+     },
+     ">=35": {
+      "thr": 35,
+      "n": 4897,
+      "obs_events": 522,
+      "est_events": 0,
+      "hits": 0,
+      "pod": 0,
+      "far": null,
+      "csi": 0,
+      "dias_obs": 522,
+      "dias_est_en_dias_con_obs": 0
+     }
+    }
+   },
+   "Tmin": {
+    "diario": {
+     "A": {
+      "n": 2556,
+      "bias": -0.538,
+      "mae": 1.155,
+      "rmse": 1.446,
+      "r": 0.876,
+      "bias_pct": -2.8,
+      "obs_mean": 19.222,
+      "est_mean": 18.684
+     },
+     "B": {
+      "n": 2342,
+      "bias": -0.25,
+      "mae": 1.036,
+      "rmse": 1.282,
+      "r": 0.865,
+      "bias_pct": -1.297,
+      "obs_mean": 19.28,
+      "est_mean": 19.03
+     },
+     "ALL": {
+      "n": 4898,
+      "bias": -0.4,
+      "mae": 1.098,
+      "rmse": 1.37,
+      "r": 0.869,
+      "bias_pct": -2.08,
+      "obs_mean": 19.25,
+      "est_mean": 18.85
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -1.15,
+      "rmse": 1.7,
+      "obs": 21.9,
+      "est": 20.7
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -1.24,
+      "rmse": 1.71,
+      "obs": 22.8,
+      "est": 21.5
+     },
+     {
+      "mes": "mar",
+      "n": 434,
+      "sesgo": -1,
+      "rmse": 1.5,
+      "obs": 22.5,
+      "est": 21.5
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -0.27,
+      "rmse": 1.16,
+      "obs": 21.1,
+      "est": 20.8
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": 0.06,
+      "rmse": 1.23,
+      "obs": 19.2,
+      "est": 19.3
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": -0.07,
+      "rmse": 1.27,
+      "obs": 17.8,
+      "est": 17.7
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": -0.21,
+      "rmse": 1.34,
+      "obs": 17,
+      "est": 16.7
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": -0.08,
+      "rmse": 1.28,
+      "obs": 16.4,
+      "est": 16.3
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": 0.26,
+      "rmse": 1.23,
+      "obs": 16.4,
+      "est": 16.7
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": 0.16,
+      "rmse": 1.14,
+      "obs": 17.2,
+      "est": 17.3
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -0.38,
+      "rmse": 1.27,
+      "obs": 18.2,
+      "est": 17.8
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -0.82,
+      "rmse": 1.44,
+      "obs": 20,
+      "est": 19.2
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 1.28,
+      "rmse_offset_mensual": 1.26,
+      "rmse_offset_global": 1.29,
+      "rmse_climatologia_obs": 1.38,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": false,
+      "supera_climatologia_sin_correccion": true,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.51,
+      "offset_global_c": 0.54
+     },
+     "B->A": {
+      "rmse_sin_correccion": 1.45,
+      "rmse_offset_mensual": 1.27,
+      "rmse_offset_global": 1.37,
+      "rmse_climatologia_obs": 1.42,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.53,
+      "offset_global_c": 0.25
+     }
+    },
+    "umbrales": {
+     ">=22": {
+      "thr": 22,
+      "n": 4898,
+      "obs_events": 1063,
+      "est_events": 318,
+      "hits": 253,
+      "pod": 0.238,
+      "far": 0.204,
+      "csi": 0.224,
+      "dias_obs": 1063,
+      "dias_est_en_dias_con_obs": 318
+     },
+     ">=24": {
+      "thr": 24,
+      "n": 4898,
+      "obs_events": 79,
+      "est_events": 1,
+      "hits": 1,
+      "pod": 0.013,
+      "far": 0,
+      "csi": 0.013,
+      "dias_obs": 79,
+      "dias_est_en_dias_con_obs": 1
+     }
+    }
+   },
+   "Tmedia (estimada en SENAMHI = (Tx+Tn)/2)": {
+    "diario": {
+     "A": {
+      "n": 2555,
+      "bias": -2.856,
+      "mae": 2.878,
+      "rmse": 3.097,
+      "r": 0.825,
+      "bias_pct": -11.205,
+      "obs_mean": 25.493,
+      "est_mean": 22.636
+     },
+     "B": {
+      "n": 2342,
+      "bias": -2.889,
+      "mae": 2.904,
+      "rmse": 3.122,
+      "r": 0.783,
+      "bias_pct": -11.23,
+      "obs_mean": 25.722,
+      "est_mean": 22.834
+     },
+     "ALL": {
+      "n": 4897,
+      "bias": -2.872,
+      "mae": 2.89,
+      "rmse": 3.109,
+      "r": 0.807,
+      "bias_pct": -11.217,
+      "obs_mean": 25.603,
+      "est_mean": 22.731
+     }
+    },
+    "estacional": [
+     {
+      "mes": "ene",
+      "n": 434,
+      "sesgo": -3.08,
+      "rmse": 3.23,
+      "obs": 27.5,
+      "est": 24.4
+     },
+     {
+      "mes": "feb",
+      "n": 395,
+      "sesgo": -3.05,
+      "rmse": 3.21,
+      "obs": 27.8,
+      "est": 24.7
+     },
+     {
+      "mes": "mar",
+      "n": 433,
+      "sesgo": -2.77,
+      "rmse": 2.95,
+      "obs": 27.6,
+      "est": 24.8
+     },
+     {
+      "mes": "abr",
+      "n": 420,
+      "sesgo": -2.31,
+      "rmse": 2.53,
+      "obs": 26.7,
+      "est": 24.4
+     },
+     {
+      "mes": "may",
+      "n": 434,
+      "sesgo": -2.1,
+      "rmse": 2.39,
+      "obs": 25.2,
+      "est": 23.1
+     },
+     {
+      "mes": "jun",
+      "n": 420,
+      "sesgo": -2.22,
+      "rmse": 2.52,
+      "obs": 24,
+      "est": 21.7
+     },
+     {
+      "mes": "jul",
+      "n": 372,
+      "sesgo": -2.68,
+      "rmse": 2.91,
+      "obs": 23.4,
+      "est": 20.7
+     },
+     {
+      "mes": "ago",
+      "n": 403,
+      "sesgo": -3.11,
+      "rmse": 3.31,
+      "obs": 23.7,
+      "est": 20.5
+     },
+     {
+      "mes": "sep",
+      "n": 390,
+      "sesgo": -3.25,
+      "rmse": 3.44,
+      "obs": 24.2,
+      "est": 21
+     },
+     {
+      "mes": "oct",
+      "n": 403,
+      "sesgo": -3.14,
+      "rmse": 3.36,
+      "obs": 24.7,
+      "est": 21.5
+     },
+     {
+      "mes": "nov",
+      "n": 390,
+      "sesgo": -3.49,
+      "rmse": 3.68,
+      "obs": 25.5,
+      "est": 22
+     },
+     {
+      "mes": "dic",
+      "n": 403,
+      "sesgo": -3.39,
+      "rmse": 3.57,
+      "obs": 26.7,
+      "est": 23.3
+     }
+    ],
+    "correcciones": {
+     "A->B": {
+      "rmse_sin_correccion": 3.12,
+      "rmse_offset_mensual": 1.12,
+      "rmse_offset_global": 1.18,
+      "rmse_climatologia_obs": 1.32,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.54,
+      "offset_global_c": 2.86
+     },
+     "B->A": {
+      "rmse_sin_correccion": 3.1,
+      "rmse_offset_mensual": 1.11,
+      "rmse_offset_global": 1.2,
+      "rmse_climatologia_obs": 1.34,
+      "mejora_offset_mensual": true,
+      "mejora_offset_global": true,
+      "supera_climatologia_sin_correccion": false,
+      "supera_climatologia_con_offset_mensual": true,
+      "correlacion_anomalias": 0.56,
+      "offset_global_c": 2.89
+     }
+    },
+    "umbrales": {}
+   }
+  }
+ },
+ "precipitacion_comparacion_pares": [
+  {
+   "A": "power",
+   "B": "era5",
+   "meses": 161,
+   "dif_rmse_mediana": -24,
+   "ic95": [
+    -63.1,
+    13.2
+   ],
+   "ganador_confiable": null
+  },
+  {
+   "A": "power",
+   "B": "imerg",
+   "meses": 161,
+   "dif_rmse_mediana": 35.6,
+   "ic95": [
+    12.1,
+    56.2
+   ],
+   "ganador_confiable": "imerg"
+  },
+  {
+   "A": "era5",
+   "B": "imerg",
+   "meses": 161,
+   "dif_rmse_mediana": 58.8,
+   "ic95": [
+    31.8,
+    91.5
+   ],
+   "ganador_confiable": "imerg"
+  }
+ ]
+}
