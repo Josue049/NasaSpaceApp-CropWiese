@@ -38,6 +38,7 @@
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v5.500M12 7.800v.1"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.500 6h.1M4.500 12h.1M4.500 18h.1"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.500" ry="3"/><path d="M4.500 6v6c0 1.700 3.400 3 7.500 3s7.500-1.300 7.500-3V6"/><path d="M4.500 12v6c0 1.700 3.400 3 7.500 3s7.500-1.300 7.500-3v-6"/></symbol>
   </defs>
 </svg>
 
@@ -65,7 +66,7 @@
   <div class="hero" style="background-image:url(img/hero-paisaje.png)">
     <div class="hero-text">
       <h1>Tu aliado para una rotación de cultivos más <span class="hl">informada y sostenible</span></h1>
-      <p>Combinamos datos satelitales, clima y suelo de la zona para comparar rotaciones de <b>arroz</b> y <b>frijol</b> en <b>Morropón (Alto Piura)</b>.</p>
+      <p>Combinamos datos satelitales, clima y suelo de la zona para comparar rotaciones de <b>arroz</b> y <b>frijol Loctao</b> en <b>Morropón (Alto Piura)</b>.</p>
     </div>
     <div class="hero-mascot">
       <img src="img/fieldi-hola.png" alt="Fieldi, la llama guía, saluda: «¡Hola! Soy Fieldi, tu guía en el campo. Te ayudo a elegir la mejor rotación para tu parcela.»">
@@ -78,25 +79,84 @@
       <div class="define">
         <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
         <dl class="facts">
-          <div><dt><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg> Ubicación</dt><dd id="coords">-5.1944, -79.9867</dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg> Ubicación</dt><dd id="coords">-5.19, -79.99</dd></div>
           <div><dt><svg class="i" aria-hidden="true"><use href="#i-area"/></svg> Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" value="1" inputmode="decimal" aria-label="Área en hectáreas"></dd></div>
-          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="arroz" selected>Arroz</option><option value="frijol">Frijol</option></select></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="arroz" selected>Arroz</option><option value="loctao">Frijol Loctao</option></select></dd></div>
         </dl>
       </div>
       <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
-      <input id="lat" type="hidden" value="-5.1944"><input id="lon" type="hidden" value="-79.9867">
+      <input id="lat" type="hidden" value="-5.19"><input id="lon" type="hidden" value="-79.99">
     </section>
 
     <section class="card card-green" aria-labelledby="t2" style="background-image:url(img/fondo-verde.png)">
-      <div class="card-head"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2 id="t2">2. Obtén tu recomendación</h2><p>Analizamos tu parcela y te mostramos las opciones de rotación.</p></div></div>
+      <div class="card-head"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2 id="t2">2. Obtén tu recomendación</h2><p>Elige cómo quieres analizar tu parcela y te mostramos las opciones viables.</p></div></div>
+
+      <fieldset class="seg" aria-label="Modo de análisis">
+        <legend>Modo de análisis</legend>
+        <label class="seg-opt"><input type="radio" name="mode" value="instantanea" checked><span><b>Instantánea</b><small>Datos satelitales y de estación de la zona</small></span></label>
+        <label class="seg-opt"><input type="radio" name="mode" value="precisa"><span><b>Precisa</b><small>Suma datos de tu parcela</small></span></label>
+      </fieldset>
+
+      <div class="row2">
+        <fieldset class="seg seg-sm" aria-label="Primera campaña a evaluar">
+          <legend>Primera campaña a sembrar</legend>
+          <label class="seg-opt"><input type="radio" name="slot" value="A" checked><span><b>Grande</b><small>≈ 21 ene</small></span></label>
+          <label class="seg-opt"><input type="radio" name="slot" value="B"><span><b>Chica</b><small>≈ 15 jul</small></span></label>
+        </fieldset>
+        <label class="field">Campaña anterior<select id="h0"><option value="arroz" selected>Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
+      </div>
+      <label class="check"><input id="irr" type="checkbox" checked> <span>Mi parcela dispone de riego <small>(el arroz lo necesita)</small></span></label>
+
+      <div id="precisaBox" hidden>
+        <details class="sect" open><summary><svg class="i"><use href="#i-sprout"/></svg><span>Tu siembra y tus fechas</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+          <p class="hint">Todo es opcional: cada dato se aplica por separado y el resultado te dirá qué se usó. Lo que ingreses <b>no se guarda</b> en el servidor y no se verifica.</p>
+          <div class="grid2">
+            <label>Fecha de siembra real del arroz<input id="sow" type="date"></label>
+            <label>Cómo sembraste<select id="estab"><option value="">— no indicar —</option><option value="siembra_directa">Siembra directa</option><option value="trasplante">Trasplante</option></select></label>
+            <label>Variedad<input id="variety" type="text" maxlength="40" placeholder="Tinajones"></label>
+          </div>
+          <h4>Fechas observadas <small>(requieren la siembra real)</small></h4>
+          <div class="grid2">
+            <label>Macollaje<input id="od_tillering" type="date"></label>
+            <label>Panoja<input id="od_panicle" type="date"></label>
+            <label>Floración<input id="od_flowering" type="date"></label>
+            <label>Maduración córnea<input id="od_hard_ripening" type="date"></label>
+          </div>
+        </details>
+        <details class="sect"><summary><svg class="i"><use href="#i-cloud"/></svg><span>Tu agua</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+          <div class="grid2">
+            <label>Manejo del agua<select id="irrMgmt"><option value="">— no indicar —</option><option value="inundacion_continua">Inundación continua</option><option value="intermitente">Riego intermitente</option><option value="secano">Secano</option></select></label>
+            <label>Agua por campaña (m³/ha)<input id="supply" type="number" min="0" max="40000" step="100" inputmode="decimal" placeholder="p. ej. 12000"></label>
+            <label>Pérdida por filtración del arroz (mm/día)<input id="perc" type="number" min="0" max="30" step="0.5" inputmode="decimal" placeholder="FAO: 2 a 8"></label>
+          </div>
+          <p class="hint">Con tu dotación evaluamos si cada cultivo completa su ciclo. Sin ella solo informamos cuánta agua necesita cada uno.</p>
+        </details>
+        <details class="sect"><summary><svg class="i"><use href="#i-star"/></svg><span>Lo que quieres conservar y lo que te cuesta</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+          <div class="grid2">
+            <label>Cultivo principal que deseas conservar<select id="keepCrop"><option value="">— ninguno —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
+            <label>¿En qué campañas?<select id="keepWhere"><option value="A">Todas las campañas grandes</option><option value="B">Todas las campañas chicas</option><option value="AB">Todas las campañas</option><option value="min2">Al menos 2 de 4 campañas</option><option value="min3">Al menos 3 de 4 campañas</option></select></label>
+          </div>
+          <p class="hint">Opcional y solo tuyo: no se fuerza ningún cultivo. Si no lo indicas, la comparación considera agua, calor, suelo y rotación, y puede favorecer al cultivo que menos agua necesita.</p>
+          <h4>Datos económicos <small>(opcional; se usan solo si están completos para ambos cultivos)</small></h4>
+          <div class="econ">
+            <div class="econ-head"><span></span><b>Arroz</b><b>Frijol Loctao</b></div>
+            <label class="econ-row"><span>Rendimiento esperado (t/ha)</span><input id="e_arroz_yield" type="number" min="0" step="0.1" inputmode="decimal"><input id="e_loctao_yield" type="number" min="0" step="0.1" inputmode="decimal"></label>
+            <label class="econ-row"><span>Precio de venta (S/ por kg)</span><input id="e_arroz_price" type="number" min="0" step="0.05" inputmode="decimal"><input id="e_loctao_price" type="number" min="0" step="0.05" inputmode="decimal"></label>
+            <label class="econ-row"><span>Costo de establecimiento (S/ ha)</span><input id="e_arroz_est" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_est" type="number" min="0" step="50" inputmode="decimal"></label>
+            <label class="econ-row"><span>Costo de riego (S/ ha)</span><input id="e_arroz_irr" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_irr" type="number" min="0" step="50" inputmode="decimal"></label>
+            <label class="econ-row"><span>Otros costos (S/ ha)</span><input id="e_arroz_oth" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_oth" type="number" min="0" step="50" inputmode="decimal"></label>
+          </div>
+          <p class="hint">Son datos que tú declaras: no usamos rendimientos ni precios de otras zonas como si fueran de Morropón.</p>
+        </details>
+      </div>
+
       <button id="btnGo" class="cta" type="button"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg> Generar recomendación</button>
       <p id="msg" class="status" role="status" aria-live="polite" hidden></p>
-      <p class="mini">Modo actual: <b id="modeLabel">Instantánea</b> · <a href="#" id="linkAdjust">ajustar datos de mi parcela</a></p>
     </section>
   </div>
 
   <div id="rotWrap" hidden>
-    <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg></span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Comparamos tu rotación actual con dos alternativas según suelo, clima y alternancia de cultivos.</p></div></div>
+    <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg></span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Primero comprobamos qué cultivos son viables en cada campaña de tu parcela; después comparamos las secuencias.</p></div></div>
     <div id="rotCards" class="rot-grid"></div>
     <div id="rotNotes"></div>
   </div>
@@ -134,51 +194,13 @@
 </section>
 </main>
 
-<!-- ============ AJUSTAR DATOS (modos) ============ -->
-<dialog id="dlg" aria-labelledby="dlgT">
-  <form method="dialog" id="dlgForm">
-    <div class="dlg-head"><h2 id="dlgT">Ajustar datos de mi parcela</h2><button class="icon-btn" value="close" aria-label="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
-    <fieldset class="modes">
-      <legend>Modo de análisis</legend>
-      <label class="check"><input type="radio" name="mode" value="instantanea" checked> <span><b>Instantánea</b> — solo datos satelitales y de reanálisis de la zona. No necesita nada de tu parte.</span></label>
-      <label class="check"><input type="radio" name="mode" value="precisa"> <span><b>Precisa</b> — agrega datos de <em>tu parcela</em> (siembra real, fases observadas, riego).</span></label>
-    </fieldset>
-    <div class="grid2">
-      <label>Cultivo de la campaña anterior<select id="h0"><option value="arroz" selected>Arroz</option><option value="frijol">Frijol</option></select></label>
-      <label>Próxima campaña a sembrar<select id="slot"><option value="A">Grande (≈ 21 ene)</option><option value="B">Chica (≈ 15 jul)</option></select></label>
-    </div>
-    <label class="check"><input id="irr" type="checkbox" checked> <span>La parcela dispone de riego (necesario para arroz)</span></label>
-    <div id="precisaBox" hidden>
-      <h3>Datos de tu parcela (todo es opcional)</h3>
-      <p class="hint">Usa solo lo que sepas: cada dato se aplica por separado y la pantalla te dirá qué se usó y qué no. Lo que ingreses <b>no se guarda</b> en el servidor y no se verifica.</p>
-      <div class="grid2">
-        <label>Fecha de siembra real<input id="sow" type="date"></label>
-        <label>Cómo sembraste<select id="estab"><option value="">— no indicar —</option><option value="siembra_directa">Siembra directa</option><option value="trasplante">Trasplante</option></select></label>
-        <label>Variedad<input id="variety" type="text" maxlength="40" placeholder="Tinajones"></label>
-      </div>
-      <h4>Fechas observadas <small>(requieren la siembra real)</small></h4>
-      <div class="grid2">
-        <label>Macollaje<input id="od_tillering" type="date"></label>
-        <label>Panoja<input id="od_panicle" type="date"></label>
-        <label>Floración<input id="od_flowering" type="date"></label>
-        <label>Maduración córnea<input id="od_hard_ripening" type="date"></label>
-      </div>
-      <h4>Riego</h4>
-      <div class="grid2">
-        <label>Manejo del agua<select id="irrMgmt"><option value="">— no indicar —</option><option value="inundacion_continua">Inundación continua</option><option value="intermitente">Riego intermitente</option><option value="secano">Secano</option></select></label>
-        <label>Agua recibida en la campaña (m³/ha)<input id="supply" type="number" min="0" max="40000" step="100" inputmode="decimal" placeholder="p. ej. 12000"></label>
-        <label>Pérdida por filtración (mm/día)<input id="perc" type="number" min="0" max="30" step="0.5" inputmode="decimal" placeholder="p. ej. 5"></label>
-      </div>
-    </div>
-    <div class="dlg-foot"><button class="cta" id="dlgApply" value="apply">Aplicar y recalcular</button></div>
-  </form>
-</dialog>
+
 
 <dialog id="dlgRot" aria-labelledby="dlgRotT">
   <div id="dlgRotBody"></div>
 </dialog>
 
-<footer class="foot">Field Shift · demo de investigación independiente. Resultados = índices relativos con datos de baja resolución y un ciclo calibrado con una sola temporada; no son rendimientos ni lámina de riego real, y no están validados por un agrónomo.</footer>
+<footer class="foot">Field Shift · rotación de cultivos con datos satelitales y de estación. <a href="#aprende" data-go="aprende">Alcance, metodología, fuentes e incertidumbre</a></footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>

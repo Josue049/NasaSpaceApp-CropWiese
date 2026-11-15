@@ -18,6 +18,9 @@ const ENGINE_VERSION = 'v2.0 · dos etapas (viabilidad → comparación)';
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const mean = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 const med = (a) => { const q = [...a].filter(Number.isFinite).sort((x, y) => x - y); return q.length ? q[Math.floor((q.length - 1) / 2)] : NaN; };
+/** Mediana y media ponderadas (pesos de confiabilidad de la fuente de lluvia). */
+function wmed(vals, ws) { const a = vals.map((v, i) => [v, ws[i]]).filter(([v]) => Number.isFinite(v)).sort((x, y) => x[0] - y[0]); if (!a.length) return NaN; const tot = a.reduce((s, [, w]) => s + w, 0); let acc = 0; for (const [v, w] of a) { acc += w; if (acc >= tot / 2) return v; } return a[a.length - 1][0]; }
+function wmean(vals, ws) { const tot = ws.reduce((a, b) => a + b, 0); return tot ? vals.reduce((s, v, i) => s + v * ws[i], 0) / tot : 0; }
 function mulberry32(seed) { return function () { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 /** Parámetros del motor con su respaldo. status: LITERATURA | HEREDADO | PROVISIONAL | DESACTIVADO. */
@@ -45,7 +48,7 @@ function buildEnv(input, data, ov) {
   return {
     input, crops, cropList: data.crops, climates: data.climates, slope: data.slope ?? null, soil: data.soil ?? null,
     slots: data.slots, slotById: Object.fromEntries(data.slots.map((s) => [s.id, s])), slotOrder: ORDER[input.start_slot === 'B' ? 'B' : 'A'],
-    awc: awcFromSoil(data.soil), dT: tempUncertainty(prim.climate), elev: prim.climate.elevation_m, primary: prim.id, cache: new Map(), ov: ov || {},
+    awc: awcFromSoil(data.soil), dT: tempUncertainty(prim.climate), elev: prim.climate.elevation_m, primary: prim.id, cache: new Map(), ov: ov || {}, sourceWeights: data.source_weights || null,
   };
 }
 
@@ -79,9 +82,10 @@ function viability(env, crop, slot, supply, ov) {
   const sat = pv('rice_sat_mm', ov);
   const fi = pv('fail_inviable', ov), fc = pv('fail_conditional', ov), heatSoft = pv('heat_soft', ov), covHard = pv('cover_hard', ov), covSoft = pv('cover_soft', ov);
   const draws = [];
-  for (const c of env.climates) for (const sh of [-1, 0, 1]) { const s = seasonOf(env, c.id, crop, slot, sh * env.dT, sh * env.dT); if (s) draws.push({ src: c.id, sh, s }); }
-  let fails = 0, softs = 0; const reasons = {}, tag = (k) => { reasons[k] = (reasons[k] || 0) + 1; };
-  const rows = draws.map(({ s }) => {
+  const SW = env.sourceWeights || {}, wSrc = (id) => (SW[id] != null ? SW[id] : 1 / env.climates.length);
+  for (const c of env.climates) for (const sh of [-1, 0, 1]) { const s = seasonOf(env, c.id, crop, slot, sh * env.dT, sh * env.dT); if (s) draws.push({ src: c.id, sh, s, w: wSrc(c.id) / 3 }); }
+  let fails = 0, softs = 0, totW = 0; const reasons = {}, tag = (k) => { reasons[k] = (reasons[k] || 0) + 1; };
+  const rows = draws.map(({ s, w }) => {
     let fail = false, soft = false;
     const dur = s.dur_days ?? s.max_days;
     const need = netNeed(crop, s, perc, sat);
@@ -98,10 +102,10 @@ function viability(env, crop, slot, supply, ov) {
     if (s.heat_frac > heatSoft) { soft = true; tag('calor sobre el umbral en la etapa media'); }
     if (!fail && cov < covSoft) { soft = true; tag('cobertura hídrica < 80 %'); }
     if (crop.ph && env.soil) { const ph = env.soil.phh2o.mean, d = ph < crop.ph[0] ? crop.ph[0] - ph : ph > crop.ph[1] ? ph - crop.ph[1] : 0; if (d > 0.5) { soft = true; tag('pH fuera del óptimo'); } }
-    if (fail) fails++; else if (soft) softs++;
-    return { s, need, cov, fail };
+    totW += w; if (fail) fails += w; else if (soft) softs += w;
+    return { s, need, cov, fail, w };
   });
-  const n = rows.length || 1, pFail = fails / n, pSoft = softs / n;
+  const n = rows.length || 1, pFail = totW ? fails / totW : 0, pSoft = totW ? softs / totW : 0;
   const doc = (crop.local_evidence && crop.local_evidence.campaigns_documented) || null;
   const localEvidence = doc ? doc.includes(slot.id) : null; // null = sin información de campañas
   const status = pFail >= fi ? 'inviable' : pFail > fc ? 'condicionada' : 'favorable';
@@ -113,8 +117,8 @@ function viability(env, crop, slot, supply, ov) {
   const hi = (r) => netNeed(crop, r.s, crop.id === 'arroz' ? PARAMS.rice_perc_mm_day.range[1] : 0, crop.id === 'arroz' ? PARAMS.rice_sat_mm.range[1] : 0);
   return {
     crop: crop.id, slot: slot.id, status, p_fail: +pFail.toFixed(2), p_alert: +pSoft.toFixed(2), reasons, local_evidence: localEvidence, n_draws: n,
-    m: { dur: med(use.map((r) => r.s.dur_days ?? r.s.max_days)), etc: med(use.map((r) => r.s.etc_mm || 0)), rain: med(use.map((r) => r.s.rain_mm || 0)), need: med(needAll), need_range: [Math.min(...use.map(lo)), Math.max(...use.map(hi))],
-      heat: mean(use.map((r) => r.s.heat_frac)), cov: mean(use.map((r) => r.cov)), complete: mean(use.map((r) => r.s.complete_frac)), tmean: mean(use.map((r) => r.s.tmean || 0)), early: mean(use.map((r) => r.s.heavy_early_mm || 0)), prim: prim ? prim.s : null },
+    m: { dur: wmed(use.map((r) => r.s.dur_days ?? r.s.max_days), use.map((r) => r.w)), etc: wmed(use.map((r) => r.s.etc_mm || 0), use.map((r) => r.w)), rain: wmed(use.map((r) => r.s.rain_mm || 0), use.map((r) => r.w)), need: wmed(needAll, use.map((r) => r.w)), need_range: [Math.min(...use.map(lo)), Math.max(...use.map(hi))],
+      heat: wmean(use.map((r) => r.s.heat_frac), use.map((r) => r.w)), cov: wmean(use.map((r) => r.cov), use.map((r) => r.w)), complete: wmean(use.map((r) => r.s.complete_frac), use.map((r) => r.w)), tmean: wmean(use.map((r) => r.s.tmean || 0), use.map((r) => r.w)), early: wmean(use.map((r) => r.s.heavy_early_mm || 0), use.map((r) => r.w)), prim: prim ? prim.s : null },
     rows, // para el recálculo con otras hipótesis de percolación
   };
 }
@@ -304,7 +308,7 @@ function run(input, data, ov) {
     viability: Object.fromEntries(env.cropList.map((c) => [c.id, Object.fromEntries(slotIds.map((sid) => { const v = V[c.id][sid]; return [sid, { status: v.status, p_fail: v.p_fail, p_alert: v.p_alert, reasons: v.reasons, local_evidence: v.local_evidence, duration_days: v.m.dur, etc_mm: Math.round(v.m.etc), rain_mm: Math.round(v.m.rain), net_water_need_mm: Math.round(v.m.need), net_water_need_range_mm: v.m.need_range.map(Math.round), heat_frac: +v.m.heat.toFixed(2), tmean_c: +v.m.tmean.toFixed(1) }]; }))])),
     eligibility, strategies, no_viable: noViable, limitations,
     water: { supply_basis: supply.basis, supply_mm_per_campaign: supply.mm === Infinity ? null : supply.mm, rice_percolation_mm_day: perc, rice_percolation_range: PARAMS.rice_perc_mm_day.range, rice_saturation_mm: sat },
-    economics: econReport, keep_main: keep,
+    economics: econReport, keep_main: keep, source_weights: env.sourceWeights ? { ...env.sourceWeights, basis: 'confiabilidad de la lluvia: 1/RMSE² mensual frente a SENAMHI Morropón 2001-2014 (docs/VALIDACION_FUENTES_SENAMHI.md)' } : { basis: 'pesos iguales (sin calibración disponible)' },
     engine_params: Object.entries(PARAMS).map(([k, p]) => ({ id: k, value: p.value, range: p.range || null, status: p.status, source: p.source })),
     weights: Object.fromEntries(Object.entries(w0).map(([k, v]) => [k, +v.toFixed(3)])), weighting_model: 'v2: prioridades repartidas entre criterios sin duplicar', weights_status: 'PROVISIONALES: derivadas de las prioridades del agricultor; no calibradas con datos de campaña.',
     sensitivity: { draws: N, perturbation: 'pesos × exp(N(0,0.35²)); N ordinal ±0,5; percolación del arroz y saturación dentro del rango FAO (salvo que el agricultor declare la suya); fuente de lluvia al azar; semilla fija', comparisons, alt_a_is_top: acc.aTop / N, alt_a_beats_current: acc.aBeatsCur / N, alt_b_beats_current: acc.bBeatsCur / N,

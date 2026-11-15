@@ -4,7 +4,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const MES_LARGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
-const CROP = { arroz: { name: 'Arroz' }, frijol: { name: 'Frijol' } };
+const CROP = { arroz: { name: 'Arroz' }, loctao: { name: 'Frijol Loctao' }, frijol: { name: 'Frijol común' } };
 const ico = (n) => '<svg class="i" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
 const fmtMD = (m, d) => `${d} ${MES[m - 1]}`;
 const fmtISO = (md) => { const [m, d] = md.split('-').map(Number); return fmtMD(m, d); };
@@ -12,7 +12,7 @@ const fmtLong = (iso) => { const [y, m, d] = iso.split('-').map(Number); return 
 // Etiquetas prudentes: sin respaldo local ninguna fecha se declara «viable» de forma concluyente.
 const STATUS = { viable: ['Sin impedimento térmico', 'ok'], marginal: ['Dudosa', 'warn'], no_viable: ['Incompatible', 'bad'] };
 const LEVEL = { claramente_preferible: 'claramente preferible', probablemente_preferible: 'probablemente preferible', practicamente_equivalentes: 'prácticamente equivalentes', indistinguibles: 'indistinguibles' };
-const state = { rot: null, rice: null, sat: null, valid: null, meta: null };
+const state = { rot: null, rice: null, sat: null, valid: null, meta: null, recent: null, senamhi: null };
 let pollTimer = null;
 
 // ---------- vistas ----------
@@ -31,9 +31,11 @@ $('btnMenu').addEventListener('click', () => setMenu(!document.body.classList.co
 $('dlgRot').addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === $('dlgRot')) $('dlgRot').close(); });
 document.addEventListener('click', (e) => { const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); showView(g.dataset.go); } });
 $('btnHelp').addEventListener('click', () => showView('aprende'));
+document.addEventListener('click', (e) => { if (e.target.closest('[data-open-precisa]')) { e.preventDefault(); $('btnAdjust').click(); } });
 
-// ---------- modos: Instantánea / Precisa ----------
+// ---------- modos: Instantánea / Precisa (dentro del bloque 2) ----------
 const getMode = () => (document.querySelector('input[name="mode"]:checked') || {}).value || 'instantanea';
+const getSlot = () => (document.querySelector('input[name="slot"]:checked') || {}).value || 'A';
 const numOrNull = (id) => { const v = $(id).value; return v === '' ? null : Number(v); };
 function insituPayload() {
   if (getMode() !== 'precisa') return null;
@@ -41,18 +43,32 @@ function insituPayload() {
   return { sowing_date: $('sow').value || null, establishment: $('estab').value || null, variety: $('variety').value || null, observed_dates: od,
     irrigation: { management: $('irrMgmt').value || null, supply_m3_ha: numOrNull('supply'), percolation_mm_day: numOrNull('perc') } };
 }
+// Economía y cultivo principal: solo en modo Precisa, solo lo que el agricultor escribe (nada se rellena por defecto).
+function economicsPayload() {
+  if (getMode() !== 'precisa') return null;
+  const out = {};
+  for (const c of ['arroz', 'loctao']) {
+    const g = (k) => numOrNull(`e_${c}_${k}`);
+    const o = { yield_t_ha: g('yield'), price_s_per_kg: g('price'), cost_establishment_s_ha: g('est'), cost_irrigation_s_ha: g('irr'), cost_other_s_ha: g('oth') };
+    if (Object.values(o).some((v) => v != null)) out[c] = o;
+  }
+  return Object.keys(out).length ? out : null;
+}
+function keepPayload() {
+  if (getMode() !== 'precisa' || !$('keepCrop').value) return null;
+  const w = $('keepWhere').value, crop = $('keepCrop').value;
+  if (w === 'A' || w === 'B') return { crop, campaigns: [w] };
+  if (w === 'AB') return { crop, campaigns: ['A', 'B'] };
+  return { crop, min_campaigns: w === 'min3' ? 3 : 2 };
+}
 function syncMode() {
   const p = getMode() === 'precisa';
   $('precisaBox').hidden = !p;
-  $('modeLabel').textContent = p ? 'Precisa' : 'Instantánea';
   $('chipMode').textContent = 'Demo · ' + (p ? 'Precisa' : 'Instantánea');
 }
 document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncMode));
-const dlg = $('dlg');
-const openDlg = () => { syncMode(); if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); };
-$('btnAdjust').addEventListener('click', openDlg);
-$('linkAdjust').addEventListener('click', (e) => { e.preventDefault(); openDlg(); });
-dlg.addEventListener('close', () => { syncMode(); if (dlg.returnValue === 'apply') generate(); });
+document.querySelectorAll('input[name="slot"]').forEach((r) => r.addEventListener('change', () => { renderTiles(); }));
+$('btnAdjust').addEventListener('click', () => { document.querySelector('input[name="mode"][value="precisa"]').checked = true; syncMode(); $('t2').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
 
 const modeBadge = (j) => {
   if (!j || !j.mode) return '';
@@ -71,11 +87,11 @@ function setMsg(text, kind) { const m = $('msg'); m.hidden = !text; m.textConten
 async function generate() {
   const lat = Number($('lat').value), lon = Number($('lon').value);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return setMsg('Toca el mapa para ubicar tu parcela.', 'bad');
-  $('btnGo').disabled = true; setMsg('Calculando con datos reales de la zona…');
-  const mode = getMode(), insitu = insituPayload(), area = $('area').value;
+  $('btnGo').disabled = true; setMsg('Calculando con los datos de tu punto…');
+  const mode = getMode(), insitu = insituPayload(), area = $('area').value, economics = economicsPayload(), keep_main = keepPayload();
   try {
     const [rot, rice] = await Promise.all([
-      post('/api/rotation/analyze', { lat, lon, area_ha: area, history: [$('h0').value, $('h1').value], start_slot: $('slot').value, irrigation: $('irr').checked, mode, insitu }),
+      post('/api/rotation/analyze', { lat, lon, area_ha: area, history: [$('h0').value, $('h1').value], start_slot: getSlot(), irrigation: $('irr').checked, mode, insitu, economics, keep_main }),
       post('/api/rice/analyze', { lat, lon, area_ha: area, sowing_date: (insitu && insitu.sowing_date) || null, mode, insitu }),
     ]);
     if (!rot.ok) { setMsg((rot.j.error || 'Error') + (rot.j.details ? ': ' + rot.j.details.join('; ') : ''), 'bad'); return; }
@@ -85,7 +101,7 @@ async function generate() {
     if (!rot.j.unsupported) { $('rotWrap').scrollIntoView({ behavior: 'smooth', block: 'start' }); fetchSat(lat, lon); }
     clearTimeout(pollTimer);
     const job = rot.j.imerg_job;
-    if (job && job.state === 'downloading') { setMsg(`Descargando lluvia satelital IMERG (${job.done}/${job.total} años). Mientras tanto se usa ERA5/POWER; el resultado se actualizará solo.`); pollTimer = setTimeout(generate, 20000); }
+    if (job && job.state === 'downloading') { setMsg(`Descargando la lluvia satelital IMERG de la celda de tu punto (${job.done}/${job.total} años). Mientras tanto la lluvia sale de ERA5/POWER y el resultado se actualizará solo.`); pollTimer = setTimeout(generate, 20000); }
   } catch (e) { setMsg('No se pudo conectar con el servidor: ' + e.message, 'bad'); } finally { $('btnGo').disabled = false; }
 }
 $('btnGo').addEventListener('click', generate);
@@ -95,91 +111,181 @@ async function fetchSat(lat, lon) {
   renderTiles();
 }
 
-// ---------- tarjetas de rotación ----------
+// ---------- tarjetas de rotación: línea de tiempo agrícola ----------
 const cropName = (c) => (CROP[c] ? CROP[c].name : c);
-// Ilustración según los cultivos reales de la secuencia (solo arroz y frijol).
-function cropArt(seq) {
-  const set = [...new Set(seq)], img = (c, cls) => '<img class="' + cls + '" src="images/crops/' + c + '.png" alt="' + esc(cropName(c)) + '" loading="lazy">';
-  if (set.length === 1) return '<div class="crop-art solo">' + img(set[0], 'a') + '</div>';
-  return '<div class="crop-art duo">' + img('arroz', 'a') + img('frijol', 'b') + '</div>';
+const cropImg = (c) => 'images/crops/' + (c === 'arroz' ? 'arroz.png' : c === 'loctao' ? 'loctao.svg' : 'frijol.png');
+const SLOT_START = { A: [1, 21], B: [7, 15] }, SLOT_NAME = { A: 'Grande', B: 'Chica' };
+const VIAB = { favorable: ['Viable', 'ok'], condicionada: ['Condicionada', 'warn'], inviable: ['No viable', 'bad'] };
+const nf = (n) => Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+// La primera campaña es la próxima aparición de su fecha de referencia; el resto sigue su desplazamiento de años.
+function firstYear(slot) { const now = new Date(), [m, d] = SLOT_START[slot]; return new Date(now.getFullYear(), m - 1, d, 23, 59) >= now ? now.getFullYear() : now.getFullYear() + 1; }
+const fmtDay = (dt) => `${dt.getUTCDate()} ${MES[dt.getUTCMonth()]}`;
+function stepDates(t, y0) {
+  const [m, d] = SLOT_START[t.slot], s = new Date(Date.UTC(y0 + t.year_offset, m - 1, d)), e = new Date(s.getTime() + (t.duration_days || 0) * 864e5);
+  return `${fmtDay(s)} ${s.getUTCFullYear()} → ${fmtDay(e)}${e.getUTCFullYear() !== s.getUTCFullYear() ? ' ' + e.getUTCFullYear() : ''}`;
 }
-// Título resumido (primeras dos campañas); la secuencia completa está en el análisis detallado.
-const seqTitle = (seq) => seq.slice(0, 2).map(cropName).join(' – ');
-const seqFull = (seq) => seq.map(cropName).join(' → ');
-function rotDetailHtml(s, v) {
+function stratTitle(seq) {
+  const u = [...new Set(seq)];
+  if (u.length === 1) return cropName(u[0]) + ' continuo';
+  return seq.every((c, i) => i === 0 || c !== seq[i - 1]) ? 'Alterna ' + u.map(cropName).join(' y ') : u.map(cropName).join(' y ') + ' combinados';
+}
+const sumNeed = (s) => s.timeline.reduce((a, t) => a + (t.water_need_mm || 0), 0);
+function whyText(s, cur, r) {
+  if (s.id === 'current') return 'Tu rotación actual proyectada: sirve de punto de comparación.' + (s.timeline.some((t) => t.viability.status === 'inviable') ? ' Incluye campañas que los datos consideran no viables.' : '');
+  const out = [], dW = sumNeed(cur) - sumNeed(s), leg = s.sequence.filter((c) => c === 'loctao').length;
+  if (dW > 200) out.push(`Necesita unos ${nf(dW)} mm menos de riego en cuatro campañas que tu rotación actual.`);
+  else if (dW < -200) out.push(`Pide unos ${nf(-dW)} mm más de riego que tu rotación actual.`);
+  if (leg && s.sequence.length !== leg) out.push('La leguminosa aporta nitrógeno y rompe la repetición del mismo cultivo.');
+  if (leg === s.sequence.length) out.push('Todas las campañas son de leguminosa: sin alternancia, la repetición del cultivo acumula plagas y enfermedades.');
+  if (r.keep_main) out.push(`Respeta ${cropName(r.keep_main.crop)} como cultivo principal.`);
+  return out.join(' ') || 'Opción viable con puntaje relativo distinto al de tu rotación actual.';
+}
+function timelineHtml(s, y0) {
+  return '<ol class="tl">' + s.timeline.map((t) => {
+    const v = VIAB[t.viability.status] || VIAB.favorable, local = t.viability.local_evidence === false ? '<span class="tl-note">sin evidencia local directa</span>' : '';
+    return '<li class="tl-step st-' + v[1] + '"><span class="tl-dot" aria-hidden="true"></span><img class="tl-img" src="' + cropImg(t.crop) + '" alt="" loading="lazy">'
+      + '<div class="tl-body"><div class="tl-top"><b>' + esc(cropName(t.crop)) + '</b><span class="tl-chip">' + SLOT_NAME[t.slot] + '</span><span class="tl-state ' + v[1] + '">' + v[0] + '</span></div>'
+      + '<small>' + esc(stepDates(t, y0)) + ' · ' + (t.duration_days ?? '—') + ' días</small>'
+      + '<small>Riego neto ≈ ' + nf(t.water_need_mm) + ' mm · días de calor ' + Math.round(t.heat_stress_frac * 100) + ' %</small>' + local + '</div></li>';
+  }).join('') + '</ol>';
+}
+function critList(s) { return Object.entries(s.criteria || {}).map(([k, c]) => '<tr><td>' + esc(c.label) + '</td><td class="num">' + Math.round(c.score * 100) + '</td><td class="num">' + Math.round(c.weight * 100) + ' %</td></tr>').join(''); }
+function rotDetailHtml(s, v, r) {
   const li = (a, cls) => (a || []).map((x) => '<li' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(x) + '</li>').join('');
-  const heat = s.timeline.length ? s.timeline.reduce((a, t) => a + t.heat_stress_frac, 0) / s.timeline.length : 0;
+  const y0 = firstYear(r.context.start_slot);
   return '<div class="dlg-head"><h2 id="dlgRotT">' + esc(s.label) + '</h2><button class="icon-btn" data-close aria-label="Cerrar">' + ico('x') + '</button></div>'
-    + '<p class="hint"><b>Secuencia completa (' + s.sequence.length + ' campañas):</b> ' + esc(seqFull(s.sequence)) + '</p>'
-    + '<div class="rot-stats"><div><span><b>' + s.score + '</b><small>Puntaje relativo (0–100), no es rendimiento</small></span></div><div><span><b>' + Math.round(heat * 100) + ' %</b><small>Días de calor en la etapa media (promedio)</small></span></div></div>'
+    + '<p class="hint"><b>Secuencia (' + s.sequence.length + ' campañas):</b> ' + esc(s.sequence.map(cropName).join(' → ')) + '</p>' + timelineHtml(s, y0)
+    + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100); compara opciones, no es rendimiento</small></span></div><div>' + ico('cloud') + '<span><b>' + nf(sumNeed(s)) + ' mm</b><small>Riego neto en cuatro campañas</small></span></div></div>'
     + (v ? '<p class="verdict">Frente a la actual: <b>' + esc(LEVEL[v.level] || v.level) + '</b> (' + esc(v.text) + ')</p>' : '')
-    + ((s.reasons || []).length ? '<h3>Por qué puntúa así</h3><ul class="checks">' + li(s.reasons) + '</ul>' : '')
-    + ((s.risks || []).length || (s.violations || []).length ? '<h3>Riesgos y advertencias</h3><ul class="checks">' + li(s.risks, 'warn') + li(s.violations, 'warn') + '</ul>' : '')
-    + '<h3>Campaña por campaña</h3><ul class="kv">' + s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + esc(t.slot_label) + ' · ciclo ' + (t.duration_days ?? '—') + ' d · agua ' + t.water_coverage_pct + ' % · calor ' + Math.round(t.heat_stress_frac * 100) + ' %</li>').join('') + '</ul>';
+    + '<h3>Cómo se puntúa esta secuencia</h3><table class="tbl"><thead><tr><th>Criterio</th><th class="num">Valor (0–100)</th><th class="num">Peso</th></tr></thead><tbody>' + critList(s) + '</tbody></table>'
+    + '<p class="hint">Antes de puntuar se comprobó la viabilidad de cada campaña; las opciones no viables no compiten.</p>'
+    + ((s.reasons || []).length ? '<h3>Por qué se propone</h3><ul class="checks">' + li(s.reasons) + '</ul>' : '')
+    + ((s.risks || []).length || (s.violations || []).length ? '<h3>Riesgos y condiciones</h3><ul class="checks">' + li(s.risks, 'warn') + li(s.violations, 'warn') + '</ul>' : '')
+    + '<h3>Campaña por campaña</h3><ul class="kv">' + s.timeline.map((t) => '<li><b>' + esc(t.crop_name) + '</b> · ' + SLOT_NAME[t.slot] + ' · ' + (VIAB[t.viability.status] || ['—'])[0] + ' · ciclo ' + (t.duration_days ?? '—') + ' d · riego neto ' + nf(t.water_need_mm) + ' mm (rango ' + nf(t.water_need_range_mm[0]) + '–' + nf(t.water_need_range_mm[1]) + ') · ETc ' + nf(t.etc_mm) + ' mm · lluvia ' + nf(t.rain_mm) + ' mm</li>').join('') + '</ul>'
+    + (s.economics && s.economics.complete ? '<p class="note">Margen acumulado según los datos que declaraste: <b>S/ ' + nf(s.economics.margin_s_ha_horizon) + ' por ha</b> en cuatro campañas (no verificado).</p>' : '');
+}
+function noViableHtml(nv) {
+  return '<div class="panel noviable"><h3>' + ico('info') + ' No hay una rotación que proponer con estos datos</h3><p>' + esc(nv.summary) + '</p>'
+    + '<table class="tbl"><thead><tr><th>Campaña</th><th>Cultivo</th><th>Estado</th><th>Motivo principal</th></tr></thead><tbody>'
+    + nv.by_campaign.flatMap((c) => c.crops.map((x) => '<tr><td>' + (c.slot === 'A' ? 'Grande' : 'Chica') + '</td><td>' + esc(x.name) + '</td><td><span class="tl-state ' + (VIAB[x.status] || ['', 'warn'])[1] + '">' + (VIAB[x.status] || ['—'])[0] + '</span></td><td>' + esc(x.reasons[0] || '—') + '</td></tr>')).join('') + '</tbody></table>'
+    + '<h4>Qué permitiría evaluarlo</h4><ul class="checks">' + nv.what_would_help.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+}
+const acc = (icon, title, body, open) => '<details class="acc"' + (open ? ' open' : '') + '><summary>' + ico(icon) + '<span>' + title + '</span>' + ico('chev') + '</summary><div class="acc-body">' + body + '</div></details>';
+const pctW = (x) => Math.round(100 * x) + ' %';
+function interpHtml(r) {
+  const lr = r.location_report || {}, T = r.temperature || {}, W = r.source_weights || {}, V = state.senamhi, pt = lr.point || {};
+  const stat = (id) => { const s = (lr.sources || []).find((x) => x.id === id); return s ? (s.status === 'no_disponible' ? 'no disponible' : s.status) : '—'; };
+  const rows = [
+    ['Lluvia', 'GPM IMERG V07 (0,1°) como fuente principal; ERA5 y POWER como escenarios alternativos', 'Pesos de confiabilidad: IMERG ' + pctW(W.imerg || 0) + ' · POWER ' + pctW(W.power || 0) + ' · ERA5 ' + pctW(W.era5 || 0) + ' (según su error frente a SENAMHI Morropón). IMERG: ' + stat('imerg') + '.'],
+    ['Temperatura', esc(T.source || '—'), esc(T.validation || '')],
+    ['Días de calor', T.method === 'senamhi_monthly' ? 'Frecuencia observada en la estación SENAMHI Morropón (1981–2014)' : 'Serie corregida de reanálisis', T.method === 'senamhi_monthly' ? 'Los reanálisis corregidos subestiman 2–5 veces los días ≥ 35 °C; por eso usamos lo observado.' : 'Sin calibración mensual disponible.'],
+    ['Relieve y suelo', 'SRTM (30 m) y SoilGrids (250 m) en tu punto', (pt.elevation_m != null ? pt.elevation_m + ' m de altitud, ' + pt.slope_pct + ' % de pendiente' : 'sin dato de relieve') + (pt.soil_ph != null ? ', pH ≈ ' + pt.soil_ph : ', sin dato de suelo')],
+  ];
+  const t1 = '<table class="tbl"><thead><tr><th>Dato</th><th>Fuente</th><th>Verificación / estado</th></tr></thead><tbody>' + rows.map((x) => '<tr><td><b>' + x[0] + '</b></td><td>' + (x[0] === 'Temperatura' ? x[1] : esc(x[1])) + '</td><td>' + (x[0] === 'Temperatura' ? x[2] : esc(x[2])) + '</td></tr>').join('') + '</tbody></table>'
+    + ((lr.fallbacks || []).length ? '<p class="hint"><b>Respaldo aplicado en este punto:</b></p><ul>' + lr.fallbacks.map((f) => '<li>' + esc(f.text) + '</li>').join('') + '</ul>' : '')
+    + '<p class="hint">' + esc(lr.note || '') + '</p>';
+  let t2;
+  if (V && V.precipitacion) {
+    const f = V.precipitacion.fuentes;
+    t2 = '<p>Comparamos cada fuente con la estación <b>' + esc(V.estacion.nombre) + '</b> (' + esc(V.estacion.periodo_serie) + '; lluvia con ' + V.estacion.cobertura_pct.lluvia + ' % de días válidos) en el periodo que comparten, <b>' + esc(V.periodo_comparado.inicio) + ' → ' + esc(V.periodo_comparado.fin) + '</b>, separando calibración y validación en el tiempo.</p>'
+      + '<table class="tbl"><thead><tr><th>Fuente de lluvia</th><th class="num">Error mensual (mm)</th><th class="num">Sesgo</th><th class="num">Correlación (temporada ene–abr)</th><th class="num">Peso</th></tr></thead><tbody>' + f.map((x) => '<tr><td>' + esc(x.id.toUpperCase()) + '</td><td class="num">' + x.rmse_mensual_mm.toFixed(0) + '</td><td class="num">' + (x.sesgo_pct > 0 ? '+' : '') + Math.round(x.sesgo_pct) + ' %</td><td class="num">' + x.r_temporada_ene_abr.toFixed(2) + '</td><td class="num">' + pctW(x.peso) + '</td></tr>').join('') + '</tbody></table>'
+      + '<ul><li><b>IMERG</b> reproduce bien las temporadas de lluvia y es la fuente principal; no le aplicamos corrección porque no mejoró de forma estable fuera de muestra.</li>'
+      + '<li><b>Temperatura:</b> el sesgo de los reanálisis cambia con la estación del año, así que lo corregimos mes a mes con la estación; el error fuera de muestra es de ' + (V.temperatura.rmse_fuera_de_muestra_c ? 'Tmax ' + V.temperatura.rmse_fuera_de_muestra_c.Tmax + ' °C, Tmin ' + V.temperatura.rmse_fuera_de_muestra_c.Tmin + ' °C' : '—') + '.</li>'
+      + '<li>' + esc(V.supuesto) + '</li></ul>';
+  } else t2 = '<p>Comparamos cada fuente con la estación SENAMHI Morropón y usamos esa verificación para elegir y corregir los datos.</p>';
+  const t3 = '<ul><li>Primero comprobamos si cada cultivo <b>puede completar su ciclo</b> en cada campaña de tu parcela (temperatura, agua, suelo, pendiente). Lo que no es viable no compite.</li>'
+    + '<li>El <b>puntaje relativo (0–100)</b> compara las opciones viables entre sí. No es un rendimiento ni una ganancia.</li>'
+    + '<li>Cada resultado se prueba frente a cambios plausibles en pesos, agua y fuente de lluvia; «claramente preferible» significa que gana casi siempre, y «equivalentes» que no hay diferencia real.</li>'
+    + '<li>El puntaje considera agua necesaria, calor, suelo, rotación' + (r.economics && r.economics.complete ? ' y tu margen económico declarado' : '') + '.</li></ul>';
+  const falta = [];
+  if (!(r.water && r.water.supply_mm_per_campaign != null)) falta.push('el <b>volumen de riego</b> disponible por campaña');
+  if (!r.keep_main) falta.push('el <b>cultivo principal</b> que quieres conservar');
+  if (!(r.economics && r.economics.complete)) falta.push('tus <b>costos, rendimiento y precio</b> esperados');
+  falta.push('la <b>fecha real de siembra</b> y la <b>pérdida por filtración</b> del arroz');
+  const t4 = '<p>Con estos datos del modo Precisa el análisis se ajusta a tu parcela: ' + falta.join(', ') + '.</p><button type="button" class="link-btn" data-open-precisa>' + ico('sprout') + ' Abrir el modo Precisa</button>';
+  const prov = (r.engine_params || []).filter((p) => p.status === 'PROVISIONAL' || p.status === 'DESACTIVADO');
+  const t5 = '<p class="hint">Valores que todavía se calibran. Se informan para que veas qué puede mover una decisión; se probaron en rangos y los resultados clave se mantienen salvo la percolación del arroz cuando el agua es limitada.</p><table class="tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Estado</th></tr></thead><tbody>'
+    + (r.engine_params || []).map((p) => '<tr><td>' + esc(p.id) + '</td><td>' + (p.value == null ? '—' : esc(String(p.value))) + (p.range ? ' (rango ' + p.range.join('–') + ')' : '') + '</td><td><span class="tl-state ' + (p.status === 'LITERATURA' || p.status === 'HEREDADO' ? 'ok' : 'warn') + '">' + esc(p.status.toLowerCase()) + '</span></td></tr>').join('') + '</tbody></table>';
+  return '<section class="interp" aria-labelledby="interpT"><h2 id="interpT">' + ico('info') + ' Conoce cómo interpretamos tu recomendación</h2>'
+    + acc('database', 'Qué datos trabajan por ti', t1, true) + acc('check', 'Cómo verificamos los datos', t2, false) + acc('chart', 'Cómo leer tu puntaje', t3, false)
+    + acc('sprout', 'Qué puedes aportar para afinar el resultado', t4, false) + (prov.length ? acc('clock', 'Parámetros en calibración', t5, false) : '') + '</section>';
 }
 function renderRot() {
   const r = state.rot, wrap = $('rotWrap'); wrap.hidden = false;
   if (r.unsupported) { $('rotCards').innerHTML = '<div class="panel" style="grid-column:1/-1">' + r.support.blockers.map((b) => '<p class="note bad">' + esc(b) + '</p>').join('') + '</div>'; $('rotNotes').innerHTML = ''; return; }
-  const cmp = r.sensitivity && r.sensitivity.comparisons, alts = r.strategies.filter((s) => s.id !== 'current');
-  const bestId = alts.length ? alts.reduce((m, s) => (s.score > m.score ? s : m), alts[0]).id : null;
+  const cur = r.strategies[0], y0 = firstYear(r.context.start_slot || 'A'), cmp = r.sensitivity && r.sensitivity.comparisons;
   const vOf = (s) => (s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null);
+  const note = r.engine === 'v2' && !r.keep_main && !(r.economics && r.economics.complete) && r.strategies.length > 1
+    ? '<p class="note value-note" style="grid-column:1/-1">' + ico('info') + ' <span>Esta comparación considera agua, calor, suelo y rotación, pero <b>no incluye tu cultivo principal ni tus márgenes</b>; por eso puede favorecer al cultivo que menos agua necesita. Indícalos en el modo Precisa para afinarla. <a href="#" data-open-precisa>Abrir modo Precisa</a></span></p>' : '';
   const cards = r.strategies.map((s, idx) => {
-    const heat = s.timeline.length ? s.timeline.reduce((a, t) => a + t.heat_stress_frac, 0) / s.timeline.length : 0;
-    const name = s.id === 'alt_a' ? 'Alternativa A' : s.id === 'alt_b' ? 'Alternativa B' : s.label.split(' · ')[0];
-    const desc = (s.label.split(' · ')[1] || '').trim();
-    const tag = s.id === 'current' ? ico('clock') + ' Rotación actual' : s.id === bestId ? ico('star') + ' ' + esc(name) + ' (mayor puntaje)' : ico('sprout') + ' ' + esc(name);
-    // máximo tres puntos visibles: razones primero, luego riesgos; el resto va en el análisis detallado
-    const pts = [...(s.reasons || []).map((x) => [x, false]), ...(s.risks || []).map((x) => [x, true]), ...(s.violations || []).map((x) => [x, true])].slice(0, 3);
-    const checks = pts.map(([x, w]) => '<li' + (w ? ' class="warn"' : '') + '>' + esc(x) + '</li>').join('');
-    return '<article class="rot ' + (s.id === bestId ? 'best' : s.id === 'current' ? '' : 'alt') + '"><span class="rot-tag">' + tag + '</span>'
-      + '<div class="rot-top">' + cropArt(s.sequence)
-      + '<div class="rot-body"><h3 class="rot-name">' + esc(seqTitle(s.sequence)) + '</h3>'
-      + '<p class="rot-sub">' + (s.id === 'current' ? 'Tu rotación actual proyectada: sirve como punto de comparación.' : (desc ? esc(desc.charAt(0).toUpperCase() + desc.slice(1)) + '.' : 'Alternativa de rotación.')) + '</p>'
-      + (checks ? '<ul class="checks">' + checks + '</ul>' : '') + '</div></div>'
-      + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100)</small></span></div><div>' + ico('thermo') + '<span><b>' + Math.round(heat * 100) + ' %</b><small>Días de calor, etapa media</small></span></div></div>'
+    const best = s.id === 'alt_a', name = s.id === 'alt_a' ? 'Alternativa A' : s.id === 'alt_b' ? 'Alternativa B' : 'Rotación actual';
+    const tag = s.id === 'current' ? ico('clock') + ' Rotación actual' : best ? ico('star') + ' Alternativa A (mayor puntaje)' : ico('sprout') + ' ' + name;
+    const eco = s.economics && s.economics.complete ? '<div>' + ico('chart') + '<span><b>S/ ' + nf(s.economics.margin_s_ha_horizon) + '</b><small>Margen declarado por ha</small></span></div>' : '<div>' + ico('thermo') + '<span><b>' + Math.round(100 * mean(s.timeline.map((t) => t.heat_stress_frac))) + ' %</b><small>Días de calor, etapa media</small></span></div>';
+    return '<article class="rot ' + (best ? 'best' : s.id === 'current' ? '' : 'alt') + '"><span class="rot-tag">' + tag + '</span>'
+      + '<h3 class="rot-name">' + esc(stratTitle(s.sequence)) + '</h3><p class="rot-sub">' + esc(whyText(s, cur, r)) + '</p>' + timelineHtml(s, y0)
+      + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100)</small></span></div><div>' + ico('cloud') + '<span><b>' + nf(sumNeed(s)) + ' mm</b><small>Riego neto, 4 campañas</small></span></div>' + (s.economics && s.economics.complete ? eco : '') + '</div>'
       + '<button type="button" class="link-btn" data-rot="' + idx + '">' + ico('list') + ' Ver análisis detallado</button></article>';
   }).join('');
-  $('rotCards').innerHTML = cards;
+  $('rotCards').innerHTML = note + (r.no_viable ? noViableHtml(r.no_viable) : '') + cards;
   $('rotCards').onclick = (e) => {
+    const o = e.target.closest('[data-open-precisa]'); if (o) { e.preventDefault(); $('btnAdjust').click(); return; }
     const b = e.target.closest('[data-rot]'); if (!b) return;
     const st = r.strategies[+b.dataset.rot];
-    $('dlgRotBody').innerHTML = rotDetailHtml(st, vOf(st));
+    $('dlgRotBody').innerHTML = rotDetailHtml(st, vOf(st), r);
     const d = $('dlgRot'); if (d.showModal) d.showModal(); else d.setAttribute('open', '');
   };
-  const caut = r.support.cautions.map((c) => '<li>' + esc(c) + '</li>').join('');
-  const acc = (icon, title, body, open) => '<details class="acc"' + (open ? ' open' : '') + '><summary>' + ico(icon) + '<span>' + title + '</span>' + ico('chev') + '</summary><div class="acc-body">' + body + '</div></details>';
-  $('rotNotes').innerHTML = '<section class="interp" aria-labelledby="interpT"><h2 id="interpT">' + ico('info') + ' Conoce cómo interpretamos tu recomendación</h2>'
-    + acc('sprout', 'Modo de análisis', modeBadge(r) || '<p>Modo Instantánea.</p>', false)
-    + acc('alert', 'Lectura crítica', '<ul>'
-      + '<li>Con solo dos cultivos, el mayor puntaje es en gran parte <b>alternar</b> (reglas de plagas y repetición); no es evidencia agronómica de que el frijol mejore el arroz en Morropón.</li>'
-      + '<li>El frijol común aparece con mucho calor en su etapa media en la campaña grande; la práctica local observada (arroz en la grande, frijol en agosto–septiembre) no necesariamente coincide con el orden propuesto.</li>'
-      + '<li>No se estima rendimiento ni salud del suelo: el puntaje combina criterios con escalas ordinales provisionales.</li></ul>', true)
-    + (caut ? acc('cloud', 'Advertencias de los datos', '<ul>' + caut + '</ul>', false) : '')
-    + '</section>';
+  $('rotNotes').innerHTML = interpHtml(r);
+  $('rotNotes').onclick = (e) => { if (e.target.closest('[data-open-precisa]')) $('btnAdjust').click(); };
 }
+const mean = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
 
 // ---------- mosaicos ----------
-function nextCampaign() {
-  const now = new Date(), y = now.getFullYear(), c = [[y, 0, 21, 'grande'], [y, 6, 15, 'chica'], [y + 1, 0, 21, 'grande']];
-  const t = c.find(([yy, m, d]) => new Date(yy, m, d, 23, 59) >= now) || c[2];
-  return { text: `${t[2]} de ${MES_LARGO[t[1]]}`, kind: t[3] };
+function nextCampaign(slot) {
+  const [m, d] = SLOT_START[slot];
+  return { text: `${d} de ${MES_LARGO[m - 1]} de ${firstYear(slot)}`, kind: slot === 'A' ? 'grande' : 'chica' };
+}
+async function fetchRecent() {
+  const lat = Number($('lat').value), lon = Number($('lon').value);
+  try { const r = await fetch(`/api/climate/recent?lat=${lat}&lon=${lon}`); state.recent = await r.json(); } catch { state.recent = { status: 'no_disponible' }; }
+  renderTiles();
+}
+async function loadSenamhi() {
+  try { const r = await fetch('/api/validation/senamhi'); if (r.ok) state.senamhi = await r.json(); } catch { /* opcional */ }
+  renderTiles(); if (state.rot && !state.rot.unsupported) $('rotNotes').innerHTML = interpHtml(state.rot);
+}
+function climaTile() {
+  const rec = state.recent, sen = state.senamhi, mi = new Date().getMonth();
+  let a;
+  if (!rec) a = '<p>Consultando el clima reciente…</p>';
+  else if (rec.window) {
+    const w = rec.window, c = rec.comparison, stale = rec.status === 'sin_conexion', old = rec.status === 'desactualizado';
+    a = '<p class="lbl">' + (stale ? 'Último dato guardado (sin conexión, no es actual)' : old ? 'Último dato disponible (desactualizado)' : 'Últimos ' + w.n + ' días registrados') + '</p>'
+      + '<p class="big2s">' + w.tmean_c.toFixed(1) + ' °C <small>media</small> · ' + Math.round(w.rain_mm) + ' mm <small>lluvia</small></p>'
+      + '<p class="src">Del ' + esc(fmtLong(w.from)) + ' al ' + esc(fmtLong(w.to)) + ' · NASA POWER (último dato válido: ' + esc(fmtLong(rec.last_valid_date)) + ')</p>'
+      + (c && c.differs ? '<p class="src warnline">ERA5 da ' + c.era5.tmean_c.toFixed(1) + ' °C y ' + Math.round(c.era5.rain_mm) + ' mm en esas fechas: las fuentes no coinciden y no hay estación en tiempo real para decidir.</p>' : '');
+  } else a = '<p>No se pudo consultar el clima reciente.</p>';
+  let b = '';
+  const cl = sen && sen.climatologia_2001_2014 && sen.climatologia_2001_2014[mi];
+  if (cl) b = '<p class="src">Referencia histórica, estación SENAMHI Morropón 2001–2014 (' + MES_LARGO[mi] + '): Tmáx ' + cl.tmax_c.mean + ' °C · Tmín ' + cl.tmin_c.mean + ' °C · lluvia ' + Math.round(cl.pr_total_mm.mean) + ' mm en el mes.</p>';
+  return '<div class="tile cloud"><img class="tile-art" src="img/montana-clima.png" alt=""><div class="ico">' + ico('cloud') + '</div><div><h3>Clima de la zona</h3>' + a + b + '</div></div>';
 }
 function renderTiles() {
-  const nc = nextCampaign(), ins = state.rice && state.rice.insitu && state.rice.insitu.supplied, mine = ins && ins.sowing_date;
-  const r = state.rot, prim = r && r.data_quality && r.data_quality.climate_summary ? (r.data_quality.climate_summary.find((c) => c.role === 'primary') || r.data_quality.climate_summary[0]) : null;
-  const m = prim ? prim.monthly[new Date().getMonth()] : null;
+  const slot = getSlot(), nc = nextCampaign(slot), ins = state.rice && state.rice.insitu && state.rice.insitu.supplied, mine = ins && ins.sowing_date;
+  const evid = ((state.meta && state.meta.slots) || []).find((s) => s.id === slot);
   let ndvi;
   if (!state.rot) ndvi = '<p class="big">—</p><p>Genera la recomendación para consultar el verdor de tu punto.</p>';
   else if (!state.sat) ndvi = '<p class="big">…</p><p>Consultando imágenes Sentinel‑2.</p>';
   else if (state.sat.error) ndvi = '<p class="big">—</p><p>No se pudo consultar Sentinel‑2.</p>';
   else {
     const last = [...state.sat.series].reverse().find((s) => s.valid && s.scl !== 6 && s.ndvi != null), c = state.sat.classification;
-    ndvi = last ? '<p class="big">' + last.ndvi.toFixed(2) + ' <small style="font-size:14px;font-weight:700">NDVI</small></p><p>Última imagen sin nubes: ' + esc(fmtLong(last.date)) + '</p><p class="src">' + esc(c.message) + '</p>' : '<p class="big">—</p><p>Sin imágenes despejadas en el periodo.</p>';
+    ndvi = last ? '<p class="big">' + last.ndvi.toFixed(2) + ' <small style="font-size:14px;font-weight:700">NDVI</small></p><p>Última imagen sin nubes: ' + esc(fmtLong(last.date)) + '</p><details class="tile-why"><summary>Qué significa</summary><p class="src">' + esc(c.message) + '</p><p class="src">Sentinel‑2, píxel de 10 m.</p></details>' : '<p class="big">—</p><p>Sin imágenes despejadas en el periodo.</p>';
   }
   $('tiles').innerHTML =
-    '<div class="tile sky"><img class="tile-art" src="img/brote-siembra.png" alt=""><div class="ico">' + ico('calendar') + '</div><div><h3>' + (mine ? 'Tu siembra declarada' : 'Próxima campaña de referencia') + '</h3><p class="big">' + esc(mine ? fmtLong(mine) : nc.text) + '</p><p>' + (mine ? 'Fecha que ingresaste en modo Precisa.' : 'Campaña ' + nc.kind + ' de la zona.') + '</p><p class="src">' + (mine ? 'Dato declarado, no verificado.' : 'La grande (21 ene) se observó en 2026 por SENAMHI; la chica (15 jul) es un supuesto.') + '</p></div></div>'
-    + '<div class="tile cloud"><img class="tile-art" src="img/montana-clima.png" alt=""><div class="ico">' + ico('cloud') + '</div><div><h3>Clima de la zona</h3>' + (m ? '<p>T° media de ' + MES_LARGO[new Date().getMonth()] + ': <b>' + m.tmean.toFixed(1) + ' °C</b></p><p>Lluvia media del mes: <b>' + Math.round(m.precip_mm) + ' mm</b></p><p class="src">Climatología 2015–2023 (NASA POWER corregido + IMERG); no es el clima de esta semana.</p>' : '<p>Genera la recomendación para ver el clima típico del mes.</p>') + '</div></div>'
-    + '<div class="tile leaf"><img class="tile-art" src="img/brote-suelo.png" alt=""><div class="ico">' + ico('heartleaf') + '</div><div><h3>Vegetación del punto (NDVI)</h3>' + ndvi + '<p class="src">Sentinel‑2, píxel de 10 m. No identifica la especie.</p></div></div>';
+    '<div class="tile sky"><img class="tile-art" src="img/brote-siembra.png" alt=""><div class="ico">' + ico('calendar') + '</div><div><h3>' + (mine ? 'Tu siembra declarada' : 'Próxima campaña ' + nc.kind) + '</h3><p class="big">' + esc(mine ? fmtLong(mine) : nc.text) + '</p>'
+    + '<p>' + (mine ? 'Fecha que ingresaste en modo Precisa (dato declarado, no verificado).' : 'Fecha de referencia de la campaña ' + nc.kind + '; cambia con el año y con el agua de los canales.') + '</p>'
+    + (!mine && evid ? '<details class="tile-why"><summary>¿Por qué esta fecha?</summary><p class="src">' + esc(evid.evidence) + '</p></details>' : '') + '</div></div>'
+    + climaTile()
+    + '<div class="tile leaf"><img class="tile-art" src="img/brote-suelo.png" alt=""><div class="ico">' + ico('heartleaf') + '</div><div><h3>Vegetación del punto (NDVI)</h3>' + ndvi + '</div></div>';
 }
 
 // ---------- gráfico y detalle (fechas de siembra) ----------
@@ -236,7 +342,7 @@ function renderDetail() {
 }
 
 // ---------- indicadores ----------
-const SOURCES = [['NASA POWER', 'Temperatura, radiación, humedad y viento'], ['IMERG', 'Precipitación estimada mediante satélites'], ['ERA5', 'Meteorología de reanálisis'], ['SRTM', 'Elevación del terreno'], ['SoilGrids', 'Propiedades estimadas del suelo'], ['Sentinel‑2', 'Imágenes satelitales (10 m) para el NDVI del punto marcado'], ['OpenStreetMap', 'Mapa de fondo (cartografía, no imagen satelital)']];
+const SOURCES = [['SENAMHI Morropón (estación)', 'Observaciones diarias 1963–2014: referencia para validar y corregir temperatura y lluvia, y frecuencia observada de días calurosos'], ['GPM IMERG V07', 'Precipitación estimada por satélite (0,1°): fuente principal de lluvia'], ['ERA5 / ERA5-Land', 'Reanálisis: temperatura (modelo fijado) y lluvia como escenario alternativo'], ['NASA POWER', 'Radiación, humedad, viento, y temperatura/lluvia recientes (casi tiempo real)'], ['SRTM', 'Elevación y pendiente del punto (30 m)'], ['SoilGrids', 'Propiedades estimadas del suelo en el punto (250 m, modelado)'], ['Sentinel‑2', 'NDVI del punto marcado (10 m)'], ['OpenStreetMap', 'Mapa de fondo']];
 const sourcesTable = () => '<table class="tbl"><thead><tr><th>Fuente</th><th>Qué obtiene</th></tr></thead><tbody>' + SOURCES.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('') + '</tbody></table>';
 function renderIndic() {
   const j = state.rice; if (!j || j.unsupported) return;
@@ -276,18 +382,18 @@ async function renderLearn() {
   if (!state.meta) { try { state.meta = await (await fetch('/api/rice/meta')).json(); } catch { state.meta = { limitations: [] }; } }
   $('learn').innerHTML = `<div class="panel"><h2>Cómo funciona</h2><ol class="steps">
       <li><b>Ubica tu parcela</b> en el mapa (dentro de la zona de Morropón) y elige el cultivo actual.</li>
-      <li><b>Reunimos datos de la zona:</b> temperatura, radiación y viento (NASA POWER), lluvia (IMERG y ERA5), elevación (SRTM) y suelo (SoilGrids).</li>
-      <li><b>Simulamos cada cultivo:</b> cuántos días tarda en completar su ciclo según la temperatura y cuánta agua demanda.</li>
-      <li><b>Comparamos rotaciones</b> de cuatro campañas (dos años) y te mostramos tu rotación actual frente a dos alternativas, con sus riesgos.</li></ol></div>
+      <li><b>Reunimos datos de tu punto:</b> lluvia (IMERG principal, con ERA5 y POWER como escenarios), temperatura corregida con la estación SENAMHI Morropón, radiación y viento (NASA POWER), elevación y pendiente (SRTM) y suelo (SoilGrids).</li>
+      <li><b>Comprobamos la viabilidad</b> de arroz y frijol Loctao en cada campaña: si completan su ciclo, cuánta agua necesitan y cómo les afecta el calor. Lo no viable no compite.</li>
+      <li><b>Comparamos rotaciones</b> de cuatro campañas (dos años) entre las opciones viables y te mostramos tu rotación actual frente a las mejores alternativas, en una línea de tiempo.</li></ol></div>
     <div class="panel"><h2>Conceptos</h2><dl class="gloss">
       <dt>Puntaje relativo (0–100)</dt><dd>Sirve para comparar opciones entre sí. No es un rendimiento ni una probabilidad de éxito.</dd>
       <dt>ETc</dt><dd>Agua que el cultivo evapora y transpira durante su ciclo (milímetros).</dd>
       <dt>NDVI</dt><dd>Índice de verdor medido por satélite: valores altos indican vegetación densa y activa.</dd>
-      <dt>C1, C2 y C7</dt><dd>Criterios del análisis: agua, fenología y riesgo térmico, y rotación. Los pesos 50/40/10 son un supuesto de diseño.</dd>
+      <dt>Viabilidad</dt><dd>Primera etapa del análisis: favorable, condicionada o no viable según temperatura, agua, suelo y pendiente, propagando el desacuerdo entre fuentes de datos.</dd><dt>Campaña grande y chica</dt><dd>La grande (siembra ≈ 21 ene) y la chica (≈ 15 jul) son fechas de referencia documentadas; cambian con el año y con el agua de los canales.</dd>
       <dt>Modo Instantánea</dt><dd>Usa solo datos satelitales y de reanálisis de la zona.</dd>
-      <dt>Modo Precisa</dt><dd>Suma datos de tu parcela: siembra real, fechas de fases y riego. Se aplican solo los que ingreses y no se guardan.</dd></dl></div>
+      <dt>Modo Precisa</dt><dd>Suma datos de tu parcela: siembra real, fechas de fases, agua disponible, cultivo principal a conservar y datos económicos. Se aplican solo los que ingreses y no se guardan.</dd></dl></div>
     <div class="panel"><h2>Qué debes tener en cuenta</h2><ul class="lim">${(state.meta.limitations || []).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
-      <div class="note warn">Esta herramienta <b>no estima rendimiento, ganancia ni salud del suelo</b> y no sustituye la opinión de un agrónomo local.</div></div>
+      <div class="note">Alcance: la herramienta compara opciones con arroz y frijol Loctao en el valle de Morropón. <b>No estima rendimiento ni ganancia</b> por sí misma: el margen solo se calcula con los datos que tú declares.</div></div>
     <div class="panel"><h2>Fuentes de datos</h2>${sourcesTable()}</div>`;
 }
 
@@ -299,7 +405,7 @@ async function initMap() {
   }
   let meta; try { meta = await (await fetch('/api/rice/meta')).json(); state.meta = meta; } catch { meta = null; }
   const b = meta && meta.scope && meta.scope.box ? meta.scope.box : { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 };
-  const c = meta && meta.scope && meta.scope.center ? meta.scope.center : { lat: -5.1944, lon: -79.9867 };
+  const c = meta && meta.scope && meta.scope.center ? meta.scope.center : { lat: -5.19, lon: -79.99 };
   const bounds = [[b.latMin, b.lonMin], [b.latMax, b.lonMax]];
   const map = L.map('map', { maxBounds: L.latLngBounds(bounds).pad(1.5), minZoom: 9 }).fitBounds(bounds);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
@@ -311,11 +417,12 @@ async function initMap() {
     const lat = +e.latlng.lat.toFixed(4), lon = +e.latlng.lng.toFixed(4);
     if (!inside(lat, lon)) { $('mapMsg').textContent = 'Ese punto está fuera de la zona de la demo (recuadro verde).'; return; }
     marker.setLatLng([lat, lon]); $('lat').value = lat; $('lon').value = lon; $('coords').textContent = lat + ', ' + lon;
-    $('mapMsg').textContent = 'Parcela ubicada. Pulsa «Generar recomendación».';
+    $('mapMsg').textContent = state.rot ? 'Cambiaste la ubicación: pulsa «Generar recomendación» para recalcular con los datos de este punto.' : 'Parcela ubicada. Pulsa «Generar recomendación».';
+    fetchRecent();
   });
 }
 
 // ---------- arranque ----------
-syncMode(); renderTiles(); initMap();
+syncMode(); renderTiles(); initMap(); loadSenamhi(); fetchRecent();
 showView((location.hash || '#inicio').slice(1));
 window.addEventListener('hashchange', () => showView((location.hash || '#inicio').slice(1)));

@@ -110,7 +110,7 @@ function validateRiceInput(b) {
 
 async function handleApi(req, res, url) {
   const p = url.pathname;
-  if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS });
+  if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS, slots: require('./src/morropon').SLOTS });
   if (req.method === 'GET' && p === '/api/validation') { // resumen de la retroprueba (npm run backtest); solo lectura
     try {
       const v = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'validation', 'results.json'), 'utf8'));
@@ -184,6 +184,27 @@ async function handleApi(req, res, url) {
     return send(res, 200, result);
   }
   if (!LEGACY && (p === '/api/meta' || p === '/api/analyze' || p.startsWith('/api/parcels'))) return send(res, 410, { error: 'Fuera del alcance de esta demo: solo arroz Tinajones en Morropón (Alto Piura). Use /api/rice/analyze.' });
+  if (req.method === 'GET' && p === '/api/climate/recent') { // clima reciente informativo (NASA POWER diario); no alimenta el motor
+    const { getRecent } = require('./src/recent'), { cellOf } = require('./src/location'), station = require('./src/morropon').PROFILE.station;
+    let lat = Number(url.searchParams.get('lat')), lon = Number(url.searchParams.get('lon'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !rice.inBox(lat, lon)) { lat = station.lat; lon = station.lon; }
+    const same = cellOf('power', lat, lon).key === cellOf('power', station.lat, station.lon).key, q = same ? station : cellOf('power', lat, lon);
+    return send(res, 200, await getRecent(q.lat, q.lon));
+  }
+  if (req.method === 'GET' && p === '/api/validation/senamhi') { // resumen de la validación frente a la estación SENAMHI Morropón
+    try {
+      const cal = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'validation', 'calibration_senamhi.json'), 'utf8')), v = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'validation', 'senamhi_sources.json'), 'utf8'));
+      const meta = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'senamhi', 'morropon_resumen.json'), 'utf8'));
+      const P = v.precipitacion;
+      return send(res, 200, {
+        estacion: { nombre: 'SENAMHI Morropón', periodo_serie: `${meta.periodo.first} → ${meta.periodo.last}`, cobertura_pct: { lluvia: meta.cobertura.total.pr_mm, tmax: meta.cobertura.total.tmax_c, tmin: meta.cobertura.total.tmin_c } },
+        periodo_comparado: v.periodo_comun, aviso: v.advertencia,
+        precipitacion: { fuentes: Object.keys(P).map((id) => ({ id, rmse_mensual_mm: P[id].mensual.ALL.rmse, sesgo_pct: P[id].mensual.ALL.bias_pct, r_mensual: P[id].mensual.ALL.r, r_temporada_ene_abr: P[id].temporada_ene_abr.r, peso: cal.precipitacion.pesos_confiabilidad[id] })), fuente_principal: cal.precipitacion.fuente_principal, ganador_confiable: cal.precipitacion.ganador_confiable_frente_a_otras, correccion: cal.precipitacion.correccion_de_sesgo, desfase: cal.precipitacion.desfase_diario },
+        temperatura: { fuente_elegida: cal.temperatura.fuente_elegida, motivo: cal.temperatura.motivo, rmse_fuera_de_muestra_c: cal.temperatura.fuentes[cal.temperatura.fuente_elegida].rmse_fuera_de_muestra_medio, linea_base_climatologia_obs_rmse_c: cal.temperatura.linea_base_climatologia_obs_rmse, calor: cal.calor_observado.descripcion },
+        supuesto: cal.aviso, climatologia_2001_2014: meta.climatologia_mensual_2001_2014,
+      });
+    } catch (e) { return send(res, 404, { error: 'Aún no hay validación frente a SENAMHI.', detail: e.message }); }
+  }
   if (req.method === 'GET' && p === '/api/health') return send(res, 200, { ok: true, version: require('./package.json').version, time: new Date().toISOString() });
   if (req.method === 'GET' && p === '/api/meta') {
     return send(res, 200, {

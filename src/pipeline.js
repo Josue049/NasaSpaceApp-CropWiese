@@ -165,6 +165,7 @@ function analyze(input, g, scenario = SCENARIOS.base) {
     ? { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [...support.blockers, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {}, weights_status: '', candidates_evaluated: 0,
       context: { slope_pct: g.slope.ok ? g.slope.data.slope_pct : null, soil: g.soil.ok ? g.soil.data : null, irrigated: !!input.irrigation, start_slot: input.start_slot || 'A', history: input.history || [] } }
     : (engineChoice === 'v2' ? engine2.run : engine.run)(input, {
+      source_weights: (() => { const cal = calibration(); return cal && cal.precipitacion ? cal.precipitacion.pesos_confiabilidad : null; })(),
       crops: cropList, slots: dom.slots, climates,
       slope: g.slope.ok ? g.slope.data.slope_pct : null,
       soil: g.soil.ok ? g.soil.data : null,
