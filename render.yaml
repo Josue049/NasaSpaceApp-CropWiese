@@ -1,0 +1,10 @@
+# Alternativa a Vercel: sitio estático en Render con el mismo proxy de /api hacia el backend.
+services:
+  - type: web
+    name: cropwise-web
+    runtime: static
+    staticPublishPath: public
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://cropwise.159-112-142-234.sslip.io/api/*
