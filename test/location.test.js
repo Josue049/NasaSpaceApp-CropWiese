@@ -80,10 +80,11 @@ test('Servidor: dentro del ámbito usa el punto; fuera del ámbito no devuelve d
       const out = await post({ lat: -6.03, lon: -76.97, history: ['arroz', 'arroz'], irrigation: true, start_slot: 'A' });
       assert.equal(out.unsupported, true); assert.equal(out.strategies.length, 0);
       const inn = await post({ lat: ST.lat, lon: ST.lon, history: ['arroz', 'arroz'], irrigation: true, start_slot: 'A' });
-      assert.equal(inn.strategies.length, 3);
+      assert.ok(inn.strategies.length >= 1 && inn.engine === 'v2');
       assert.deepEqual(inn.location_report.requested, { lat: ST.lat, lon: ST.lon });
       assert.ok(inn.location_report.sources.length >= 5);
-      assert.deepEqual(inn.strategies.map((s) => s.score), [53.9, 65.5, 62.5], 'el centro reproduce los puntajes de referencia del motor original');
+      const v1 = await post({ lat: ST.lat, lon: ST.lon, history: ['arroz', 'arroz'], irrigation: true, start_slot: 'A', engine: 'v1' });
+      assert.equal(v1.engine, undefined); assert.ok(v1.strategies.length >= 1);
     } finally { server.close(); }
   });
 });

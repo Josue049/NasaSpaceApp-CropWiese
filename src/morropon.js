@@ -11,23 +11,28 @@ const { canopyCoverMean } = require('./climate');
 const PROFILE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'rice_tinajones.json'), 'utf8'));
 const OBS_CSV = path.join(__dirname, '..', 'docs', 'evidence', 'rice_morropon_2026_senamhi.csv');
 
-// Cultivos de la rotación: SOLO los dos con base y referencias (decisión del equipo, 2026-11-14). Se ampliará después.
-const ROTATION_CROPS = ['arroz', 'frijol'];
+// Cultivos de la rotación (motor v2): arroz Tinajones + frijol Loctao (Vigna radiata), el frijol con evidencia local en Morropón (SENAMHI 2024).
+// El motor original (v1, pruebas de regresión y comparación) conserva el par arroz + frijol común (LEGACY_ROTATION_CROPS).
+const ROTATION_CROPS = ['arroz', 'loctao'];
+const LEGACY_ROTATION_CROPS = ['arroz', 'frijol'];
 // Campañas de Morropón. SUPUESTO de diseño con evidencia débil: la campaña grande se sembró el 21‑ene‑2026 (SENAMHI, Morropón);
 // la chica se ubica a mediados de julio por el reporte regional de SENAMHI 2024 (instalación de arroz en julio–agosto, 8 224 ha en Piura).
 // Los ids 'A' y 'B' se conservan para no tocar el motor.
 const SLOTS = [
-  { id: 'A', label: 'Campaña grande (siembra ≈ 21 ene)', start: { m: 1, d: 21 }, window_days: 165 },
-  { id: 'B', label: 'Campaña chica (siembra ≈ 15 jul)', start: { m: 7, d: 15 }, window_days: 165 },
+  { id: 'A', label: 'Campaña grande (siembra ≈ 21 ene)', start: { m: 1, d: 21 }, window_days: 165,
+    evidence: 'Observada: SENAMHI Morropón, arroz Tinajones sembrado el 21-ene-2026 (una temporada). El calendario regional de Alto Piura 2025-26 fija almácigo 15-dic a 15-ene, trasplante 16-ene a 28-feb y siembra directa hasta 15-mar (Agraria.pe, DRA Piura).' },
+  { id: 'B', label: 'Campaña chica (siembra ≈ 15 jul)', start: { m: 7, d: 15 }, window_days: 165,
+    evidence: 'Documentada: en 2024 se instalaron 8 224 ha de arroz en julio-agosto en la región (SENAMHI/DRAP) y SENAMHI registró la emergencia del frijol Loctao en Morropón el 22-jul-2024. Es una fecha de referencia, no un calendario fijo: depende del año y del agua disponible en los canales.' },
 ];
 
-/** Cultivos de la rotación: el arroz usa el perfil Tinajones (ciclo observado de 114 días); el resto, la base común. */
-function rotationCrops(allCrops, riceCycle = null) {
-  return ROTATION_CROPS.map((id) => {
+/** Cultivos de la rotación: el arroz usa el perfil Tinajones (ciclo observado de 114 días); el resto, la base común. `ids` permite el par heredado (arroz + frijol común). */
+function rotationCrops(allCrops, riceCycle = null, ids = ROTATION_CROPS) {
+  return ids.map((id) => {
     const c = allCrops.find((x) => x.id === id);
     if (!c) throw new Error(`Cultivo ${id} no está en la base`);
     if (id !== 'arroz') return c;
-    const t = { ...c, name: 'Arroz Tinajones', cycle: { ...(riceCycle || PROFILE.cycle) }, kc: { ...PROFILE.kc }, eco: { ...c.eco, ...PROFILE.eco } };
+    const t = { ...c, name: 'Arroz Tinajones', cycle: { ...(riceCycle || PROFILE.cycle) }, kc: { ...PROFILE.kc }, eco: { ...c.eco, ...PROFILE.eco }, ph_abs: [4.5, 9] };
+    t.local_evidence = { campaigns_documented: ['A', 'B'], note: 'Arroz: campaña grande observada por SENAMHI Morropón (21-ene-2026) y campaña chica documentada (8 224 ha instaladas en jul-ago 2024 en Piura).', sources: ['SENAMHI Morropón 2026 (docs/evidence)', 'SENAMHI Boletín agroclimático Piura 2024, pág. 3'] };
     t.param_status = { ...c.param_status, cycle: riceCycle ? 'DATOS IN SITU del agricultor (modo Precisa); asignación a etapas Kc = supuesto' : 'OBSERVACIÓN: SENAMHI Morropón 2026 (114 días a maduración córnea), una temporada; asignación a etapas Kc = supuesto', kc: c.param_status && c.param_status.kc };
     t.canopy_cover = canopyCoverMean(t);
     return t;
@@ -59,4 +64,4 @@ function temperatureCheck(clim) {
 /** Desplazamientos que anulan el sesgo medido (SUPUESTO: sesgo estacionario; una temporada, 11 valores). */
 const offsetsFrom = (chk) => (chk ? { T: -chk.bias_tmean_c, Tx: -chk.bias_tmax_c, Tn: -chk.bias_tmin_c } : null);
 
-module.exports = { PROFILE, ROTATION_CROPS, SLOTS, rotationCrops, temperatureCheck, offsetsFrom };
+module.exports = { PROFILE, ROTATION_CROPS, LEGACY_ROTATION_CROPS, SLOTS, rotationCrops, temperatureCheck, offsetsFrom };

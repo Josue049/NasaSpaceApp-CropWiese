@@ -36,6 +36,28 @@ function ensureImerg(lat, lon, missing) {
   return job;
 }
 
+// ---------- entradas opcionales del agricultor (motor v2) ----------
+const num = (x, lo, hi) => { if (x === '' || x == null) return null; const v = Number(x); return Number.isFinite(v) && v >= lo && v <= hi ? v : null; };
+/** Economía declarada por cultivo. Solo se aceptan números razonables; lo demás se ignora (nunca se inventa). */
+function sanitizeEconomics(e, ids) {
+  if (!e || typeof e !== 'object') return null;
+  const out = {};
+  for (const id of ids) {
+    const d = e[id]; if (!d || typeof d !== 'object') continue;
+    const o = { yield_t_ha: num(d.yield_t_ha, 0, 60), price_s_per_kg: num(d.price_s_per_kg, 0, 100), cost_establishment_s_ha: num(d.cost_establishment_s_ha, 0, 200000), cost_irrigation_s_ha: num(d.cost_irrigation_s_ha, 0, 100000), cost_other_s_ha: num(d.cost_other_s_ha, 0, 200000) };
+    if (Object.values(o).some((x) => x != null)) out[id] = Object.fromEntries(Object.entries(o).filter(([, x]) => x != null));
+  }
+  return Object.keys(out).length ? out : null;
+}
+/** Cultivo principal que el agricultor quiere conservar: { crop, campaigns?: ['A'|'B'], min_campaigns?: 1..4 }. */
+function sanitizeKeepMain(k, ids) {
+  if (!k || typeof k !== 'object' || !ids.includes(k.crop)) return null;
+  const o = { crop: k.crop };
+  if (Array.isArray(k.campaigns)) { const c = [...new Set(k.campaigns.filter((x) => x === 'A' || x === 'B'))]; if (c.length) o.campaigns = c; }
+  const m = Number(k.min_campaigns); if (Number.isInteger(m) && m >= 1 && m <= 4) o.min_campaigns = m;
+  return o.campaigns || o.min_campaigns ? o : null;
+}
+
 // ---------- validación de entrada ----------
 function validateInput(b) {
   const errs = [];
@@ -105,8 +127,9 @@ async function handleApi(req, res, url) {
   }
   if (req.method === 'POST' && p === '/api/rotation/analyze') {
     const b = await readBody(req);
-    const { ROTATION_CROPS } = require('./src/morropon');
-    if (!Array.isArray(b.history) || !b.history.length || b.history.some((h) => !ROTATION_CROPS.includes(h))) return send(res, 400, { error: 'Entrada inválida', details: ['el historial solo admite: ' + ROTATION_CROPS.join(', ')] });
+    const { ROTATION_CROPS, LEGACY_ROTATION_CROPS } = require('./src/morropon');
+    const allowed = b.engine === 'v1' ? LEGACY_ROTATION_CROPS : ROTATION_CROPS;
+    if (!Array.isArray(b.history) || !b.history.length || b.history.some((h) => !allowed.includes(h))) return send(res, 400, { error: 'Entrada inválida', details: ['el historial solo admite: ' + allowed.join(', ')] });
     const v = validateInput({ ...b, irrigation: b.irrigation !== false, excluded_crops: [] });
     if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });
     // Modo Precisa: el ciclo del arroz se recalibra con las fechas del agricultor (misma lógica que /api/rice/analyze).
@@ -114,6 +137,12 @@ async function handleApi(req, res, url) {
     if (iv.errors.length) return send(res, 400, { error: 'Entrada inválida', details: iv.errors });
     const cal = require('./src/insitu').calibratedProfile(rice.PROFILE, iv.insitu);
     if (cal.profile.calibrated) v.input.rice_cycle = cal.profile.cycle;
+    // Entradas del motor v2 (todas opcionales y declaradas por el agricultor; no se verifican)
+    v.input.engine = b.engine === 'v1' ? 'v1' : 'v2';
+    const ec = sanitizeEconomics(b.economics, allowed); if (ec) v.input.economics = ec;
+    const km = sanitizeKeepMain(b.keep_main, allowed); if (km) v.input.keep_main = km;
+    const irr = iv.insitu && iv.insitu.irrigation;
+    if (irr) { v.input.water = { supply_m3_ha: irr.supply_m3_ha ?? null, percolation_mm_day: irr.percolation_mm_day ?? null, management: irr.management || null }; if (irr.management === 'secano') v.input.irrigation = false; }
     // La ubicación elegida por el usuario es la que alimenta el motor (clima por celda nativa; elevación, pendiente y suelo del punto).
     if (!rice.inBox(v.input.lat, v.input.lon)) { // fuera del ámbito: se explica sin consultar datos de otro lugar
       const r0 = outOfScope(v.input); r0.input = v.input; r0.mode = 'instantanea'; r0.imerg_job = { state: 'ready', done: 0, total: 0, errors: [] };
