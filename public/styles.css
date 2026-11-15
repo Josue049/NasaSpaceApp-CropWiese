@@ -257,3 +257,12 @@ label.check small{color:var(--muted);font-weight:400}
 #dlgPrecisa{width:min(720px,95vw)}#dlgPrecisaForm{padding:20px 24px;max-height:92vh;overflow:auto}
 #dlgPrecisa .sect{background:#fbfcf8}
 #btnPrecisa{width:100%}
+
+/* ---------- héroe más compacto y con márgenes laterales ---------- */
+.hero{width:auto;margin:18px 0 0;border-radius:28px;padding:clamp(20px,2.6vw,40px) clamp(20px,3vw,52px) clamp(56px,5vw,84px);min-height:clamp(250px,22vw,370px);background-position:center 35%;box-shadow:var(--shadow)}
+.hero-text h1{font-size:clamp(26px,3.1vw,50px);margin-bottom:12px}
+.hero-text p{font-size:clamp(15px,1.2vw,19px);max-width:560px}
+.hero-mascot img{width:min(400px,100%)}
+.grid-top{margin-top:-16px}
+@media (max-width:900px){.hero{min-height:0;padding-bottom:64px}.hero-mascot img{width:min(300px,86%)}}
+@media (max-width:520px){.hero{border-radius:22px;padding:18px 16px 54px}.hero-text h1{font-size:28px}.hero-mascot img{width:min(250px,80%)}}
