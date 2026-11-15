@@ -15,6 +15,7 @@
  * ESCENARIO y se marca lo que depende de él. Ver docs/AUDITORIA_PARAMETROS.md y src/parametros.js.
  */
 const climate = require('./climate');
+const suelo = require('./suelo');
 const { evaluateSeason, tempUncertainty, awcFromSoil, cycleLength, coverOf } = climate;
 
 const ENGINE_VERSION = 'v2.1 · dos etapas (viabilidad → comparación) con procedencia';
@@ -473,7 +474,8 @@ function buildProvenance(env, res, supply, pinf) {
   add('calor_obs', 'Frecuencia de días calurosos', 'estación SENAMHI 1981–2014', 'A', 'frecuencia observada por día del año; se transfiere al punto con gradiente térmico (estimación)');
   const sd = inp.soil || {};
   add('ph', 'pH del suelo', env.soil && env.soil.phh2o && env.soil.phh2o.mean != null ? env.soil.phh2o.mean.toFixed(2) : 'sin dato', sd.ph != null ? 'C' : 'D', sd.ph != null ? 'declarado (análisis del agricultor); no verificado' : 'SoilGrids 250 m: estimación modelada, no una medición de tu parcela');
-  add('textura', 'Textura del suelo', sd.texture ? TEXTURE[sd.texture].label : env.clayHigh ? 'arcillosa (SoilGrids)' : 'estimada por SoilGrids', sd.texture ? 'C' : 'D', sd.texture ? 'declarada por el agricultor' : 'SoilGrids (modelado)');
+  const est = suelo.estimate(env.soil);
+  add('textura', 'Textura del suelo', sd.texture ? TEXTURE[sd.texture].label : est ? `${est.class} (estimada: arcilla ${est.clay_pct} %, arena ${est.sand_pct} %)` : 'sin dato', sd.texture ? 'C' : 'D', sd.texture ? 'declarada por el agricultor' : 'SoilGrids (modelado; intervalo ' + (est ? 'arcilla ' + est.clay_range_pct.join('–') + ' %' : '—') + '): no es una medición de tu parcela', !sd.texture && est ? 'Incertidumbre ' + est.uncertainty + '.' : null);
   add('relieve', 'Altitud y pendiente', `${Math.round(env.elev)} m · ${env.slope != null ? env.slope.toFixed(1) : '—'} %`, 'D', 'SRTM 30 m en el punto elegido (estimación)');
   add('ordinales', 'Cobertura, biomasa y nitrógeno de los cultivos', 'escalas ordinales', 'E', 'criterio del equipo, sin cantidades físicas');
   add('rotacion', 'Penalización por repetir cultivo', `${PARAMS.rot_same_crop.value} / ${PARAMS.rot_same_family.value}`, 'E', 'supuesto del equipo; sin cuantificación');

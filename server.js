@@ -220,6 +220,13 @@ async function handleApi(req, res, url) {
       });
     } catch (e) { return send(res, 404, { error: 'Aún no hay validación frente a SENAMHI.', detail: e.message }); }
   }
+  if (req.method === 'GET' && p === '/api/soil/estimate') { // textura y pH ESTIMADOS por SoilGrids en el punto (no es una medición de la parcela)
+    const lat = Number(url.searchParams.get('lat')), lon = Number(url.searchParams.get('lon'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !rice.inBox(lat, lon)) return send(res, 400, { error: 'Ubicación fuera del ámbito de la demo.' });
+    const r = await require('./src/datasources').getSoil(lat, lon);
+    if (!r.ok) return send(res, 200, { available: false, reason: r.error, note: 'No hay estimación de SoilGrids para este punto; no se sustituye por la de otro lugar.' });
+    return send(res, 200, { available: true, source: 'ISRIC SoilGrids 2.0 (250 m, modelado)', ...require('./src/suelo').estimate(r.data) });
+  }
   if (req.method === 'GET' && p === '/api/health') return send(res, 200, { ok: true, version: require('./package.json').version, time: new Date().toISOString() });
   if (req.method === 'GET' && p === '/api/meta') {
     return send(res, 200, {

@@ -94,6 +94,20 @@ function updatePrecisaSummary() {
 }
 PRECISA_FIELDS.forEach((id) => { const el = $(id); if (el) el.addEventListener('input', updatePrecisaSummary); });
 
+
+// Pista de suelo: textura y pH ESTIMADOS por SoilGrids en el punto (se muestran como estimación; nunca se envían como declarados).
+async function loadSoilHint() {
+  const el = $('soilHint'); if (!el) return;
+  const lat = Number($('lat').value), lon = Number($('lon').value);
+  el.textContent = 'Consultando la estimación de SoilGrids en tu punto…';
+  try {
+    const j = await (await fetch(`/api/soil/estimate?lat=${lat}&lon=${lon}`)).json();
+    if (!j.available) { el.innerHTML = 'No hay estimación de SoilGrids para este punto. ' + esc(j.note || '') ; return; }
+    el.innerHTML = '<b>SoilGrids estima en tu punto:</b> suelo <b>' + esc(j.class) + '</b> (arcilla ' + j.clay_pct + ' %, arena ' + j.sand_pct + ' %, limo ' + j.silt_pct + ' %)' + (j.ph ? ' y pH ≈ ' + j.ph.mean : '') + '. '
+      + 'Es una <b>estimación modelada</b> con incertidumbre ' + esc(j.uncertainty.split(':')[0]) + ' (arcilla entre ' + j.clay_range_pct[0] + ' y ' + j.clay_range_pct[1] + ' %), <b>no una medición de tu parcela</b>. Si la conoces, indica tu textura o tu pH; si no, déjalos vacíos y usamos esta estimación.';
+  } catch { el.textContent = 'No se pudo consultar SoilGrids.'; }
+}
+
 // ---------- validación: campos obligatorios y rangos, señalados en rojo ----------
 function markInvalid(el, msg, inModal) {
   el.classList.add('invalid'); el.setAttribute('aria-invalid', 'true');
@@ -497,12 +511,12 @@ async function initMap() {
     if (!inside(lat, lon)) { $('mapMsg').textContent = 'Ese punto está fuera de la zona de la demo (recuadro verde).'; return; }
     marker.setLatLng([lat, lon]); $('lat').value = lat; $('lon').value = lon; $('coords').textContent = lat + ', ' + lon;
     $('mapMsg').textContent = state.rot ? 'Cambiaste la ubicación: pulsa «Generar recomendación» para recalcular con los datos de este punto.' : 'Parcela ubicada. Pulsa «Generar recomendación».';
-    fetchRecent();
+    fetchRecent(); loadSoilHint();
   });
 }
 
 // ---------- arranque ----------
 (() => { const r = document.querySelector('input[name="slot"][value="' + defaultSlot() + '"]'); if (r) r.checked = true; })();
-syncMode(); renderTiles(); initMap(); loadSenamhi(); fetchRecent();
+syncMode(); renderTiles(); initMap(); loadSenamhi(); fetchRecent(); loadSoilHint();
 showView((location.hash || '#inicio').slice(1));
 window.addEventListener('hashchange', () => showView((location.hash || '#inicio').slice(1)));
