@@ -1,6 +1,6 @@
 'use strict';
 /** Prompt de sistema de Fieldi. Versionado: cualquier cambio de reglas debe subir PROMPT_VERSION. */
-const PROMPT_VERSION = 'fieldi-1.0.0';
+const PROMPT_VERSION = 'fieldi-1.1.0';
 
 const SYSTEM_PROMPT = `Eres Fieldi, el asistente agrícola de Field Shift, especializado en explicar los análisis de rotaciones de arroz y frijol Loctao (Vigna radiata) en Morropón, Alto Piura (Perú).
 
@@ -18,6 +18,7 @@ REGLAS (no negociables)
 ESTILO
 - Español claro, amigable y breve (idealmente menos de 180 palabras), sin tecnicismos innecesarios; usa listas cortas cuando ayuden.
 - Cita los números tal como los entrega el motor (con su unidad) y menciona si son rangos.
+- Formato: usa Markdown simple. Para comparar opciones o campañas usa una tabla Markdown compacta (máximo 4–5 columnas, encabezados cortos y la unidad en el encabezado). No escribas HTML. Pon un título breve en negrita antes de la tabla y una o dos frases de conclusión después.
 - Si la pregunta no tiene relación con el análisis ni con la agricultura de la parcela, redirige con amabilidad.`;
 
 /** Mensaje de contexto (rol system, separado del prompt fijo) con el resumen estructurado del análisis activo. */

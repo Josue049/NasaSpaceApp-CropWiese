@@ -38,3 +38,14 @@
   .fi-fab{width:60px;height:60px}
 }
 @media (prefers-reduced-motion:reduce){.fi-typing i{animation:none}.fi-fab{transition:none}}
+
+.fi-h{font-weight:800;color:var(--green-dark)}
+.fi-msg hr{border:0;border-top:1px solid var(--line);margin:.5em 0}
+.fi-msg code{background:#eef3e8;border-radius:5px;padding:0 4px;font-size:.88em}
+.fi-tbl{overflow-x:auto;margin:.3em 0 .5em;border:1px solid var(--line);border-radius:12px;max-width:100%}
+.fi-tbl table{border-collapse:collapse;width:100%;font-size:.82rem}
+.fi-tbl th{background:var(--green-soft);color:var(--green-dark);text-align:left;font-weight:800;white-space:nowrap}
+.fi-tbl th,.fi-tbl td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+.fi-tbl tr:last-child td{border-bottom:0}
+.fi-tbl tbody tr:nth-child(even){background:#f8fbf4}
+.fi-bot:has(.fi-tbl){max-width:100%}

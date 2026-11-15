@@ -4,16 +4,28 @@
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  /** Markdown mínimo y seguro: se escapa TODO el HTML primero; solo **negrita**, listas «- » y saltos de párrafo. */
+  /** Markdown seguro: se escapa TODO el HTML primero y solo se generan estas etiquetas: negrita, cursiva, código, títulos, listas y tablas.
+      (No se acepta HTML del modelo: así una respuesta nunca puede inyectar scripts ni estilos.) */
+  const inline = (t) => t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  const cells = (l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
   function md(t) {
-    const out = []; let list = false;
-    for (const raw of esc(t).split(/\n/)) {
-      const line = raw.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'), li = /^\s*[-•*]\s+(.*)$/.exec(line);
-      if (li) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + li[1] + '</li>'); continue; }
-      if (list) { out.push('</ul>'); list = false; }
-      if (line.trim()) out.push('<p>' + line + '</p>');
+    const lines = esc(t).split(/\n/), out = []; let list = false, i = 0;
+    const closeList = () => { if (list) { out.push('</ul>'); list = false; } };
+    while (i < lines.length) {
+      const raw = lines[i], line = raw.trim();
+      if (/^\|.*\|$/.test(line) && i + 1 < lines.length && /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(lines[i + 1].trim())) { // tabla
+        closeList(); const head = cells(line); i += 2; const rows = [];
+        while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) { rows.push(cells(lines[i])); i++; }
+        out.push('<div class="fi-tbl"><table><thead><tr>' + head.map((c) => '<th>' + inline(c) + '</th>').join('') + '</tr></thead><tbody>'
+          + rows.map((r) => '<tr>' + head.map((_, k) => '<td>' + inline(r[k] || '') + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+        continue;
+      }
+      const li = /^[-•*]\s+(.*)$/.exec(line), h = /^#{1,4}\s+(.*)$/.exec(line);
+      if (li) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + inline(li[1]) + '</li>'); }
+      else { closeList(); if (h) out.push('<p class="fi-h">' + inline(h[1]) + '</p>'); else if (line === '---') out.push('<hr>'); else if (line) out.push('<p>' + inline(line) + '</p>'); }
+      i++;
     }
-    if (list) out.push('</ul>');
+    closeList();
     return out.join('');
   }
 
@@ -69,7 +81,7 @@
       if (r.ok) {
         add('fi-bot', md(r.b.reply || ''));
         if (r.b.mode === 'limited' && r.b.notice) { banner.hidden = false; banner.textContent = r.b.notice; }
-        hasAnalysis = r.b.mode !== 'no_analysis'; if (hasAnalysis) loadChips();
+        hasAnalysis = r.b.mode !== 'no_analysis';
       } else {
         const wait = r.b.retry_after ? ` Puedes reintentar en ${r.b.retry_after} s.` : '';
         const e = add('fi-err', `<p>${esc(r.b.error || 'No pude responder ahora.')}${wait}</p>`);
