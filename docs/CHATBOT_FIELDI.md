@@ -24,7 +24,7 @@ Navegador (public/fieldi.js)  ──►  server.js /api/assistant/*  ──►  
                                                                           └─ groq-sdk (groqClient.js)  ─► Groq (solo servidor)
 ```
 
-Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `cropi-1.1.0`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
+Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `cropi-1.2.1`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
 
 El motor agrícola **no se modificó**: `server.js` solo guarda en memoria el resultado de `/api/rotation/analyze` y le añade `analysis_id`.
 

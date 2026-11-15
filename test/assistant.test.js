@@ -243,3 +243,14 @@ test('HTTP: cookie de sesión HttpOnly, análisis activo ligado a la sesión, ch
   } finally { server.close(); }
   assert.ok(assistant);
 });
+
+test('si Groq rechaza la solicitud (bad_request), reintenta y luego responde sin herramientas', async () => {
+  const bad = () => new AssistantError('bad_request', 'x', { http: 502 });
+  const g = fakeGroq([bad(), bad(), say('Respuesta sin herramientas')]);
+  const { A, sid } = await setup({ groq: g });
+  const r = await chat(A, sid, 'hola');
+  assert.equal(r.status, 200); assert.equal(r.body.reply, 'Respuesta sin herramientas');
+  assert.equal(g.calls.length, 3); assert.equal(g.calls[2].tools, undefined, 'el último intento no envía herramientas');
+  const g2 = fakeGroq([bad(), say('Ok tras reintento')]);
+  const s2 = await setup({ groq: g2 }); assert.equal((await chat(s2.A, s2.sid, 'hola')).body.reply, 'Ok tras reintento');
+});

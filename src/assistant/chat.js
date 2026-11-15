@@ -38,7 +38,7 @@ class AssistantService {
   suggestions(sid) {
     const a = this.store.active(sid);
     if (!a || a.result.unsupported) return { status: 200, body: { suggestions: [] } };
-    const r = a.result, s = ['¿Por qué esta es la mejor opción?', '¿Qué riesgos tiene mi rotación actual?', '¿Cuánta agua necesita cada opción?', '¿Qué datos del análisis son hipótesis?'];
+    const r = a.result, s = ['¿Por qué esta es la mejor opción?', '¿Qué riesgos tiene mi rotación actual?', '¿Cuánta agua necesita cada opción?', '¿Qué tan seguros son estos resultados?'];
     if (r.sensitive_to_assumptions) s.splice(1, 0, '¿Qué tan firme es esta recomendación?');
     if (!r.economics || !r.economics.complete) s.push('¿Cuánto voy a ganar?');
     else s.push('¿Qué margen económico declaré?');
@@ -83,12 +83,25 @@ class AssistantService {
     while (sess.chat.length && sess.chat[0].role !== 'user') sess.chat.shift();
   }
 
+  /** Llama al modelo. Si Groq rechaza la solicitud (p. ej. una llamada a herramienta mal formada, algo conocido en gpt-oss), reintenta una vez y,
+   *  si persiste, responde SIN herramientas usando solo el resumen del análisis (nunca inventa: el prompt lo prohíbe). */
+  async callModel(messages, noTools) {
+    const withTools = { messages, tools: this.tools.definitions, toolChoice: noTools ? 'none' : 'auto' };
+    try { return await this.groq.chat(withTools); }
+    catch (e) {
+      if (!(e instanceof AssistantError) || e.code !== 'bad_request') throw e;
+      this.log({ event: 'bad_request_retry' });
+      try { return await this.groq.chat(withTools); }
+      catch (e2) { if (!(e2 instanceof AssistantError) || e2.code !== 'bad_request') throw e2; this.log({ event: 'bad_request_no_tools' }); return this.groq.chat({ messages: messages.filter((m) => m.role !== 'tool' && !m.tool_calls) }); }
+    }
+  }
+
   async aiReply(message, analysis, sess, notes) {
     const cfg = this.cfg, ctx = { analysis, sims: 0 }, used = [];
     const messages = [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'system', content: contextMessage(C.contextJson(analysis.result, analysis.input), notes) }, ...sess.chat, { role: 'user', content: message }];
     for (let it = 0; it <= cfg.maxToolIterations; it++) {
       const last = it === cfg.maxToolIterations;
-      const r = await this.groq.chat({ messages, tools: this.tools.definitions, toolChoice: last ? 'none' : 'auto' });
+      const r = await this.callModel(messages, last);
       if (!r.tool_calls.length || last) {
         const text = (r.content || '').trim();
         if (!text) throw new AssistantError('empty', 'Cropi no pudo generar una respuesta. Intenta reformular tu pregunta.', { http: 502 });
@@ -122,15 +135,15 @@ class AssistantService {
       return `Riesgos que señala el motor para «${t.label}» (${seq(t)}):\n` + (rk.length ? rk.map((x) => '- ' + C.cut(x, 240)).join('\n') : '- No registra riesgos específicos.') + (r.sensitive_to_assumptions ? '\nOjo: el resultado es sensible a supuestos.' : '');
     }
     if (/(agua|riego|lluvia|sequ)/.test(m)) {
-      const t = best; const rows = (t.timeline || []).map((x) => `- Campaña ${x.campaign} (${x.crop_name}): demanda neta de riego ≈ ${x.water_need_mm} mm${x.water_need_range_mm ? ` (rango ${x.water_need_range_mm[0]}–${x.water_need_range_mm[1]} mm)` : ''}`);
-      return `Demanda de agua del motor para «${t.label}»:\n${rows.join('\n')}\nEs una estimación con rangos; la cobertura solo se calcula si declaras cuánta agua tienes.`;
+      const t = best; const rows = (t.timeline || []).map((x) => `- Campaña ${x.campaign} (${x.crop_name}): necesita unos ${x.water_need_mm} mm de riego${x.water_need_range_mm ? ` (podría ir de ${x.water_need_range_mm[0]} a ${x.water_need_range_mm[1]} mm)` : ''}`);
+      return `Esto es lo que calculó el motor sobre el agua para «${t.label}»:\n${rows.join('\n')}\nSon estimaciones; para saber si el agua te alcanza, cuéntame cuánta tienes.`;
     }
     if (/(dato|origen|fuente|hip[oó]tesis|confiable|observado|declarado|bibliogr)/.test(m) && r.provenance) {
       const s = r.provenance.summary || {}, L = r.provenance.legend || {};
-      return 'Origen de los datos del análisis: ' + ['A', 'B', 'C', 'D', 'E'].filter((k) => s[k]).map((k) => `${s[k]} ${String(L[k] || k).split(':')[0].toLowerCase()}`).join(', ') + '. Las hipótesis (E) son supuestos del equipo, no hechos.';
+      return 'De dónde salen los datos del análisis: ' + ['A', 'B', 'C', 'D', 'E'].filter((k) => s[k]).map((k) => `${s[k]} ${String(L[k] || k).split(':')[0].toLowerCase()}`).join(', ') + '. Los que son suposiciones del equipo no se toman como hechos.';
     }
     const lines = (r.strategies || []).map((s) => `- ${s.label}: ${seq(s)} — puntaje ${s.score}/100`);
-    return `Esto es lo que calculó el motor:\n${lines.join('\n')}\n` + (best && best.reasons && best.reasons[0] ? `\nPor qué «${best.label}»: ${C.cut(best.reasons[0], 260)}` : '') + (r.sensitive_to_assumptions ? '\nEl resultado es sensible a supuestos.' : '') + '\nLos puntajes son relativos, no son rendimientos.';
+    return `Esto es lo que calculó el motor:\n${lines.join('\n')}\n` + (best && best.reasons && best.reasons[0] ? `\nPor qué «${best.label}»: ${C.cut(best.reasons[0], 260)}` : '') + (r.sensitive_to_assumptions ? '\nEl resultado es sensible a supuestos.' : '') + '\nLos puntajes sirven para comparar opciones; no son cosecha.';
   }
 }
 
