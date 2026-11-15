@@ -89,6 +89,13 @@ function validateRiceInput(b) {
 async function handleApi(req, res, url) {
   const p = url.pathname;
   if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS });
+  if (req.method === 'GET' && p === '/api/validation') { // resumen de la retroprueba (npm run backtest); solo lectura
+    try {
+      const v = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'validation', 'results.json'), 'utf8'));
+      const oos = v.phenology.oos.map((r) => r.err).filter((x) => x != null);
+      return send(res, 200, { generated_at: v.generated_at, temperature: v.temperature, phenology_oos: v.phenology.oos, phenology_oos_mae_days: oos.length ? oos.reduce((a, x) => a + Math.abs(x), 0) / oos.length : null, ndvi: v.ndvi && { pattern: v.ndvi.cls.pattern, peak_date: v.ndvi.cls.peak_date, peak_off_days: v.ndvi.peak_off_days }, annual_rain: v.annual_rain, ranking: v.ranking });
+    } catch { return send(res, 404, { error: 'Aún no hay resultados de validación (ejecute npm run backtest).' }); }
+  }
   if (req.method === 'POST' && p === '/api/satellite/check') {
     const b = await readBody(req), lat = +(+b.lat).toFixed(4), lon = +(+b.lon).toFixed(4);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return send(res, 400, { error: 'Entrada inválida', details: ['latitud y longitud requeridas'] });
