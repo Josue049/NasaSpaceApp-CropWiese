@@ -1,0 +1,1684 @@
+{
+ "estacion": {
+  "nombre": "MORROPON",
+  "departamento": "PIURA",
+  "provincia": "MORROPON",
+  "distrito": "MORROPON",
+  "codigo_archivo": "qc00000235",
+  "coordenadas_y_altitud": "NO figuran en el archivo; no se asumen (la gráfica del portal solo indica nombre y ubicación administrativa)"
+ },
+ "procedencia": {
+  "origen": "SENAMHI (Servicio Nacional de Meteorología e Hidrología del Perú), portal de datos históricos de estaciones; descarga manual del usuario",
+  "archivo_original": "qc00000235.txt",
+  "tamano_bytes": 390679,
+  "sha256": "215a94046e8b9f781d1c07e7d8f927f934b58f2a6502fa31fb829f5652c64240",
+  "copia_en_proyecto": "data/senamhi/raw/qc00000235.txt",
+  "importado_el": "2026-11-15T08:49:01.881Z"
+ },
+ "formato": {
+  "codificacion": "ASCII",
+  "encabezado": "no",
+  "separador": "espacios",
+  "columnas": [
+   "year",
+   "month",
+   "day",
+   "pr_mm",
+   "tmax_c",
+   "tmin_c"
+  ],
+  "valor_ausente": -99.9,
+  "unidades": {
+   "pr_mm": "mm/día (acumulado diario; hora de corte no indicada en el archivo)",
+   "tmax_c": "°C",
+   "tmin_c": "°C"
+  },
+  "asignacion_de_columnas": "inferida (sin encabezado): ver cabecera de src/senamhi.js",
+  "indicadores_de_calidad_en_archivo": "ninguno"
+ },
+ "periodo": {
+  "first": "1963-10-01",
+  "last": "2014-06-30",
+  "expected_days": 18536,
+  "records": 18536,
+  "calendar_gaps": []
+ },
+ "lineas_con_problemas_de_formato": 0,
+ "problemas": [],
+ "calidad": {
+  "banderas": {
+   "tmin_ausente": 616,
+   "tmax_ausente": 630,
+   "tmin_sospechosa": 16,
+   "pr_ausente": 752
+  },
+  "valores_sospechosos": [
+   {
+    "date": "1966-06-03",
+    "var": "tmin_c",
+    "value": 9.8
+   },
+   {
+    "date": "1966-06-06",
+    "var": "tmin_c",
+    "value": 9.8
+   },
+   {
+    "date": "1966-06-08",
+    "var": "tmin_c",
+    "value": 9.4
+   },
+   {
+    "date": "1966-06-14",
+    "var": "tmin_c",
+    "value": 9.8
+   },
+   {
+    "date": "1966-06-16",
+    "var": "tmin_c",
+    "value": 9
+   },
+   {
+    "date": "1966-06-23",
+    "var": "tmin_c",
+    "value": 9.4
+   },
+   {
+    "date": "1966-06-27",
+    "var": "tmin_c",
+    "value": 10
+   },
+   {
+    "date": "1966-06-29",
+    "var": "tmin_c",
+    "value": 10
+   },
+   {
+    "date": "1966-07-03",
+    "var": "tmin_c",
+    "value": 9.4
+   },
+   {
+    "date": "1971-07-04",
+    "var": "tmin_c",
+    "value": 10
+   },
+   {
+    "date": "1971-07-05",
+    "var": "tmin_c",
+    "value": 9.6
+   },
+   {
+    "date": "1971-07-06",
+    "var": "tmin_c",
+    "value": 9.5
+   },
+   {
+    "date": "1971-07-11",
+    "var": "tmin_c",
+    "value": 8.8
+   },
+   {
+    "date": "1971-07-13",
+    "var": "tmin_c",
+    "value": 10
+   },
+   {
+    "date": "1971-07-14",
+    "var": "tmin_c",
+    "value": 9.2
+   },
+   {
+    "date": "1971-07-19",
+    "var": "tmin_c",
+    "value": 9.6
+   }
+  ],
+  "rachas_ausentes_15d": {
+   "pr_mm": [
+    {
+     "from": "1967-01-01",
+     "to": "1967-06-30",
+     "days": 181
+    },
+    {
+     "from": "1967-08-01",
+     "to": "1967-09-05",
+     "days": 36
+    },
+    {
+     "from": "1970-06-01",
+     "to": "1970-06-30",
+     "days": 30
+    },
+    {
+     "from": "1974-06-01",
+     "to": "1974-06-30",
+     "days": 30
+    },
+    {
+     "from": "1976-11-01",
+     "to": "1976-11-30",
+     "days": 30
+    },
+    {
+     "from": "1984-06-01",
+     "to": "1984-06-30",
+     "days": 30
+    },
+    {
+     "from": "1986-03-10",
+     "to": "1986-03-26",
+     "days": 17
+    },
+    {
+     "from": "1989-04-01",
+     "to": "1989-05-03",
+     "days": 33
+    },
+    {
+     "from": "1989-12-01",
+     "to": "1989-12-31",
+     "days": 31
+    },
+    {
+     "from": "1990-09-01",
+     "to": "1990-09-30",
+     "days": 30
+    },
+    {
+     "from": "1992-12-01",
+     "to": "1992-12-31",
+     "days": 31
+    },
+    {
+     "from": "1993-06-01",
+     "to": "1993-10-31",
+     "days": 153
+    },
+    {
+     "from": "1998-02-01",
+     "to": "1998-04-30",
+     "days": 89
+    },
+    {
+     "from": "2013-07-01",
+     "to": "2013-07-31",
+     "days": 31
+    }
+   ],
+   "tmax_c": [
+    {
+     "from": "1964-09-01",
+     "to": "1964-11-12",
+     "days": 73
+    },
+    {
+     "from": "1967-01-01",
+     "to": "1967-06-30",
+     "days": 181
+    },
+    {
+     "from": "1967-08-01",
+     "to": "1967-09-06",
+     "days": 37
+    },
+    {
+     "from": "1970-06-01",
+     "to": "1970-06-30",
+     "days": 30
+    },
+    {
+     "from": "1989-04-01",
+     "to": "1989-05-04",
+     "days": 34
+    },
+    {
+     "from": "1992-12-01",
+     "to": "1992-12-31",
+     "days": 31
+    },
+    {
+     "from": "1993-06-01",
+     "to": "1993-11-03",
+     "days": 156
+    },
+    {
+     "from": "2013-07-01",
+     "to": "2013-07-31",
+     "days": 31
+    }
+   ],
+   "tmin_c": [
+    {
+     "from": "1967-01-01",
+     "to": "1967-06-30",
+     "days": 181
+    },
+    {
+     "from": "1967-08-01",
+     "to": "1967-09-06",
+     "days": 37
+    },
+    {
+     "from": "1970-03-25",
+     "to": "1970-06-30",
+     "days": 98
+    },
+    {
+     "from": "1989-04-01",
+     "to": "1989-05-04",
+     "days": 34
+    },
+    {
+     "from": "1992-12-01",
+     "to": "1992-12-31",
+     "days": 31
+    },
+    {
+     "from": "1993-06-01",
+     "to": "1993-11-03",
+     "days": 156
+    },
+    {
+     "from": "2013-07-01",
+     "to": "2013-07-31",
+     "days": 31
+    }
+   ]
+  },
+  "sensibilidad_regla_mensual": {
+   "estricta_5_3": {
+    "regla": {
+     "maxMissing": 5,
+     "maxConsecutive": 3
+    },
+    "meses_pr_validos": 583,
+    "anios_completos_pr": 38
+   },
+   "omm_10_5": {
+    "regla": {
+     "maxMissing": 10,
+     "maxConsecutive": 5
+    },
+    "meses_pr_validos": 584,
+    "anios_completos_pr": 38
+   },
+   "laxa_15_10": {
+    "regla": {
+     "maxMissing": 15,
+     "maxConsecutive": 10
+    },
+    "meses_pr_validos": 584,
+    "anios_completos_pr": 38
+   }
+  }
+ },
+ "cobertura": {
+  "total": {
+   "n": 18536,
+   "pr_mm": 95.9,
+   "tmax_c": 96.6,
+   "tmin_c": 96.7,
+   "tmean_est_c": 96.2
+  },
+  "by_year": {
+   "1963": {
+    "n": 92,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1964": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 80.1,
+    "tmin_c": 97.8,
+    "tmean_est_c": 77.9
+   },
+   "1965": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1966": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1967": {
+    "n": 365,
+    "pr_mm": 40.5,
+    "tmax_c": 40.3,
+    "tmin_c": 40.3,
+    "tmean_est_c": 40.3
+   },
+   "1968": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1969": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1970": {
+    "n": 365,
+    "pr_mm": 91.8,
+    "tmax_c": 91.8,
+    "tmin_c": 73.2,
+    "tmean_est_c": 73.2
+   },
+   "1971": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1972": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 96.7,
+    "tmin_c": 96.4,
+    "tmean_est_c": 96.4
+   },
+   "1973": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1974": {
+    "n": 365,
+    "pr_mm": 91.8,
+    "tmax_c": 98.1,
+    "tmin_c": 98.6,
+    "tmean_est_c": 98.1
+   },
+   "1975": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1976": {
+    "n": 366,
+    "pr_mm": 91.8,
+    "tmax_c": 97,
+    "tmin_c": 100,
+    "tmean_est_c": 97
+   },
+   "1977": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1978": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1979": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1980": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1981": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1982": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1983": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1984": {
+    "n": 366,
+    "pr_mm": 91.8,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1985": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1986": {
+    "n": 365,
+    "pr_mm": 95.3,
+    "tmax_c": 96.2,
+    "tmin_c": 96.2,
+    "tmean_est_c": 95.9
+   },
+   "1987": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1988": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1989": {
+    "n": 365,
+    "pr_mm": 82.5,
+    "tmax_c": 90.7,
+    "tmin_c": 90.7,
+    "tmean_est_c": 90.7
+   },
+   "1990": {
+    "n": 365,
+    "pr_mm": 91.8,
+    "tmax_c": 97.8,
+    "tmin_c": 97.8,
+    "tmean_est_c": 97.8
+   },
+   "1991": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1992": {
+    "n": 366,
+    "pr_mm": 91.5,
+    "tmax_c": 91.5,
+    "tmin_c": 91.5,
+    "tmean_est_c": 91.5
+   },
+   "1993": {
+    "n": 365,
+    "pr_mm": 58.1,
+    "tmax_c": 57.3,
+    "tmin_c": 57.3,
+    "tmean_est_c": 57.3
+   },
+   "1994": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1995": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1996": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 98.9,
+    "tmin_c": 100,
+    "tmean_est_c": 98.9
+   },
+   "1997": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1998": {
+    "n": 365,
+    "pr_mm": 75.6,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "1999": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2000": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2001": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2002": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2003": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2004": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2005": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 99.7,
+    "tmin_c": 100,
+    "tmean_est_c": 99.7
+   },
+   "2006": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2007": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2008": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2009": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2010": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2011": {
+    "n": 365,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2012": {
+    "n": 366,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   },
+   "2013": {
+    "n": 365,
+    "pr_mm": 91.5,
+    "tmax_c": 91.5,
+    "tmin_c": 91.5,
+    "tmean_est_c": 91.5
+   },
+   "2014": {
+    "n": 181,
+    "pr_mm": 100,
+    "tmax_c": 100,
+    "tmin_c": 100,
+    "tmean_est_c": 100
+   }
+  },
+  "by_month": {
+   "1": {
+    "n": 1581,
+    "pr_mm": 98,
+    "tmax_c": 98,
+    "tmin_c": 98,
+    "tmean_est_c": 98
+   },
+   "2": {
+    "n": 1441,
+    "pr_mm": 96.1,
+    "tmax_c": 98.1,
+    "tmin_c": 98.1,
+    "tmean_est_c": 98.1
+   },
+   "3": {
+    "n": 1581,
+    "pr_mm": 95,
+    "tmax_c": 96.6,
+    "tmin_c": 96.6,
+    "tmean_est_c": 96.1
+   },
+   "4": {
+    "n": 1530,
+    "pr_mm": 94.1,
+    "tmax_c": 95,
+    "tmin_c": 93.6,
+    "tmean_est_c": 93.1
+   },
+   "5": {
+    "n": 1581,
+    "pr_mm": 97.8,
+    "tmax_c": 97.1,
+    "tmin_c": 94.6,
+    "tmean_est_c": 94.6
+   },
+   "6": {
+    "n": 1530,
+    "pr_mm": 90.2,
+    "tmax_c": 93.9,
+    "tmin_c": 94,
+    "tmean_est_c": 93.9
+   },
+   "7": {
+    "n": 1550,
+    "pr_mm": 96,
+    "tmax_c": 95.9,
+    "tmin_c": 95.9,
+    "tmean_est_c": 95.9
+   },
+   "8": {
+    "n": 1550,
+    "pr_mm": 96,
+    "tmax_c": 95.9,
+    "tmin_c": 95.9,
+    "tmean_est_c": 95.9
+   },
+   "9": {
+    "n": 1500,
+    "pr_mm": 95.7,
+    "tmax_c": 95.6,
+    "tmin_c": 97.6,
+    "tmean_est_c": 95.6
+   },
+   "10": {
+    "n": 1581,
+    "pr_mm": 98,
+    "tmax_c": 96.1,
+    "tmin_c": 98,
+    "tmean_est_c": 96.1
+   },
+   "11": {
+    "n": 1530,
+    "pr_mm": 98,
+    "tmax_c": 99,
+    "tmin_c": 99.8,
+    "tmean_est_c": 99
+   },
+   "12": {
+    "n": 1581,
+    "pr_mm": 96.1,
+    "tmax_c": 98,
+    "tmin_c": 98,
+    "tmean_est_c": 98
+   }
+  }
+ },
+ "climatologia_mensual_todo_el_periodo": [
+  {
+   "month": 1,
+   "pr_total_mm": {
+    "n_years": 50,
+    "mean": 38.31
+   },
+   "tmax_c": {
+    "n_years": 50,
+    "mean": 32.94
+   },
+   "tmin_c": {
+    "n_years": 50,
+    "mean": 21
+   },
+   "tmean_est_c": {
+    "n_years": 50,
+    "mean": 26.97
+   }
+  },
+  {
+   "month": 2,
+   "pr_total_mm": {
+    "n_years": 49,
+    "mean": 100.7
+   },
+   "tmax_c": {
+    "n_years": 50,
+    "mean": 32.72
+   },
+   "tmin_c": {
+    "n_years": 50,
+    "mean": 21.82
+   },
+   "tmean_est_c": {
+    "n_years": 50,
+    "mean": 27.27
+   }
+  },
+  {
+   "month": 3,
+   "pr_total_mm": {
+    "n_years": 48,
+    "mean": 161.61
+   },
+   "tmax_c": {
+    "n_years": 49,
+    "mean": 32.67
+   },
+   "tmin_c": {
+    "n_years": 48,
+    "mean": 21.72
+   },
+   "tmean_est_c": {
+    "n_years": 48,
+    "mean": 27.17
+   }
+  },
+  {
+   "month": 4,
+   "pr_total_mm": {
+    "n_years": 48,
+    "mean": 66.92
+   },
+   "tmax_c": {
+    "n_years": 47,
+    "mean": 32.28
+   },
+   "tmin_c": {
+    "n_years": 47,
+    "mean": 20.6
+   },
+   "tmean_est_c": {
+    "n_years": 46,
+    "mean": 26.42
+   }
+  },
+  {
+   "month": 5,
+   "pr_total_mm": {
+    "n_years": 50,
+    "mean": 11.72
+   },
+   "tmax_c": {
+    "n_years": 49,
+    "mean": 31.14
+   },
+   "tmin_c": {
+    "n_years": 47,
+    "mean": 18.78
+   },
+   "tmean_est_c": {
+    "n_years": 47,
+    "mean": 24.95
+   }
+  },
+  {
+   "month": 6,
+   "pr_total_mm": {
+    "n_years": 46,
+    "mean": 2.79
+   },
+   "tmax_c": {
+    "n_years": 48,
+    "mean": 29.9
+   },
+   "tmin_c": {
+    "n_years": 48,
+    "mean": 17.13
+   },
+   "tmean_est_c": {
+    "n_years": 48,
+    "mean": 23.52
+   }
+  },
+  {
+   "month": 7,
+   "pr_total_mm": {
+    "n_years": 48,
+    "mean": 0.25
+   },
+   "tmax_c": {
+    "n_years": 48,
+    "mean": 29.62
+   },
+   "tmin_c": {
+    "n_years": 48,
+    "mean": 15.96
+   },
+   "tmean_est_c": {
+    "n_years": 48,
+    "mean": 22.79
+   }
+  },
+  {
+   "month": 8,
+   "pr_total_mm": {
+    "n_years": 48,
+    "mean": 0.33
+   },
+   "tmax_c": {
+    "n_years": 48,
+    "mean": 30.47
+   },
+   "tmin_c": {
+    "n_years": 48,
+    "mean": 15.81
+   },
+   "tmean_est_c": {
+    "n_years": 48,
+    "mean": 23.14
+   }
+  },
+  {
+   "month": 9,
+   "pr_total_mm": {
+    "n_years": 48,
+    "mean": 0.25
+   },
+   "tmax_c": {
+    "n_years": 47,
+    "mean": 31.62
+   },
+   "tmin_c": {
+    "n_years": 48,
+    "mean": 15.94
+   },
+   "tmean_est_c": {
+    "n_years": 47,
+    "mean": 23.8
+   }
+  },
+  {
+   "month": 10,
+   "pr_total_mm": {
+    "n_years": 50,
+    "mean": 2.09
+   },
+   "tmax_c": {
+    "n_years": 49,
+    "mean": 31.95
+   },
+   "tmin_c": {
+    "n_years": 50,
+    "mean": 16.64
+   },
+   "tmean_est_c": {
+    "n_years": 49,
+    "mean": 24.32
+   }
+  },
+  {
+   "month": 11,
+   "pr_total_mm": {
+    "n_years": 50,
+    "mean": 1.77
+   },
+   "tmax_c": {
+    "n_years": 50,
+    "mean": 32.36
+   },
+   "tmin_c": {
+    "n_years": 51,
+    "mean": 17.47
+   },
+   "tmean_est_c": {
+    "n_years": 50,
+    "mean": 24.93
+   }
+  },
+  {
+   "month": 12,
+   "pr_total_mm": {
+    "n_years": 49,
+    "mean": 11.13
+   },
+   "tmax_c": {
+    "n_years": 50,
+    "mean": 32.78
+   },
+   "tmin_c": {
+    "n_years": 50,
+    "mean": 19.08
+   },
+   "tmean_est_c": {
+    "n_years": 50,
+    "mean": 25.93
+   }
+  }
+ ],
+ "climatologia_mensual_1981_2010": [
+  {
+   "month": 1,
+   "pr_total_mm": {
+    "n_years": 30,
+    "mean": 51.78
+   },
+   "tmax_c": {
+    "n_years": 30,
+    "mean": 32.93
+   },
+   "tmin_c": {
+    "n_years": 30,
+    "mean": 21.66
+   },
+   "tmean_est_c": {
+    "n_years": 30,
+    "mean": 27.29
+   }
+  },
+  {
+   "month": 2,
+   "pr_total_mm": {
+    "n_years": 29,
+    "mean": 116.94
+   },
+   "tmax_c": {
+    "n_years": 30,
+    "mean": 32.54
+   },
+   "tmin_c": {
+    "n_years": 30,
+    "mean": 22.62
+   },
+   "tmean_est_c": {
+    "n_years": 30,
+    "mean": 27.58
+   }
+  },
+  {
+   "month": 3,
+   "pr_total_mm": {
+    "n_years": 28,
+    "mean": 187.89
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 32.63
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 22.39
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 27.51
+   }
+  },
+  {
+   "month": 4,
+   "pr_total_mm": {
+    "n_years": 28,
+    "mean": 87.22
+   },
+   "tmax_c": {
+    "n_years": 28,
+    "mean": 32.16
+   },
+   "tmin_c": {
+    "n_years": 28,
+    "mean": 21.31
+   },
+   "tmean_est_c": {
+    "n_years": 28,
+    "mean": 26.74
+   }
+  },
+  {
+   "month": 5,
+   "pr_total_mm": {
+    "n_years": 30,
+    "mean": 16.96
+   },
+   "tmax_c": {
+    "n_years": 30,
+    "mean": 31.13
+   },
+   "tmin_c": {
+    "n_years": 30,
+    "mean": 19.27
+   },
+   "tmean_est_c": {
+    "n_years": 30,
+    "mean": 25.2
+   }
+  },
+  {
+   "month": 6,
+   "pr_total_mm": {
+    "n_years": 28,
+    "mean": 3.87
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 29.81
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 17.51
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 23.66
+   }
+  },
+  {
+   "month": 7,
+   "pr_total_mm": {
+    "n_years": 29,
+    "mean": 0.34
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 29.55
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 16.5
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 23.02
+   }
+  },
+  {
+   "month": 8,
+   "pr_total_mm": {
+    "n_years": 29,
+    "mean": 0.17
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 30.47
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 16.27
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 23.37
+   }
+  },
+  {
+   "month": 9,
+   "pr_total_mm": {
+    "n_years": 28,
+    "mean": 0.34
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 31.7
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 16.46
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 24.08
+   }
+  },
+  {
+   "month": 10,
+   "pr_total_mm": {
+    "n_years": 29,
+    "mean": 2.14
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 32.14
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 17.29
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 24.72
+   }
+  },
+  {
+   "month": 11,
+   "pr_total_mm": {
+    "n_years": 30,
+    "mean": 1.7
+   },
+   "tmax_c": {
+    "n_years": 30,
+    "mean": 32.59
+   },
+   "tmin_c": {
+    "n_years": 30,
+    "mean": 18.09
+   },
+   "tmean_est_c": {
+    "n_years": 30,
+    "mean": 25.34
+   }
+  },
+  {
+   "month": 12,
+   "pr_total_mm": {
+    "n_years": 28,
+    "mean": 17.18
+   },
+   "tmax_c": {
+    "n_years": 29,
+    "mean": 32.87
+   },
+   "tmin_c": {
+    "n_years": 29,
+    "mean": 19.87
+   },
+   "tmean_est_c": {
+    "n_years": 29,
+    "mean": 26.37
+   }
+  }
+ ],
+ "climatologia_mensual_2001_2014": [
+  {
+   "month": 1,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 42.59
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 33.03
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 21.88
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 27.46
+   }
+  },
+  {
+   "month": 2,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 163.09
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 32.79
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 22.76
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 27.77
+   }
+  },
+  {
+   "month": 3,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 181.06
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 32.65
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 22.45
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 27.55
+   }
+  },
+  {
+   "month": 4,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 63.45
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 32.42
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 21.08
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 26.75
+   }
+  },
+  {
+   "month": 5,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 2.5
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 31.29
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 19.19
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 25.24
+   }
+  },
+  {
+   "month": 6,
+   "pr_total_mm": {
+    "n_years": 14,
+    "mean": 0.56
+   },
+   "tmax_c": {
+    "n_years": 14,
+    "mean": 30.12
+   },
+   "tmin_c": {
+    "n_years": 14,
+    "mean": 17.82
+   },
+   "tmean_est_c": {
+    "n_years": 14,
+    "mean": 23.97
+   }
+  },
+  {
+   "month": 7,
+   "pr_total_mm": {
+    "n_years": 12,
+    "mean": 0.16
+   },
+   "tmax_c": {
+    "n_years": 12,
+    "mean": 29.84
+   },
+   "tmin_c": {
+    "n_years": 12,
+    "mean": 16.96
+   },
+   "tmean_est_c": {
+    "n_years": 12,
+    "mean": 23.4
+   }
+  },
+  {
+   "month": 8,
+   "pr_total_mm": {
+    "n_years": 13,
+    "mean": 0
+   },
+   "tmax_c": {
+    "n_years": 13,
+    "mean": 30.91
+   },
+   "tmin_c": {
+    "n_years": 13,
+    "mean": 16.4
+   },
+   "tmean_est_c": {
+    "n_years": 13,
+    "mean": 23.66
+   }
+  },
+  {
+   "month": 9,
+   "pr_total_mm": {
+    "n_years": 13,
+    "mean": 0
+   },
+   "tmax_c": {
+    "n_years": 13,
+    "mean": 32.07
+   },
+   "tmin_c": {
+    "n_years": 13,
+    "mean": 16.41
+   },
+   "tmean_est_c": {
+    "n_years": 13,
+    "mean": 24.24
+   }
+  },
+  {
+   "month": 10,
+   "pr_total_mm": {
+    "n_years": 13,
+    "mean": 3.88
+   },
+   "tmax_c": {
+    "n_years": 13,
+    "mean": 32.14
+   },
+   "tmin_c": {
+    "n_years": 13,
+    "mean": 17.16
+   },
+   "tmean_est_c": {
+    "n_years": 13,
+    "mean": 24.65
+   }
+  },
+  {
+   "month": 11,
+   "pr_total_mm": {
+    "n_years": 13,
+    "mean": 3.84
+   },
+   "tmax_c": {
+    "n_years": 13,
+    "mean": 32.81
+   },
+   "tmin_c": {
+    "n_years": 13,
+    "mean": 18.15
+   },
+   "tmean_est_c": {
+    "n_years": 13,
+    "mean": 25.48
+   }
+  },
+  {
+   "month": 12,
+   "pr_total_mm": {
+    "n_years": 13,
+    "mean": 4.14
+   },
+   "tmax_c": {
+    "n_years": 13,
+    "mean": 33.26
+   },
+   "tmin_c": {
+    "n_years": 13,
+    "mean": 20.04
+   },
+   "tmean_est_c": {
+    "n_years": 13,
+    "mean": 26.65
+   }
+  }
+ ],
+ "lluvia_anual_anios_completos": {
+  "1964": 62,
+  "1965": 655,
+  "1966": 72.1,
+  "1968": 26.6,
+  "1969": 104.1,
+  "1971": 151.6,
+  "1972": 482,
+  "1973": 568.8,
+  "1975": 394.8,
+  "1977": 403.1,
+  "1978": 122.8,
+  "1979": 115.7,
+  "1980": 147.7,
+  "1981": 622.6,
+  "1982": 135.8,
+  "1983": 2891.1,
+  "1985": 130,
+  "1987": 681.8,
+  "1988": 52.1,
+  "1991": 80.2,
+  "1994": 259.1,
+  "1995": 218.8,
+  "1996": 134,
+  "1997": 423.6,
+  "1999": 612.5,
+  "2000": 594.4,
+  "2001": 717,
+  "2002": 773.3,
+  "2003": 141.9,
+  "2004": 208,
+  "2005": 143.7,
+  "2006": 600.1,
+  "2007": 188.8,
+  "2008": 1181.2,
+  "2009": 454.7,
+  "2010": 371.4,
+  "2011": 243.3,
+  "2012": 1194.1
+ },
+ "umbrales_termicos": {
+  "tmax_c": {
+   "valid_days": 17906,
+   "thresholds": {
+    ">=30": {
+     "days": 14375,
+     "pct_of_valid": 80.28
+    },
+    ">=32": {
+     "days": 9099,
+     "pct_of_valid": 50.82
+    },
+    ">=35": {
+     "days": 1516,
+     "pct_of_valid": 8.47
+    }
+   }
+  },
+  "tmin_c": {
+   "valid_days": 17920,
+   "thresholds": {
+    ">=20": {
+     "days": 6404,
+     "pct_of_valid": 35.74
+    },
+    ">=22": {
+     "days": 3133,
+     "pct_of_valid": 17.48
+    },
+    ">=24": {
+     "days": 371,
+     "pct_of_valid": 2.07
+    }
+   }
+  }
+ },
+ "extremos": {
+  "pr_mm_top": [
+   {
+    "date": "1981-03-13",
+    "value": 170.9
+   },
+   {
+    "date": "1983-01-26",
+    "value": 152.7
+   },
+   {
+    "date": "1983-04-20",
+    "value": 137.1
+   },
+   {
+    "date": "2002-04-06",
+    "value": 130
+   },
+   {
+    "date": "1983-04-06",
+    "value": 123.9
+   },
+   {
+    "date": "1981-03-10",
+    "value": 122.4
+   },
+   {
+    "date": "2012-03-23",
+    "value": 120
+   },
+   {
+    "date": "2008-02-26",
+    "value": 107.5
+   },
+   {
+    "date": "2012-02-22",
+    "value": 102
+   },
+   {
+    "date": "2011-04-09",
+    "value": 101
+   }
+  ],
+  "tmax_c_top": [
+   {
+    "date": "1990-03-13",
+    "value": 39
+   },
+   {
+    "date": "1991-03-05",
+    "value": 39
+   },
+   {
+    "date": "1995-04-03",
+    "value": 39
+   },
+   {
+    "date": "1997-03-15",
+    "value": 38.8
+   },
+   {
+    "date": "1992-01-28",
+    "value": 38.2
+   },
+   {
+    "date": "2014-03-31",
+    "value": 38.2
+   },
+   {
+    "date": "1991-03-09",
+    "value": 38
+   },
+   {
+    "date": "1996-01-14",
+    "value": 38
+   },
+   {
+    "date": "1996-02-07",
+    "value": 38
+   },
+   {
+    "date": "1997-04-02",
+    "value": 38
+   }
+  ],
+  "tmin_c_lowest": [
+   {
+    "date": "1971-07-11",
+    "value": 8.8
+   },
+   {
+    "date": "1966-06-16",
+    "value": 9
+   },
+   {
+    "date": "1971-07-14",
+    "value": 9.2
+   },
+   {
+    "date": "1966-06-08",
+    "value": 9.4
+   },
+   {
+    "date": "1966-06-23",
+    "value": 9.4
+   },
+   {
+    "date": "1966-07-03",
+    "value": 9.4
+   },
+   {
+    "date": "1971-07-06",
+    "value": 9.5
+   },
+   {
+    "date": "1971-07-05",
+    "value": 9.6
+   },
+   {
+    "date": "1971-07-19",
+    "value": 9.6
+   },
+   {
+    "date": "1966-06-03",
+    "value": 9.8
+   }
+  ]
+ },
+ "eventos_lluvia": {
+  "valid_days": 17784,
+  "wet_days_ge_1mm": 1485,
+  "days_ge_20mm": 279,
+  "wet_day_p95_mm": 54.2,
+  "wet_day_p99_mm": 88.3
+ },
+ "notas": [
+  "La serie termina el 2014-06-30: NO solapa con la climatología 2015–2023 usada por el motor; sirve para validar fuentes en un periodo anterior (2000-06 → 2014-06 para IMERG; 1981+ para POWER; 1963+ para ERA5).",
+  "La temperatura media se estima como (Tmax+Tmin)/2; no es la media de observaciones horarias.",
+  "Un 0 de precipitación y un día sin reporte son distintos: solo -99.9 se trata como ausente; no se puede distinguir un 0 real de un 0 no reportado."
+ ]
+}
