@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const ds = require('./src/datasources');
 const { gatherData, analyze, outOfScope, SCENARIOS, CROPS } = require('./src/pipeline');
 const rice = require('./src/rice');
-// Fieldi (asistente): Groq solo en el servidor; la clave viene de GROQ_API_KEY (.env, nunca en el repo ni en el navegador).
+// Cropi (asistente): Groq solo en el servidor; la clave viene de GROQ_API_KEY (.env, nunca en el repo ni en el navegador).
 const { Store: AssistantStore } = require('./src/assistant/store');
 const { createAssistant } = require('./src/assistant');
 const assistant = createAssistant({ loadEnvFile: true, runSimulation: async (input) => analyze(input, await gatherData(input.lat, input.lon), SCENARIOS.base) });
@@ -214,7 +214,7 @@ async function handleApi(req, res, url) {
         }, { provenance: 'motor genérico de rotaciones (src/engine.js)' });
       }
     }
-    result.analysis_id = assistant.store.put(sid, v.input, result); // análisis activo de esta sesión para Fieldi (solo en memoria)
+    result.analysis_id = assistant.store.put(sid, v.input, result); // análisis activo de esta sesión para Cropi (solo en memoria)
     return send(res, 200, result);
   }
   if (req.method === 'POST' && p === '/api/rice/analyze') {

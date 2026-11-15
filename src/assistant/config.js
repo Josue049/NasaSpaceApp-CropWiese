@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Configuración del asistente Fieldi. TODO viene de variables de entorno (backend); ningún secreto llega al navegador.
+ * Configuración del asistente Cropi. TODO viene de variables de entorno (backend); ningún secreto llega al navegador.
  *   GROQ_API_KEY             clave de Groq (sin ella el asistente funciona en modo limitado, sin IA)
  *   GROQ_MODEL               modelo (por defecto openai/gpt-oss-120b); se puede cambiar sin tocar código
  *   GROQ_TIMEOUT_MS          tiempo de espera por solicitud (1 000–120 000)

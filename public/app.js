@@ -171,7 +171,7 @@ async function generate() {
     ]);
     if (!rot.ok) { setMsg((rot.j.error || 'Error') + (rot.j.details ? ': ' + rot.j.details.join('; ') : ''), 'bad'); return; }
     state.rot = rot.j; state.rice = rice.ok ? rice.j : null; state.sat = null;
-    window.dispatchEvent(new CustomEvent('fieldshift:analysis', { detail: { id: rot.j.analysis_id || null, unsupported: !!rot.j.unsupported } })); // avisa a Fieldi: hay un análisis nuevo
+    window.dispatchEvent(new CustomEvent('fieldshift:analysis', { detail: { id: rot.j.analysis_id || null, unsupported: !!rot.j.unsupported } })); // avisa a Cropi: hay un análisis nuevo
     setMsg('');
     renderRot(); renderTiles(); renderDetail(); renderIndic();
     if (!rot.j.unsupported) { $('rotWrap').scrollIntoView({ behavior: 'smooth', block: 'start' }); fetchSat(lat, lon); }

@@ -1,5 +1,5 @@
 'use strict';
-/* Fieldi: asistente del análisis. Solo habla con /api/assistant/* del propio servidor (la clave de Groq NUNCA llega al navegador).
+/* Cropi: asistente del análisis. Solo habla con /api/assistant/* del propio servidor (la clave de Groq NUNCA llega al navegador).
    La IA interpreta y explica; el motor agrícola calcula. El análisis activo lo conoce el servidor por la sesión (cookie HttpOnly). */
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
@@ -31,16 +31,16 @@
 
   const root = document.createElement('div');
   root.innerHTML = `
-    <button class="fi-fab" id="fiFab" type="button" aria-label="Abrir el chat con Fieldi" aria-expanded="false" aria-controls="fiPanel"><span class="fi-dot" id="fiDot" hidden></span></button>
-    <section class="fi-panel" id="fiPanel" role="dialog" aria-label="Chat con Fieldi" hidden>
-      <header class="fi-head"><div class="fi-avatar" aria-hidden="true"></div><div class="fi-title"><b>Fieldi</b><small>Te explico tu análisis</small></div>
+    <button class="fi-fab" id="fiFab" type="button" aria-label="Abrir el chat con Cropi" aria-expanded="false" aria-controls="fiPanel"><span class="fi-dot" id="fiDot" hidden></span></button>
+    <section class="fi-panel" id="fiPanel" role="dialog" aria-label="Chat con Cropi" hidden>
+      <header class="fi-head"><div class="fi-avatar" aria-hidden="true"></div><div class="fi-title"><b>Cropi</b><small>Te explico tu análisis</small></div>
         <button class="fi-hbtn" id="fiReset" type="button" title="Nueva conversación" aria-label="Nueva conversación">↺</button>
         <button class="fi-hbtn" id="fiClose" type="button" title="Cerrar" aria-label="Cerrar el chat">✕</button></header>
       <p class="fi-banner" id="fiBanner" hidden></p>
       <div class="fi-log" id="fiLog" role="log" aria-live="polite"></div>
       <div class="fi-chips" id="fiChips"></div>
-      <form class="fi-form" id="fiForm"><textarea class="fi-in" id="fiIn" rows="1" maxlength="1000" placeholder="Escribe tu pregunta…" aria-label="Tu pregunta para Fieldi"></textarea><button class="fi-send" id="fiSend" type="submit" aria-label="Enviar">➤</button></form>
-      <p class="fi-foot">Fieldi explica los resultados del motor; no inventa datos ni garantiza cosechas.</p>
+      <form class="fi-form" id="fiForm"><textarea class="fi-in" id="fiIn" rows="1" maxlength="1000" placeholder="Escribe tu pregunta…" aria-label="Tu pregunta para Cropi"></textarea><button class="fi-send" id="fiSend" type="submit" aria-label="Enviar">➤</button></form>
+      <p class="fi-foot">Cropi explica los resultados del motor; no inventa datos ni garantiza cosechas.</p>
     </section>`;
   document.body.appendChild(root);
   const fab = $('#fiFab'), panel = $('#fiPanel'), log = $('#fiLog'), chips = $('#fiChips'), input = $('#fiIn'), send = $('#fiSend'), banner = $('#fiBanner'), dot = $('#fiDot');
@@ -49,12 +49,12 @@
   const j = async (url, opts) => { const r = await fetch(url, opts); let b = {}; try { b = await r.json(); } catch { /* sin cuerpo */ } return { ok: r.ok, status: r.status, b }; };
   const scroll = () => { log.scrollTop = log.scrollHeight; };
   function add(cls, html) { const d = document.createElement('div'); d.className = 'fi-msg ' + cls; d.innerHTML = html; log.appendChild(d); scroll(); return d; }
-  const typing = () => { const d = document.createElement('div'); d.className = 'fi-typing'; d.setAttribute('aria-label', 'Fieldi está escribiendo'); d.innerHTML = '<i></i><i></i><i></i>'; log.appendChild(d); scroll(); return d; };
+  const typing = () => { const d = document.createElement('div'); d.className = 'fi-typing'; d.setAttribute('aria-label', 'Cropi está escribiendo'); d.innerHTML = '<i></i><i></i><i></i>'; log.appendChild(d); scroll(); return d; };
 
   function welcome() {
     log.innerHTML = '';
-    add('fi-bot', hasAnalysis ? '<p>¡Hola! Soy Fieldi. Ya tengo los resultados de tu parcela. Puedo explicarte por qué el motor recomienda cada opción, los riesgos, el agua y qué datos son hipótesis. ¿Qué te gustaría entender?</p>'
-      : '<p>¡Hola! Soy Fieldi. Primero genera tu recomendación (elige el punto en el mapa y pulsa el botón de generar) y luego te ayudo a entenderla paso a paso.</p>');
+    add('fi-bot', hasAnalysis ? '<p>¡Hola! Soy Cropi. Ya tengo los resultados de tu parcela. Puedo explicarte por qué el motor recomienda cada opción, los riesgos, el agua y qué datos son hipótesis. ¿Qué te gustaría entender?</p>'
+      : '<p>¡Hola! Soy Cropi. Primero genera tu recomendación (elige el punto en el mapa y pulsa el botón de generar) y luego te ayudo a entenderla paso a paso.</p>');
   }
   async function loadChips() {
     chips.innerHTML = ''; if (!hasAnalysis) return;

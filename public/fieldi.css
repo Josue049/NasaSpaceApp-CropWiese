@@ -1,4 +1,4 @@
-/* Fieldi: botón flotante y panel de chat. Usa las variables de styles.css. */
+/* Cropi: botón flotante y panel de chat. Usa las variables de styles.css. */
 .fi-fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:1200;width:68px;height:68px;padding:0;border:3px solid #fff;border-radius:50%;background:var(--green-soft) url(img/fieldi-tablet.png) center 12%/118% no-repeat;box-shadow:0 6px 18px rgba(30,60,30,.28);transition:transform .15s}
 .fi-fab:hover{transform:scale(1.06)}
 .fi-fab .fi-dot{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff}

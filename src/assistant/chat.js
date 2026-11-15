@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Servicio de Fieldi. «La IA interpreta y explica. El motor agrícola calcula.»
+ * Servicio de Cropi. «La IA interpreta y explica. El motor agrícola calcula.»
  * - Con GROQ_API_KEY: bucle modelo ⇄ herramientas de solo lectura (límite de vueltas y de tiempo).
  * - Sin clave: MODO LIMITADO determinista; responde con datos reales del motor y lo avisa. No simula una IA.
  * El cliente de Groq se inyecta (las pruebas usan un doble; en producción es el SDK oficial).
@@ -11,7 +11,7 @@ const { toToolMessageContent } = require('./tools');
 const C = require('./context');
 const { AssistantError } = require('./groqClient');
 
-const LIMITED_NOTICE = 'Fieldi está en modo limitado: la conversación con IA (Groq) aún no está activada en este servidor. Las respuestas salen directamente de los resultados del motor.';
+const LIMITED_NOTICE = 'Cropi está en modo limitado: la conversación con IA (Groq) aún no está activada en este servidor. Las respuestas salen directamente de los resultados del motor.';
 
 const withTimeout = (p, ms, label) => new Promise((res, rej) => { const t = setTimeout(() => rej(new Error(`${label}: tiempo agotado`)), ms); p.then((v) => { clearTimeout(t); res(v); }, (e) => { clearTimeout(t); rej(e); }); });
 
@@ -68,7 +68,7 @@ class AssistantService {
       catch (e) {
         if (e instanceof AssistantError) return this.err(e.http, e.code, e.message, e.retryAfter ? { retry_after: e.retryAfter } : {});
         this.log({ event: 'assistant_internal_error', msg: String(e && e.message).slice(0, 120) });
-        return this.err(500, 'internal', 'Fieldi tuvo un problema inesperado. Intenta de nuevo.');
+        return this.err(500, 'internal', 'Cropi tuvo un problema inesperado. Intenta de nuevo.');
       }
     }
     sess.chat.push({ role: 'user', content: message }, { role: 'assistant', content: body.reply });
@@ -91,7 +91,7 @@ class AssistantService {
       const r = await this.groq.chat({ messages, tools: this.tools.definitions, toolChoice: last ? 'none' : 'auto' });
       if (!r.tool_calls.length || last) {
         const text = (r.content || '').trim();
-        if (!text) throw new AssistantError('empty', 'Fieldi no pudo generar una respuesta. Intenta reformular tu pregunta.', { http: 502 });
+        if (!text) throw new AssistantError('empty', 'Cropi no pudo generar una respuesta. Intenta reformular tu pregunta.', { http: 502 });
         return { reply: text, tools: [...new Set(used)] };
       }
       const calls = r.tool_calls.slice(0, cfg.maxToolCallsPerTurn);
@@ -104,7 +104,7 @@ class AssistantService {
         messages.push({ role: 'tool', tool_call_id: c.id, name: c.name, content: toToolMessageContent(out) });
       }
     }
-    throw new AssistantError('empty', 'Fieldi no pudo completar la respuesta.', { http: 502 });
+    throw new AssistantError('empty', 'Cropi no pudo completar la respuesta.', { http: 502 });
   }
 
   /** Respuestas deterministas (sin IA) construidas SOLO con datos reales del motor. */

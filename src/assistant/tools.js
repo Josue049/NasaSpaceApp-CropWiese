@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Herramientas de SOLO LECTURA que Fieldi puede pedir. Lista blanca cerrada; argumentos validados de forma estricta;
+ * Herramientas de SOLO LECTURA que Cropi puede pedir. Lista blanca cerrada; argumentos validados de forma estricta;
  * ninguna acepta identificadores de análisis, rutas ni código: operan siempre sobre el análisis ACTIVO de la sesión,
  * que resuelve el servidor (no el modelo ni el navegador). La simulación trabaja sobre una COPIA y no altera el análisis activo.
  */

@@ -1,5 +1,5 @@
 'use strict';
-/** Ensambla Fieldi: configuración (.env), almacén en memoria, limitador, herramientas y cliente de Groq (SDK oficial, solo servidor). */
+/** Ensambla Cropi: configuración (.env), almacén en memoria, limitador, herramientas y cliente de Groq (SDK oficial, solo servidor). */
 const { getConfig, loadDotEnv, isConfigured } = require('./config');
 const { Store, RateLimiter } = require('./store');
 const { createTools } = require('./tools');

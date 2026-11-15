@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Pruebas de Fieldi. IMPORTANTE: usan DOBLES de Groq (no hay red ni clave). Verifican la construcción de solicitudes, el bucle de
+ * Pruebas de Cropi. IMPORTANTE: usan DOBLES de Groq (no hay red ni clave). Verifican la construcción de solicitudes, el bucle de
  * herramientas, la validación, el aislamiento y el mapeo de errores con las clases REALES del SDK. NO sustituyen la validación
  * con credenciales reales (scripts/probar_groq.js).
  */

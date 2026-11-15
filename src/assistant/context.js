@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Resúmenes COMPACTOS del análisis del motor para Fieldi. Nunca se envía el resultado completo, ni series meteorológicas,
+ * Resúmenes COMPACTOS del análisis del motor para Cropi. Nunca se envía el resultado completo, ni series meteorológicas,
  * ni bases de datos: solo lo necesario para explicar. Todo viene del resultado real del motor (nada se calcula ni se inventa aquí).
  */
 const MAX_CONTEXT_CHARS = 7000;

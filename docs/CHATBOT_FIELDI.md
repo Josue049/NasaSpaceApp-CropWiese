@@ -1,8 +1,8 @@
-# Fieldi — asistente conversacional de Field Shift
+# Cropi — asistente conversacional de Field Shift
 
 > **La IA interpreta y explica. El motor agrícola calcula.**
 
-Fieldi explica a los agricultores los análisis que ya generó el motor de Field Shift (rotaciones de arroz Tinajones y frijol Loctao en Morropón). No calcula rotaciones, no estima rendimientos y no inventa datos.
+Cropi explica a los agricultores los análisis que ya generó el motor de Field Shift (rotaciones de arroz Tinajones y frijol Loctao en Morropón). No calcula rotaciones, no estima rendimientos y no inventa datos.
 
 ## Estado de la validación (leer primero)
 
@@ -24,7 +24,7 @@ Navegador (public/fieldi.js)  ──►  server.js /api/assistant/*  ──►  
                                                                           └─ groq-sdk (groqClient.js)  ─► Groq (solo servidor)
 ```
 
-Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `fieldi-1.0.0`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
+Archivos: `config.js` (entorno, `.env`), `prompt.js` (prompt versionado `cropi-1.1.0`), `store.js` (sesiones y límite de solicitudes), `validate.js` (validación estricta de argumentos), `context.js` (resúmenes compactos del motor), `tools.js` (lista blanca), `groqClient.js` (SDK oficial y errores), `chat.js` (servicio), `index.js` (ensamblado).
 
 El motor agrícola **no se modificó**: `server.js` solo guarda en memoria el resultado de `/api/rotation/analyze` y le añade `analysis_id`.
 
@@ -43,7 +43,7 @@ Códigos de error: 400 mensaje inválido/largo · 403 origen distinto · 429 lí
 
 - Cada solicitud a Groq lleva: prompt del sistema + **resumen compacto** del análisis activo (máx. ~7000 caracteres: entradas declaradas, 3 rotaciones con puntaje relativo, riesgos principales, sensibilidad, procedencia A–E, límites) + últimos 12 mensajes (máx. 9000 caracteres) + la pregunta.
 - **Nunca** se envían series meteorológicas, bases de datos, archivos del SENAMHI ni el resultado completo del motor.
-- Al generarse un análisis nuevo, la conversación previa se descarta y se avisa; Fieldi usa solo el análisis nuevo.
+- Al generarse un análisis nuevo, la conversación previa se descarta y se avisa; Cropi usa solo el análisis nuevo.
 - Sin almacenamiento permanente: todo vive en memoria del servidor, caduca a las 2 h de inactividad y se pierde al reiniciar. No se guarda el chat en disco.
 
 ## Herramientas (solo lectura)
@@ -69,7 +69,7 @@ Códigos de error: 400 mensaje inválido/largo · 403 origen distinto · 429 lí
 
 ## Modo limitado (sin clave)
 
-Sin `GROQ_API_KEY` Fieldi **no simula una IA**: contesta con plantillas deterministas construidas con los números reales del motor (puntajes, riesgos, demanda de agua, procedencia) y lo declara en un aviso visible. Ante preguntas de rendimiento o ganancia explica que Field Shift no las estima (el margen existe solo si el agricultor declaró rendimiento, precio y costos de ambos cultivos).
+Sin `GROQ_API_KEY` Cropi **no simula una IA**: contesta con plantillas deterministas construidas con los números reales del motor (puntajes, riesgos, demanda de agua, procedencia) y lo declara en un aviso visible. Ante preguntas de rendimiento o ganancia explica que Field Shift no las estima (el margen existe solo si el agricultor declaró rendimiento, precio y costos de ambos cultivos).
 
 ## Pruebas
 
@@ -81,12 +81,11 @@ Sin `GROQ_API_KEY` Fieldi **no simula una IA**: contesta con plantillas determin
 - El prompt reduce, pero no elimina, la posibilidad de que el modelo se exceda; por eso el contexto y las herramientas devuelven solo datos del motor y el prompt prohíbe cifras propias.
 - Estado solo en memoria: reiniciar el servidor borra análisis y chats (hay que volver a generar la recomendación).
 - Con varias instancias del servidor (balanceo) las sesiones no se comparten.
-- En la interfaz la mascota del hero se presenta como «Cropi» mientras el chat se llama «Fieldi»; conviene unificar el nombre.
 
 ## Activación
 
 1. Crea una clave en <https://console.groq.com/keys>.
 2. `copy .env.example .env` y escribe la clave en `GROQ_API_KEY=` (no la subas a git).
 3. `node scripts/probar_groq.js` → debe confirmar modelo disponible, texto y llamada a herramienta.
-4. `npm start`; abre el chat de Fieldi: el aviso de «modo limitado» debe desaparecer (`GET /api/assistant/status` → `mode: "ai"`).
+4. `npm start`; abre el chat de Cropi: el aviso de «modo limitado» debe desaparecer (`GET /api/assistant/status` → `mode: "ai"`).
 5. Si el modelo no está en tu cuenta o ignora las herramientas, cambia `GROQ_MODEL`.

@@ -1,6 +1,6 @@
 # Field Shift — Informe integral del MVP
 
-Estado documentado: rama `feat/fieldshift-morropon-validation`, commit `7815113` (**antes** de incorporar el asistente Fieldi). Todo lo que sigue se verificó contra el historial de Git (48 commits en el repositorio), los archivos reales, los informes existentes y las pruebas (`npm test`: 116 pruebas, 0 fallos).
+Estado documentado: rama `feat/fieldshift-morropon-validation`, commit `7815113` (**antes** de incorporar el asistente Cropi). Todo lo que sigue se verificó contra el historial de Git (48 commits en el repositorio), los archivos reales, los informes existentes y las pruebas (`npm test`: 116 pruebas, 0 fallos).
 
 > Principio rector del proyecto: podemos trabajar con estimaciones científicas justificadas, pero nunca fabricar datos para completar el modelo ni presentar hipótesis como hechos. Este informe distingue lo que está **listo** de lo que es **experimental** o está **pendiente de validación**.
 
@@ -193,7 +193,7 @@ Detalle con fuente, método, incertidumbre y efecto: `docs/AUDITORIA_PARAMETROS.
 ## 13. Cambios del frontend
 
 - Cabecera con pestañas (Inicio, Recomendación, Indicadores, Aprende), logo Cropwise (imagen `Crop.png`) y menú hamburguesa en móvil.
-- Héroe a todo el ancho con padding lateral, mascota Fieldi y globo; paisaje agrícola.
+- Héroe a todo el ancho con padding lateral, mascota Cropi y globo; paisaje agrícola.
 - Bloque 1: mapa Leaflet, área opcional, **cultivo actual obligatorio** (campos obligatorios y rangos inválidos en rojo con mensaje y foco).
 - Bloque 2: selector Instantánea/Precisa, primera campaña (por defecto la próxima según la fecha), campaña anterior («No lo sé»), riego de tres estados; Precisa en **modal** con cinco secciones y resumen de datos indicados; pista de suelo de SoilGrids.
 - Tarjetas de rotación con **línea de tiempo** (cultivo, campaña, fechas, duración, agua, calor, viabilidad, evidencia local, dependencia del riego), ilustraciones de arroz y Loctao, análisis detallado en modal.
