@@ -276,3 +276,7 @@ label.check small{color:var(--muted);font-weight:400}
 .hero{padding-left:max(clamp(28px,8vw,150px),calc((100vw - var(--maxw))/2 + var(--gut)));padding-right:max(clamp(28px,8vw,150px),calc((100vw - var(--maxw))/2 + var(--gut)))}
 @media (max-width:900px){.hero{padding-left:clamp(24px,6vw,48px);padding-right:clamp(24px,6vw,48px)}}
 @media (max-width:520px){.hero{padding-left:24px;padding-right:24px}}
+
+/* logo del header (imagen) */
+.brand-logo{height:44px;width:auto;display:block;max-width:100%}
+@media (max-width:520px){.brand-logo{height:36px}}
