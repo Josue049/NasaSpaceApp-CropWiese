@@ -58,7 +58,7 @@
   }
   async function loadChips() {
     chips.innerHTML = ''; if (!hasAnalysis) return;
-    const r = await j('/api/assistant/suggestions'); if (!r.ok) return;
+    const r = await j('/api/assistant/suggestions?lang=' + ((window.FSI18N && window.FSI18N.lang) || 'es')); if (!r.ok) return;
     for (const s of r.b.suggestions || []) { const b = document.createElement('button'); b.type = 'button'; b.className = 'fi-chip'; b.textContent = s; b.addEventListener('click', () => ask(s)); chips.appendChild(b); }
   }
   async function loadStatus() {
@@ -76,7 +76,7 @@
     add('fi-me', esc(text).replace(/\n/g, '<br>')); input.value = ''; resize();
     const t = typing();
     try {
-      const r = await j('/api/assistant/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) });
+      const r = await j('/api/assistant/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, lang: (window.FSI18N && window.FSI18N.lang) || 'es' }) });
       t.remove();
       if (r.ok) {
         add('fi-bot', md(r.b.reply || ''));
@@ -112,6 +112,7 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && opened) close(); });
   if (window.visualViewport) { window.visualViewport.addEventListener('resize', fitViewport); window.visualViewport.addEventListener('scroll', fitViewport); }
   window.addEventListener('resize', fitViewport);
+  window.addEventListener('fieldshift:lang', () => { if (statusLoaded) { welcome(); loadChips(); } }); // cambia el idioma: saludo y sugerencias nuevos
 
   // Un nuevo análisis reemplaza el contexto: el servidor ya lo marcó como activo; aquí se refresca la interfaz.
   window.addEventListener('fieldshift:analysis', async (ev) => {

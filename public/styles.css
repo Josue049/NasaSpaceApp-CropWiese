@@ -280,3 +280,13 @@ label.check small{color:var(--muted);font-weight:400}
 /* logo del header (imagen) */
 .brand-logo{height:44px;width:auto;display:block;max-width:100%}
 @media (max-width:520px){.brand-logo{height:36px}}
+
+/* Selector de idioma y botón de descarga de la app */
+.lang-sel{display:inline-flex;border:2px solid #34503b;border-radius:99px;overflow:hidden;flex:none}
+.lang-sel button{border:0;background:#fff;color:#34503b;font-weight:800;font-size:13px;padding:6px 11px;min-width:38px;cursor:pointer}
+.lang-sel button.on{background:#34503b;color:#fff}
+.lang-sel button:focus-visible,.dl-btn:focus-visible{outline:3px solid var(--accent,#d98c2b);outline-offset:2px}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;background:#2e8b3d;color:#fff;font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap}
+.dl-btn:hover{background:#27763a}.dl-btn .i{width:18px;height:18px;stroke:#fff}
+@media (max-width:760px){.dl-btn span{display:none}.dl-btn{padding:9px}.dl-btn .i{width:20px;height:20px}}
+@media (max-width:1400px){.top-actions .chip{display:none}}

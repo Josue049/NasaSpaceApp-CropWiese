@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -29,6 +29,7 @@
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.500" width="16" height="15" rx="2.500"/><path d="M4 10h16M8.500 3.500v4M15.500 3.500v4"/></symbol>
     <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.6-7.900A5.500 5.500 0 0 1 17 9.500a4.300 4.300 0 0 1 .5 8.500Z"/><path d="M9 21l.8-1.800M13 21l.8-1.800"/></symbol>
     <symbol id="i-heartleaf" viewBox="0 0 24 24"><path d="M12 20.500C6 16 3 12.500 3 9a4.800 4.800 0 0 1 9-2.300A4.800 4.800 0 0 1 21 9c0 3.500-3 7-9 11.500Z"/><path d="M12 17c0-3 1.500-5 4-6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
@@ -53,6 +54,8 @@
     <button class="tab" data-view="aprende"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg> Aprende</button>
   </nav>
   <div class="top-actions">
+    <a class="dl-btn" id="btnApp" aria-label="Descargar la app" href="https://github.com/Josue049/NasaSpaceApp-CropWiese/releases/latest/download/cropwise.apk" download rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg><span>Descargar la app</span></a>
+    <div class="lang-sel" role="group" aria-label="Idioma"><button type="button" data-lang="en" aria-pressed="true" data-no-i18n lang="en">EN</button><button type="button" data-lang="es" aria-pressed="false" data-no-i18n lang="es">ES</button></div>
     <button class="icon-btn" id="btnHelp" aria-label="Ayuda: ¿qué es esta demo?"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></button>
     <span class="chip" id="chipMode">Demo · Instantánea</span>
   </div>
@@ -67,7 +70,7 @@
       <p>Combinamos datos satelitales, clima y suelo de la zona para comparar rotaciones de <b>arroz</b> y <b>frijol Loctao</b> en <b>Morropón (Alto Piura)</b>.</p>
     </div>
     <div class="hero-mascot">
-      <img src="img/fieldi-hola.png" alt="Cropi, la llama guía, saluda: «¡Hola! Soy Cropi, tu guía en el campo. Te ayudo a elegir la mejor rotación para tu parcela.»">
+      <img src="img/fieldi-hola.png" data-src-en="img/fieldi-hola-en.png" alt="Cropi, la llama guía, saluda: «¡Hola! Soy Cropi, tu guía en el campo. Te ayudo a elegir la mejor rotación para tu parcela.»">
     </div>
   </div>
 
@@ -223,6 +226,7 @@
 
 <footer class="foot">Field Shift · rotación de cultivos con datos satelitales y de estación. <a href="#aprende" data-go="aprende">Alcance, metodología, fuentes e incertidumbre</a></footer>
 
+<script src="i18n.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
 <script src="fieldi.js"></script>

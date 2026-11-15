@@ -140,12 +140,12 @@ const sameOrigin = (req) => { const o = req.headers.origin; if (!o) return true;
 async function handleAssistant(req, res, p, sid) {
   const sv = assistant.service, out = (r) => { if (r.body && r.body.retry_after) res.setHeader('Retry-After', String(r.body.retry_after)); return send(res, r.status, r.body); };
   if (req.method === 'GET' && p === '/api/assistant/status') return send(res, 200, await sv.status(sid));
-  if (req.method === 'GET' && p === '/api/assistant/suggestions') return out(sv.suggestions(sid));
+  if (req.method === 'GET' && p === '/api/assistant/suggestions') return out(sv.suggestions(sid, new URL(req.url, 'http://x').searchParams.get('lang') === 'en' ? 'en' : 'es'));
   if (req.method === 'POST' && (p === '/api/assistant/chat' || p === '/api/assistant/reset')) {
     if (!sameOrigin(req)) return send(res, 403, { error: 'Origen no permitido' });
     if (p === '/api/assistant/reset') return out(sv.reset(sid));
     let b; try { b = await readBody(req); } catch (e) { return send(res, 400, { error: e.message }); }
-    return out(await sv.chat({ sid, ip: clientIp(req), message: b && b.message })); // el cliente NO elige el análisis: se usa el activo de su sesión
+    return out(await sv.chat({ sid, ip: clientIp(req), message: b && b.message, lang: b && b.lang === 'en' ? 'en' : 'es' })); // el cliente NO elige el análisis: se usa el activo de su sesión
   }
   return send(res, 404, { error: 'ruta no encontrada' });
 }

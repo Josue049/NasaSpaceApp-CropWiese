@@ -35,17 +35,24 @@ class AssistantService {
 
   reset(sid) { this.store.resetChat(sid); return { status: 200, body: { ok: true } }; }
 
-  suggestions(sid) {
+  suggestions(sid, lang) {
     const a = this.store.active(sid);
     if (!a || a.result.unsupported) return { status: 200, body: { suggestions: [] } };
-    const r = a.result, s = ['¿Por qué esta es la mejor opción?', '¿Qué riesgos tiene mi rotación actual?', '¿Cuánta agua necesita cada opción?', '¿Qué tan seguros son estos resultados?'];
+    const r = a.result;
+    if (lang === 'en') {
+      const e = ['Why is this the best option?', 'What are the risks of my current rotation?', 'How much water does each option need?', 'How certain are these results?'];
+      if (r.sensitive_to_assumptions) e.splice(1, 0, 'How firm is this recommendation?');
+      e.push(!r.economics || !r.economics.complete ? 'How much will I earn?' : 'What economic margin did I declare?');
+      return { status: 200, body: { suggestions: e.slice(0, 5) } };
+    }
+    const s = ['¿Por qué esta es la mejor opción?', '¿Qué riesgos tiene mi rotación actual?', '¿Cuánta agua necesita cada opción?', '¿Qué tan seguros son estos resultados?'];
     if (r.sensitive_to_assumptions) s.splice(1, 0, '¿Qué tan firme es esta recomendación?');
     if (!r.economics || !r.economics.complete) s.push('¿Cuánto voy a ganar?');
     else s.push('¿Qué margen económico declaré?');
     return { status: 200, body: { suggestions: s.slice(0, 5) } };
   }
 
-  async chat({ sid, ip, message }) {
+  async chat({ sid, ip, message, lang }) {
     if (typeof message !== 'string' || !message.trim()) return this.err(400, 'invalid_message', 'Escribe una pregunta.');
     message = message.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim();
     if (message.length > this.cfg.messageMaxChars) return this.err(400, 'message_too_long', `Tu mensaje es muy largo (máximo ${this.cfg.messageMaxChars} caracteres).`);
@@ -64,7 +71,7 @@ class AssistantService {
     let body;
     if (!isConfigured(this.cfg) || !this.groq) body = { reply: changed + this.limitedReply(message, analysis), mode: 'limited', notice: LIMITED_NOTICE };
     else {
-      try { const r = await this.aiReply(message, analysis, sess, notes); body = { reply: r.reply, mode: 'ai', tools_used: r.tools }; }
+      try { const r = await this.aiReply(message, analysis, sess, notes, lang); body = { reply: r.reply, mode: 'ai', tools_used: r.tools }; }
       catch (e) {
         if (e instanceof AssistantError) return this.err(e.http, e.code, e.message, e.retryAfter ? { retry_after: e.retryAfter } : {});
         this.log({ event: 'assistant_internal_error', msg: String(e && e.message).slice(0, 120) });
@@ -96,9 +103,9 @@ class AssistantService {
     }
   }
 
-  async aiReply(message, analysis, sess, notes) {
+  async aiReply(message, analysis, sess, notes, lang) {
     const cfg = this.cfg, ctx = { analysis, sims: 0 }, used = [];
-    const messages = [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'system', content: contextMessage(C.contextJson(analysis.result, analysis.input), notes) }, ...sess.chat, { role: 'user', content: message }];
+    const messages = [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'system', content: contextMessage(C.contextJson(analysis.result, analysis.input), notes) }, ...(lang === 'en' ? [{ role: 'system', content: 'LANGUAGE: the user interface is in English. Reply in clear, simple English (keep every rule above). Tool results and context may be in Spanish: translate them faithfully; never change numbers or facts.' }] : []), ...sess.chat, { role: 'user', content: message }];
     for (let it = 0; it <= cfg.maxToolIterations; it++) {
       const last = it === cfg.maxToolIterations;
       const r = await this.callModel(messages, last);
