@@ -58,6 +58,18 @@ function sanitizeKeepMain(k, ids) {
   return o.campaigns || o.min_campaigns ? o : null;
 }
 
+/** Riego: true | false | null (NO declarado). Nunca se asume que hay riego. */
+function irrigation3(x) { if (x === true || x === 'si' || x === 'sí') return true; if (x === false || x === 'no') return false; return null; }
+/** Entradas declaradas de la parcela. Lo vacío o inválido queda como «no declarado» (null/ausente), jamás como cero. */
+function sanitizeDeclared(b) {
+  const out = {};
+  const d = typeof b.first_sowing_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.first_sowing_date) ? b.first_sowing_date : null;
+  if (d) { const t = Date.parse(d), now = Date.now(); if (Number.isFinite(t) && t > now - 400 * 864e5 && t < now + 1100 * 864e5) out.first_sowing_date = d; }
+  if (b.cycle_days && typeof b.cycle_days === 'object') { const c = {}; for (const id of ['arroz', 'loctao']) { const v = num(b.cycle_days[id], 40, 200); if (v != null) c[id] = Math.round(v); } if (Object.keys(c).length) out.cycle_days = c; }
+  if (b.soil && typeof b.soil === 'object') { const s = {}; const ph = num(b.soil.ph, 3.5, 9.5); if (ph != null) s.ph = ph; if (['arenosa', 'franca', 'arcillosa'].includes(b.soil.texture)) s.texture = b.soil.texture; if (Object.keys(s).length) out.soil = s; }
+  return out;
+}
+
 // ---------- validación de entrada ----------
 function validateInput(b) {
   const errs = [];
@@ -130,7 +142,8 @@ async function handleApi(req, res, url) {
     const { ROTATION_CROPS, LEGACY_ROTATION_CROPS } = require('./src/morropon');
     const allowed = b.engine === 'v1' ? LEGACY_ROTATION_CROPS : ROTATION_CROPS;
     if (!Array.isArray(b.history) || !b.history.length || b.history.some((h) => !allowed.includes(h))) return send(res, 400, { error: 'Entrada inválida', details: ['el historial solo admite: ' + allowed.join(', ')] });
-    const v = validateInput({ ...b, irrigation: b.irrigation !== false, excluded_crops: [] });
+    const irr3 = irrigation3(b.irrigation);
+    const v = validateInput({ ...b, irrigation: irr3 === true, excluded_crops: [] });
     if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });
     // Modo Precisa: el ciclo del arroz se recalibra con las fechas del agricultor (misma lógica que /api/rice/analyze).
     const iv = b.mode === 'precisa' ? require('./src/insitu').validateInsitu(b.insitu) : { insitu: null, errors: [] };
@@ -139,10 +152,12 @@ async function handleApi(req, res, url) {
     if (cal.profile.calibrated) v.input.rice_cycle = cal.profile.cycle;
     // Entradas del motor v2 (todas opcionales y declaradas por el agricultor; no se verifican)
     v.input.engine = b.engine === 'v1' ? 'v1' : 'v2';
+    v.input.irrigation = irr3 === null && v.input.engine === 'v1' ? true : irr3; // v1 (referencia histórica) conservaba el supuesto de riego; v2 no lo asume
+    if (v.input.engine === 'v2' && b.mode === 'precisa') Object.assign(v.input, sanitizeDeclared(b));
     const ec = sanitizeEconomics(b.economics, allowed); if (ec) v.input.economics = ec;
     const km = sanitizeKeepMain(b.keep_main, allowed); if (km) v.input.keep_main = km;
     const irr = iv.insitu && iv.insitu.irrigation;
-    if (irr) { v.input.water = { supply_m3_ha: irr.supply_m3_ha ?? null, percolation_mm_day: irr.percolation_mm_day ?? null, management: irr.management || null }; if (irr.management === 'secano') v.input.irrigation = false; }
+    if (irr) { v.input.water = { supply_m3_ha: irr.supply_m3_ha ?? null, percolation_mm_day: irr.percolation_mm_day ?? null, management: irr.management || null }; if (irr.management === 'secano') v.input.irrigation = false; else if (irr.supply_m3_ha > 0 && v.input.irrigation === null) v.input.irrigation = true; }
     // La ubicación elegida por el usuario es la que alimenta el motor (clima por celda nativa; elevación, pendiente y suelo del punto).
     if (!rice.inBox(v.input.lat, v.input.lon)) { // fuera del ámbito: se explica sin consultar datos de otro lugar
       const r0 = outOfScope(v.input); r0.input = v.input; r0.mode = 'instantanea'; r0.imerg_job = { state: 'ready', done: 0, total: 0, errors: [] };
@@ -154,7 +169,7 @@ async function handleApi(req, res, url) {
     try { result = analyze(v.input, g, v.scenario); } catch (e) { return send(res, 422, { error: e.message }); }
     result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };
     result.input = v.input;
-    result.mode = v.input.rice_cycle ? 'precisa' : 'instantanea';
+    result.mode = v.input.rice_cycle || (result.inputs_used && result.inputs_used.length) ? 'precisa' : 'instantanea';
     result.insitu = { applied: cal.applied, ignored: cal.ignored, calibrated_rice_cycle: cal.profile.calibrated ? cal.profile.cycle : null,
       notes: result.mode === 'precisa' ? ['Datos in situ declarados por el agricultor: no verificados. En la rotación solo se usa el ciclo recalibrado del arroz; la dotación de riego no entra (el motor genérico no la incorpora).'] : [] };
     if (!result.unsupported) {

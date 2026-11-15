@@ -238,3 +238,12 @@ label.check small{color:var(--muted);font-weight:400}
 @media (max-width:900px){.tile>div:not(.ico){max-width:100%}.tile-art{opacity:.35}}
 .grid-top{align-items:start}
 #map{min-height:300px}
+
+/* ---------- auditoría de parámetros: riego de tres estados, avisos y procedencia ---------- */
+.seg-3{grid-template-columns:1fr 1fr 1.3fr}
+.scen-note,.sens-flag{display:flex;gap:8px;align-items:flex-start}
+.sens-flag{margin:0;padding:6px 10px;border-radius:12px;background:var(--warn-bg);color:var(--warn-ink);font-size:12.5px;line-height:1.3}
+.sens-flag .i{flex:none;margin-top:2px;width:16px;height:16px}
+.tl-note.ok{color:#1f6b2e;background:#e3f3dc}
+.tbl.prov td,.tbl.prov th{vertical-align:top}.tbl.prov small{display:block;color:var(--muted)}
+.tbl.prov .tl-state{white-space:normal}

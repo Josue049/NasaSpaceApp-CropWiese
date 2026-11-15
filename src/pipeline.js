@@ -159,7 +159,9 @@ function analyze(input, g, scenario = SCENARIOS.base) {
   const { climates, problems } = built;
   // Motor: 'v2' (dos etapas) por defecto en Morropón; 'v1' (puntuación única original) a petición y fuera de Morropón.
   const engineChoice = dom.id === 'morropon' && input.engine !== 'v1' ? 'v2' : 'v1';
-  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops, input.rice_cycle || null, engineChoice === 'v1' ? morropon.LEGACY_ROTATION_CROPS : morropon.ROTATION_CROPS) : CROPS.crops;
+  let cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops, input.rice_cycle || null, engineChoice === 'v1' ? morropon.LEGACY_ROTATION_CROPS : morropon.ROTATION_CROPS) : CROPS.crops;
+  // Ciclo DECLARADO por el agricultor (modo Precisa): fija la duración y sustituye al rango de incertidumbre. Las fechas observadas del arroz tienen prioridad.
+  if (engineChoice === 'v2' && input.cycle_days) cropList = cropList.map((c) => (input.cycle_days[c.id] && !(c.id === 'arroz' && input.rice_cycle) ? { ...engine2.scaleCycle(c, input.cycle_days[c.id]), cycle_declared: true } : c));
   const support = assessSupport(input, g, climates);
   const res = support.level === 'no_recomendable'
     ? { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [...support.blockers, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {}, weights_status: '', candidates_evaluated: 0,

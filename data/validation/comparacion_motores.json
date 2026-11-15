@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-15T09:24:10.286Z",
+ "generado": "2026-11-15T09:59:05.456Z",
  "antes_despues": [
   {
    "label": "inicio grande · hist. arroz–arroz",
@@ -197,12 +197,12 @@
      43.7
     ],
     [
-     "ALAL",
-     64
+     "LLLL",
+     56
     ],
     [
-     "LALA",
-     64.5
+     "LLAL",
+     64.4
     ]
    ],
    "v2_no_viable": false
@@ -245,6 +245,10 @@
     [
      "LLLL",
      56
+    ],
+    [
+     "LLAL",
+     62.3
     ]
    ],
    "v2_no_viable": false
@@ -352,32 +356,32 @@
   "agua": [
    [
     "secano",
-    "Arroz: grande inviable, chica inviable · Loctao: grande condicionada, chica inviable",
+    "Arroz: grande inviable, chica inviable · Loctao: grande condicionada, chica condicionada",
     "sin alternativa",
     "1350 mm"
    ],
    [
     "3000 m³/ha",
-    "Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable",
+    "Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable",
     "LLLL (56)",
     "1350 mm"
    ],
    [
     "6000 m³/ha",
-    "Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable",
+    "Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable",
     "LLLL (56)",
     "1350 mm"
    ],
    [
     "9000 m³/ha",
-    "Arroz: grande favorable, chica inviable · Loctao: grande favorable, chica favorable",
-    "LLAL (63.4)",
+    "Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable",
+    "LLLL (56)",
     "1350 mm"
    ],
    [
     "12000 m³/ha",
-    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
-    "ALAL (64)",
+    "Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable",
+    "LLLL (56)",
     "1350 mm"
    ],
    [
@@ -434,7 +438,7 @@
   "ciclo_loctao": [
    [
     59,
-    "favorable (59 d) / favorable (59 d)",
+    "favorable (75 d) / favorable (75 d)",
     "LLAL (61)"
    ],
    [
@@ -444,29 +448,29 @@
    ],
    [
     90,
-    "favorable (90 d) / favorable (90 d)",
+    "favorable (75 d) / favorable (75 d)",
     "LALA (60.3)"
    ]
   ],
   "umbral_calor": [
    [
     32,
-    "0.67 / 0.41",
+    "0.31 / 0.19",
     "LALA (49.2)"
    ],
    [
     35,
-    "0.26 / 0.07",
+    "0.31 / 0.19",
     "LLAL (61)"
    ],
    [
     38,
-    "0.04 / 0",
+    "0.31 / 0.19",
     "LALA (69.7)"
    ],
    [
     40,
-    "0 / 0",
+    "0.31 / 0.19",
     "LALA (70.1)"
    ]
   ],
@@ -479,7 +483,7 @@
    [
     "5 mm/d",
     "1067 / 1350",
-    "LLAL (63.4)"
+    "LLLL (56)"
    ],
    [
     "8 mm/d",
@@ -491,26 +495,26 @@
    [
     "todas (pesos)",
     1067,
-    "LLAL (63.4)",
-    "ALAL (64)"
+    "LLLL (56)",
+    "LLLL (56)"
    ],
    [
     "imerg",
     1067,
-    "LLAL (63.4)",
-    "ALAL (64)"
+    "LLLL (56)",
+    "LLLL (56)"
    ],
    [
     "era5",
     967,
-    "ALAL (63.6)",
+    "LLLL (55.8)",
     "ALAL (64.5)"
    ],
    [
     "power",
-    1134,
+    1143,
     "LLLL (56.3)",
-    "ALAL (64.2)"
+    "LLLL (56.3)"
    ]
   ],
   "historial_prioridades": [

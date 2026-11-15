@@ -80,8 +80,8 @@
         <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
         <dl class="facts">
           <div><dt><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg> Ubicación</dt><dd id="coords">-5.19, -79.99</dd></div>
-          <div><dt><svg class="i" aria-hidden="true"><use href="#i-area"/></svg> Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" value="1" inputmode="decimal" aria-label="Área en hectáreas"></dd></div>
-          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="arroz" selected>Arroz</option><option value="loctao">Frijol Loctao</option></select></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-area"/></svg> Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" inputmode="decimal" placeholder="opcional" aria-label="Área en hectáreas"></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="" selected>— elige —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></dd></div>
         </dl>
       </div>
       <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
@@ -103,41 +103,56 @@
           <label class="seg-opt"><input type="radio" name="slot" value="A" checked><span><b>Grande</b><small>≈ 21 ene</small></span></label>
           <label class="seg-opt"><input type="radio" name="slot" value="B"><span><b>Chica</b><small>≈ 15 jul</small></span></label>
         </fieldset>
-        <label class="field">Campaña anterior<select id="h0"><option value="arroz" selected>Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
+        <label class="field">Campaña anterior<select id="h0"><option value="" selected>No lo sé</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
       </div>
-      <label class="check"><input id="irr" type="checkbox" checked> <span>Mi parcela dispone de riego <small>(el arroz lo necesita)</small></span></label>
+      <fieldset class="seg seg-3" aria-label="Disponibilidad de riego">
+        <legend>¿Dispones de riego?</legend>
+        <label class="seg-opt"><input type="radio" name="irr" value="si"><span><b>Sí</b></span></label>
+        <label class="seg-opt"><input type="radio" name="irr" value="no"><span><b>No</b></span></label>
+        <label class="seg-opt"><input type="radio" name="irr" value="" checked><span><b>No lo sé</b><small>se evalúa como escenario</small></span></label>
+      </fieldset>
 
       <div id="precisaBox" hidden>
-        <details class="sect" open><summary><svg class="i"><use href="#i-sprout"/></svg><span>Tu siembra y tus fechas</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
-          <p class="hint">Todo es opcional: cada dato se aplica por separado y el resultado te dirá qué se usó. Lo que ingreses <b>no se guarda</b> en el servidor y no se verifica.</p>
+        <p class="hint">Todo es opcional. Déjalo vacío si no lo sabes: <b>nunca se completa por ti</b> ni se toma como cero. Lo que ingreses no se guarda y no se verifica.</p>
+        <details class="sect" open><summary><svg class="i"><use href="#i-calendar"/></svg><span>Tu campaña</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
           <div class="grid2">
-            <label>Fecha de siembra real del arroz<input id="sow" type="date"></label>
-            <label>Cómo sembraste<select id="estab"><option value="">— no indicar —</option><option value="siembra_directa">Siembra directa</option><option value="trasplante">Trasplante</option></select></label>
-            <label>Variedad<input id="variety" type="text" maxlength="40" placeholder="Tinajones"></label>
+            <label>Fecha prevista de siembra de la primera campaña<input id="first_sow" type="date"></label>
+            <label>Cultivo principal que deseas conservar<select id="keepCrop"><option value="">— ninguno —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
+            <label>¿En qué campañas?<select id="keepWhere"><option value="A">Todas las campañas grandes</option><option value="B">Todas las campañas chicas</option><option value="AB">Todas las campañas</option><option value="min2">Al menos 2 de 4 campañas</option><option value="min3">Al menos 3 de 4 campañas</option></select></label>
           </div>
-          <h4>Fechas observadas <small>(requieren la siembra real)</small></h4>
+          <p class="hint">Sin fecha usamos la de referencia de la campaña. Conservar un cultivo es una decisión tuya: no se fuerza ninguno.</p>
+        </details>
+        <details class="sect"><summary><svg class="i"><use href="#i-cloud"/></svg><span>Agua y riego</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
           <div class="grid2">
+            <label>Agua disponible por campaña (m³/ha)<input id="supply" type="number" min="0" max="40000" step="100" inputmode="decimal" placeholder="No lo sé: déjalo vacío"></label>
+            <label>Pérdida por filtración del arroz (mm/día)<input id="perc" type="number" min="0" max="30" step="0.5" inputmode="decimal" placeholder="Solo si la mediste"></label>
+          </div>
+          <p class="hint">Con tu dotación evaluamos si cada cultivo completa su ciclo. Sin ella informamos cuánta agua necesita cada uno. Para la filtración usamos el rango de la FAO (2–8 mm/día) mientras no tengas una medición.</p>
+        </details>
+        <details class="sect"><summary><svg class="i"><use href="#i-sprout"/></svg><span>Tus cultivos</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+          <div class="grid2">
+            <label>Ciclo observado del arroz (días de siembra a cosecha)<input id="cyc_arroz" type="number" min="40" max="200" step="1" inputmode="numeric" placeholder="No lo sé"></label>
+            <label>Ciclo observado del Loctao (días de siembra a cosecha)<input id="cyc_loctao" type="number" min="40" max="200" step="1" inputmode="numeric" placeholder="No lo sé"></label>
+          </div>
+          <p class="hint">Sin tu dato usamos 114 días para el arroz (observado por SENAMHI en 2026) y un rango de 59 a 90 días para el Loctao, porque aún no hay una cifra única confirmada.</p>
+          <h4>Arroz ya sembrado <small>(opcional; calibra el ciclo con tus fechas)</small></h4>
+          <div class="grid2">
+            <label>Fecha de siembra real<input id="sow" type="date"></label>
             <label>Macollaje<input id="od_tillering" type="date"></label>
             <label>Panoja<input id="od_panicle" type="date"></label>
             <label>Floración<input id="od_flowering" type="date"></label>
             <label>Maduración córnea<input id="od_hard_ripening" type="date"></label>
           </div>
         </details>
-        <details class="sect"><summary><svg class="i"><use href="#i-cloud"/></svg><span>Tu agua</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+        <details class="sect"><summary><svg class="i"><use href="#i-heartleaf"/></svg><span>Suelo</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
           <div class="grid2">
-            <label>Manejo del agua<select id="irrMgmt"><option value="">— no indicar —</option><option value="inundacion_continua">Inundación continua</option><option value="intermitente">Riego intermitente</option><option value="secano">Secano</option></select></label>
-            <label>Agua por campaña (m³/ha)<input id="supply" type="number" min="0" max="40000" step="100" inputmode="decimal" placeholder="p. ej. 12000"></label>
-            <label>Pérdida por filtración del arroz (mm/día)<input id="perc" type="number" min="0" max="30" step="0.5" inputmode="decimal" placeholder="FAO: 2 a 8"></label>
+            <label>Textura del suelo<select id="soil_tex"><option value="">No lo sé</option><option value="arenosa">Arenosa</option><option value="franca">Franca / media</option><option value="arcillosa">Arcillosa</option></select></label>
+            <label>pH medido (análisis de suelo)<input id="soil_ph" type="number" min="3.5" max="9.5" step="0.1" inputmode="decimal" placeholder="Si no tienes análisis, déjalo vacío"></label>
           </div>
-          <p class="hint">Con tu dotación evaluamos si cada cultivo completa su ciclo. Sin ella solo informamos cuánta agua necesita cada uno.</p>
+          <p class="hint">Sin tus datos usamos SoilGrids (250 m): es una <b>estimación modelada</b>, no una medición de tu parcela.</p>
         </details>
-        <details class="sect"><summary><svg class="i"><use href="#i-star"/></svg><span>Lo que quieres conservar y lo que te cuesta</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
-          <div class="grid2">
-            <label>Cultivo principal que deseas conservar<select id="keepCrop"><option value="">— ninguno —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></label>
-            <label>¿En qué campañas?<select id="keepWhere"><option value="A">Todas las campañas grandes</option><option value="B">Todas las campañas chicas</option><option value="AB">Todas las campañas</option><option value="min2">Al menos 2 de 4 campañas</option><option value="min3">Al menos 3 de 4 campañas</option></select></label>
-          </div>
-          <p class="hint">Opcional y solo tuyo: no se fuerza ningún cultivo. Si no lo indicas, la comparación considera agua, calor, suelo y rotación, y puede favorecer al cultivo que menos agua necesita.</p>
-          <h4>Datos económicos <small>(opcional; se usan solo si están completos para ambos cultivos)</small></h4>
+        <details class="sect"><summary><svg class="i"><use href="#i-star"/></svg><span>Lo que te cuesta y lo que esperas ganar</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
+          <p class="hint">Se usa solo si completas rendimiento, precio y algún costo para <b>ambos</b> cultivos. No usamos cifras de otras zonas.</p>
           <div class="econ">
             <div class="econ-head"><span></span><b>Arroz</b><b>Frijol Loctao</b></div>
             <label class="econ-row"><span>Rendimiento esperado (t/ha)</span><input id="e_arroz_yield" type="number" min="0" step="0.1" inputmode="decimal"><input id="e_loctao_yield" type="number" min="0" step="0.1" inputmode="decimal"></label>
@@ -146,7 +161,6 @@
             <label class="econ-row"><span>Costo de riego (S/ ha)</span><input id="e_arroz_irr" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_irr" type="number" min="0" step="50" inputmode="decimal"></label>
             <label class="econ-row"><span>Otros costos (S/ ha)</span><input id="e_arroz_oth" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_oth" type="number" min="0" step="50" inputmode="decimal"></label>
           </div>
-          <p class="hint">Son datos que tú declaras: no usamos rendimientos ni precios de otras zonas como si fueran de Morropón.</p>
         </details>
       </div>
 

@@ -10,8 +10,8 @@
 | inicio chica · hist. arroz–arroz | FAFA 65.4 / FFAF 62.6 · actual 53.9 | FAFA 65.6 / FFAF 62.4 · actual 53.1 | LALA 69.5 / LLAL 55.9 · actual 34 |
 | inicio grande · hist. arroz–{leg} | FAFA 60 / AFFA 59.9 · actual 65.4 | AFFA 59.9 / FAFA 59.6 · actual 65.6 | LLLL 54.9 / ALLA 53.2 · actual 69.5 |
 | inicio grande · sin riego | sin alternativa · actual 41.8 | sin alternativa · actual 41 | sin alternativa (no viable) · actual 35.2 |
-| inicio grande · 12 000 m³/ha | FAFA 65.5 / FFAF 62.5 · actual 53.9 | FAFA 65.1 / FFAF 62.6 · actual 53.1 | ALAL 64 / LALA 64.5 · actual 43.7 |
-| inicio grande · 6 000 m³/ha | FAFA 65.5 / FFAF 62.5 · actual 53.9 | FAFA 65.1 / FFAF 62.6 · actual 53.1 | LLLL 56 · actual 35.2 |
+| inicio grande · 12 000 m³/ha | FAFA 65.5 / FFAF 62.5 · actual 53.9 | FAFA 65.1 / FFAF 62.6 · actual 53.1 | LLLL 56 / LLAL 64.4 · actual 43.7 |
+| inicio grande · 6 000 m³/ha | FAFA 65.5 / FFAF 62.5 · actual 53.9 | FAFA 65.1 / FFAF 62.6 · actual 53.1 | LLLL 56 / LLAL 62.3 · actual 35.2 |
 
 (A = arroz, F = frijol común, L = frijol Loctao.) El motor v1 con la temperatura calibrada ya no encuentra alternativas con frijol común en la campaña grande: con la temperatura corregida el frijol común no completa su ciclo allí (coherente con que no sea el frijol local).
 
@@ -21,11 +21,11 @@
 
 | Dotación | Viabilidad (A=arroz, L=Loctao; g=grande, c=chica) | Mejor alternativa | Necesidad de riego del arroz (chica) |
 |---|---|---|---|
-| secano | Arroz: grande inviable, chica inviable · Loctao: grande condicionada, chica inviable | sin alternativa | 1350 mm |
-| 3000 m³/ha | Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
-| 6000 m³/ha | Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
-| 9000 m³/ha | Arroz: grande favorable, chica inviable · Loctao: grande favorable, chica favorable | LLAL (63.4) | 1350 mm |
-| 12000 m³/ha | Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable | ALAL (64) | 1350 mm |
+| secano | Arroz: grande inviable, chica inviable · Loctao: grande condicionada, chica condicionada | sin alternativa | 1350 mm |
+| 3000 m³/ha | Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
+| 6000 m³/ha | Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
+| 9000 m³/ha | Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
+| 12000 m³/ha | Arroz: grande condicionada, chica condicionada · Loctao: grande favorable, chica favorable | LLLL (56) | 1350 mm |
 | 15000 m³/ha | Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable | LALA (66) | 1350 mm |
 
 ### Temperatura (escenarios y desplazamientos)
@@ -50,35 +50,35 @@
 
 | Ciclo (días) | Loctao: grande / chica | Mejor alternativa |
 |---|---|---|
-| 59 | favorable (59 d) / favorable (59 d) | LLAL (61) |
+| 59 | favorable (75 d) / favorable (75 d) | LLAL (61) |
 | 75 | favorable (75 d) / favorable (75 d) | LLAL (60.6) |
-| 90 | favorable (90 d) / favorable (90 d) | LALA (60.3) |
+| 90 | favorable (75 d) / favorable (75 d) | LALA (60.3) |
 
 ### Umbral de calor del Loctao (hipótesis)
 
 | Umbral (°C) | Calor etapa media: grande / chica | Mejor alternativa |
 |---|---|---|
-| 32 | 0.67 / 0.41 | LALA (49.2) |
-| 35 | 0.26 / 0.07 | LLAL (61) |
-| 38 | 0.04 / 0 | LALA (69.7) |
-| 40 | 0 / 0 | LALA (70.1) |
+| 32 | 0.31 / 0.19 | LALA (49.2) |
+| 35 | 0.31 / 0.19 | LLAL (61) |
+| 38 | 0.31 / 0.19 | LALA (69.7) |
+| 40 | 0.31 / 0.19 | LALA (70.1) |
 
 ### Percolación del arroz (FAO 2–8 mm/d; 5 central)
 
 | Percolación | Demanda del arroz grande / chica (mm) | Mejor alternativa con 9 000 m³/ha |
 |---|---|---|
 | 2 mm/d | 722 / 1008 | ALAL (64.2) |
-| 5 mm/d | 1067 / 1350 | LLAL (63.4) |
+| 5 mm/d | 1067 / 1350 | LLLL (56) |
 | 8 mm/d | 1412 / 1692 | LLLL (56.2) |
 
 ### Fuente de lluvia usada sola (el motor las combina con pesos de validación)
 
 | Fuente | Demanda del arroz grande (mm) | Mejor alternativa con 9 000 m³/ha | Mejor alternativa con 12 000 m³/ha |
 |---|---|---|---|
-| todas (pesos) | 1067 | LLAL (63.4) | ALAL (64) |
-| imerg | 1067 | LLAL (63.4) | ALAL (64) |
-| era5 | 967 | ALAL (63.6) | ALAL (64.5) |
-| power | 1134 | LLLL (56.3) | ALAL (64.2) |
+| todas (pesos) | 1067 | LLLL (56) | LLLL (56) |
+| imerg | 1067 | LLLL (56) | LLLL (56) |
+| era5 | 967 | LLLL (55.8) | ALAL (64.5) |
+| power | 1143 | LLLL (56.3) | LLLL (56.3) |
 
 ### Historial y prioridades
 

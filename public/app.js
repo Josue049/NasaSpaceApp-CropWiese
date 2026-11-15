@@ -40,9 +40,21 @@ const numOrNull = (id) => { const v = $(id).value; return v === '' ? null : Numb
 function insituPayload() {
   if (getMode() !== 'precisa') return null;
   const od = {}; for (const k of ['tillering', 'panicle', 'flowering', 'hard_ripening']) if ($('od_' + k).value) od[k] = $('od_' + k).value;
-  return { sowing_date: $('sow').value || null, establishment: $('estab').value || null, variety: $('variety').value || null, observed_dates: od,
-    irrigation: { management: $('irrMgmt').value || null, supply_m3_ha: numOrNull('supply'), percolation_mm_day: numOrNull('perc') } };
+  return { sowing_date: $('sow').value || null, observed_dates: od, irrigation: { supply_m3_ha: numOrNull('supply'), percolation_mm_day: numOrNull('perc') } };
 }
+// Lo que el agricultor NO escribe queda como «no declarado»: no se envía y nunca se convierte en cero.
+function declaredPayload() {
+  if (getMode() !== 'precisa') return {};
+  const o = {};
+  if ($('first_sow').value) o.first_sowing_date = $('first_sow').value;
+  const cy = {}; for (const c of ['arroz', 'loctao']) { const v = numOrNull('cyc_' + c); if (v != null) cy[c] = v; } if (Object.keys(cy).length) o.cycle_days = cy;
+  const soil = {}; if ($('soil_tex').value) soil.texture = $('soil_tex').value; const ph = numOrNull('soil_ph'); if (ph != null) soil.ph = ph; if (Object.keys(soil).length) o.soil = soil;
+  return o;
+}
+// Riego: sí / no / no lo sé (null). «No lo sé» NO se interpreta como «sí».
+const getIrr = () => { const v = (document.querySelector('input[name="irr"]:checked') || {}).value; return v === 'si' ? true : v === 'no' ? false : null; };
+// La primera campaña a evaluar por defecto es la que empieza antes a partir de hoy (no una elección fija).
+function defaultSlot() { const a = new Date(firstYear('A'), 0, 21), b = new Date(firstYear('B'), 6, 15); return a <= b ? 'A' : 'B'; }
 // Economía y cultivo principal: solo en modo Precisa, solo lo que el agricultor escribe (nada se rellena por defecto).
 function economicsPayload() {
   if (getMode() !== 'precisa') return null;
@@ -88,10 +100,12 @@ async function generate() {
   const lat = Number($('lat').value), lon = Number($('lon').value);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return setMsg('Toca el mapa para ubicar tu parcela.', 'bad');
   $('btnGo').disabled = true; setMsg('Calculando con los datos de tu punto…');
-  const mode = getMode(), insitu = insituPayload(), area = $('area').value, economics = economicsPayload(), keep_main = keepPayload();
+  if (!$('h1').value) return setMsg('Elige tu cultivo actual en el bloque 1: con él proyectamos tu rotación.', 'bad');
+  const mode = getMode(), insitu = insituPayload(), area = $('area').value, economics = economicsPayload(), keep_main = keepPayload(), declared = declaredPayload();
+  const history = $('h0').value ? [$('h0').value, $('h1').value] : [$('h1').value]; // «No lo sé» en la campaña anterior: solo se usa el cultivo actual
   try {
     const [rot, rice] = await Promise.all([
-      post('/api/rotation/analyze', { lat, lon, area_ha: area, history: [$('h0').value, $('h1').value], start_slot: getSlot(), irrigation: $('irr').checked, mode, insitu, economics, keep_main }),
+      post('/api/rotation/analyze', { lat, lon, area_ha: area, history, start_slot: getSlot(), irrigation: getIrr(), mode, insitu, economics, keep_main, ...declared }),
       post('/api/rice/analyze', { lat, lon, area_ha: area, sowing_date: (insitu && insitu.sowing_date) || null, mode, insitu }),
     ]);
     if (!rot.ok) { setMsg((rot.j.error || 'Error') + (rot.j.details ? ': ' + rot.j.details.join('; ') : ''), 'bad'); return; }
@@ -120,8 +134,9 @@ const nf = (n) => Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 }
 // La primera campaña es la próxima aparición de su fecha de referencia; el resto sigue su desplazamiento de años.
 function firstYear(slot) { const now = new Date(), [m, d] = SLOT_START[slot]; return new Date(now.getFullYear(), m - 1, d, 23, 59) >= now ? now.getFullYear() : now.getFullYear() + 1; }
 const fmtDay = (dt) => `${dt.getUTCDate()} ${MES[dt.getUTCMonth()]}`;
+function y0Of(r) { return r.context && r.context.first_sowing_date ? +r.context.first_sowing_date.slice(0, 4) : firstYear(r.context.start_slot || 'A'); }
 function stepDates(t, y0) {
-  const [m, d] = SLOT_START[t.slot], s = new Date(Date.UTC(y0 + t.year_offset, m - 1, d)), e = new Date(s.getTime() + (t.duration_days || 0) * 864e5);
+  const [m, d] = (t.sowing_md || '').split('-').map(Number), s = new Date(Date.UTC(y0 + t.year_offset, m - 1, d)), e = new Date(s.getTime() + (t.duration_days || 0) * 864e5);
   return `${fmtDay(s)} ${s.getUTCFullYear()} → ${fmtDay(e)}${e.getUTCFullYear() !== s.getUTCFullYear() ? ' ' + e.getUTCFullYear() : ''}`;
 }
 function stratTitle(seq) {
@@ -142,17 +157,21 @@ function whyText(s, cur, r) {
 }
 function timelineHtml(s, y0) {
   return '<ol class="tl">' + s.timeline.map((t) => {
-    const v = VIAB[t.viability.status] || VIAB.favorable, local = t.viability.local_evidence === false ? '<span class="tl-note">sin evidencia local directa</span>' : '';
+    const hi = t.viability.status === 'condicionada' && t.viability.severity === 'alta', v = hi ? ['Riesgo alto', 'bad'] : (VIAB[t.viability.status] || VIAB.favorable);
+    const notes = (t.viability.local_evidence === false ? '<span class="tl-note">sin evidencia local directa</span>' : '') + (t.viability.irrigation_dependent ? '<span class="tl-note">depende del riego (no declarado)</span>' : '') + (t.viability.source_dependent ? '<span class="tl-note">depende de la fuente de lluvia</span>' : '') + (t.sowing_declared ? '<span class="tl-note ok">fecha declarada por ti</span>' : '');
+    const dur = t.duration_range_days && t.duration_range_days[0] !== t.duration_range_days[1] ? t.duration_range_days.join('–') : (t.duration_days ?? '—');
+    const heat = t.heat_range && Math.abs(t.heat_range[1] - t.heat_range[0]) >= 0.03 ? Math.round(t.heat_range[0] * 100) + '–' + Math.round(t.heat_range[1] * 100) : Math.round(t.heat_stress_frac * 100);
+    const local = notes;
     return '<li class="tl-step st-' + v[1] + '"><span class="tl-dot" aria-hidden="true"></span><img class="tl-img" src="' + cropImg(t.crop) + '" alt="" loading="lazy">'
       + '<div class="tl-body"><div class="tl-top"><b>' + esc(cropName(t.crop)) + '</b><span class="tl-chip">' + SLOT_NAME[t.slot] + '</span><span class="tl-state ' + v[1] + '">' + v[0] + '</span></div>'
-      + '<small>' + esc(stepDates(t, y0)) + ' · ' + (t.duration_days ?? '—') + ' días</small>'
-      + '<small>Riego neto ≈ ' + nf(t.water_need_mm) + ' mm · días de calor ' + Math.round(t.heat_stress_frac * 100) + ' %</small>' + local + '</div></li>';
+      + '<small>' + esc(stepDates(t, y0)) + ' · ' + dur + ' días</small>'
+      + '<small>Riego neto ≈ ' + nf(t.water_need_mm) + ' mm · días de calor ' + heat + ' %</small>' + local + '</div></li>';
   }).join('') + '</ol>';
 }
 function critList(s) { return Object.entries(s.criteria || {}).map(([k, c]) => '<tr><td>' + esc(c.label) + '</td><td class="num">' + Math.round(c.score * 100) + '</td><td class="num">' + Math.round(c.weight * 100) + ' %</td></tr>').join(''); }
 function rotDetailHtml(s, v, r) {
   const li = (a, cls) => (a || []).map((x) => '<li' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(x) + '</li>').join('');
-  const y0 = firstYear(r.context.start_slot);
+  const y0 = y0Of(r);
   return '<div class="dlg-head"><h2 id="dlgRotT">' + esc(s.label) + '</h2><button class="icon-btn" data-close aria-label="Cerrar">' + ico('x') + '</button></div>'
     + '<p class="hint"><b>Secuencia (' + s.sequence.length + ' campañas):</b> ' + esc(s.sequence.map(cropName).join(' → ')) + '</p>' + timelineHtml(s, y0)
     + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100); compara opciones, no es rendimiento</small></span></div><div>' + ico('cloud') + '<span><b>' + nf(sumNeed(s)) + ' mm</b><small>Riego neto en cuatro campañas</small></span></div></div>'
@@ -171,6 +190,17 @@ function noViableHtml(nv) {
     + '<h4>Qué permitiría evaluarlo</h4><ul class="checks">' + nv.what_would_help.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
 }
 const acc = (icon, title, body, open) => '<details class="acc"' + (open ? ' open' : '') + '><summary>' + ico(icon) + '<span>' + title + '</span>' + ico('chev') + '</summary><div class="acc-body">' + body + '</div></details>';
+
+const CAT_CLASS = { A: 'ok', B: 'ok', C: 'ok', D: 'warn', E: 'bad' };
+function provenanceHtml(r) {
+  const pv = r.provenance; if (!pv) return '';
+  const chip = (c, n) => '<span class="tl-state ' + CAT_CLASS[c] + '" title="' + esc(pv.legend[c]) + '">' + c + ' · ' + esc(pv.legend[c]) + '</span>';
+  const used = (r.inputs_used || []).length ? '<h4>Lo que declaraste y cómo se usó</h4><ul>' + r.inputs_used.map((u) => '<li><b>' + esc(u.field) + ':</b> ' + esc(String(u.value)) + ' → ' + esc(u.used_for) + '</li>').join('') + '</ul>' : '<p class="hint">No declaraste datos de tu parcela: el análisis usa solo información geográfica, meteorológica, satelital y bibliográfica.</p>';
+  const scen = r.water_scenarios ? '<h4>Escenarios de agua (no son condiciones de tu parcela)</h4><ul>' + r.water_scenarios.map((x) => '<li><b>' + esc(x.label) + '</b> — ' + esc(x.used_for) + '</li>').join('') + '</ul>' : '';
+  const table = '<table class="tbl prov"><thead><tr><th>Dato</th><th>Valor</th><th>Tipo</th><th>De dónde sale</th></tr></thead><tbody>' + pv.items.map((i) => '<tr><td>' + esc(i.label) + '</td><td>' + esc(String(i.value)) + '</td><td>' + chip(i.cat) + '</td><td>' + esc(i.source) + (i.note ? ' <small>' + esc(i.note) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>';
+  const legend = '<p class="hint">' + Object.keys(pv.legend).map((c) => chip(c)).join(' ') + '</p><p class="hint">Un valor de tipo <b>hipótesis</b> se propaga como rango y nunca se presenta como hecho; los datos <b>estimados</b> llevan su incertidumbre.</p>';
+  return legend + used + scen + table;
+}
 const pctW = (x) => Math.round(100 * x) + ' %';
 function interpHtml(r) {
   const lr = r.location_report || {}, T = r.temperature || {}, W = r.source_weights || {}, V = state.senamhi, pt = lr.point || {};
@@ -198,37 +228,39 @@ function interpHtml(r) {
     + '<li>Cada resultado se prueba frente a cambios plausibles en pesos, agua y fuente de lluvia; «claramente preferible» significa que gana casi siempre, y «equivalentes» que no hay diferencia real.</li>'
     + '<li>El puntaje considera agua necesaria, calor, suelo, rotación' + (r.economics && r.economics.complete ? ' y tu margen económico declarado' : '') + '.</li></ul>';
   const falta = [];
-  if (!(r.water && r.water.supply_mm_per_campaign != null)) falta.push('el <b>volumen de riego</b> disponible por campaña');
+  if (r.water && r.water.scenario) falta.push('si <b>dispones de riego</b>'); if (!(r.water && r.water.supply_mm_per_campaign != null)) falta.push('el <b>volumen de riego</b> disponible por campaña');
   if (!r.keep_main) falta.push('el <b>cultivo principal</b> que quieres conservar');
   if (!(r.economics && r.economics.complete)) falta.push('tus <b>costos, rendimiento y precio</b> esperados');
-  falta.push('la <b>fecha real de siembra</b> y la <b>pérdida por filtración</b> del arroz');
+  falta.push('la <b>fecha prevista de siembra</b>, el <b>ciclo observado</b> de tus cultivos, la <b>textura y el pH</b> de tu suelo y la <b>pérdida por filtración</b> del arroz');
   const t4 = '<p>Con estos datos del modo Precisa el análisis se ajusta a tu parcela: ' + falta.join(', ') + '.</p><button type="button" class="link-btn" data-open-precisa>' + ico('sprout') + ' Abrir el modo Precisa</button>';
-  const prov = (r.engine_params || []).filter((p) => p.status === 'PROVISIONAL' || p.status === 'DESACTIVADO');
+  const prov = (r.engine_params || []).filter((p) => p.cat === 'E');
   const t5 = '<p class="hint">Valores que todavía se calibran. Se informan para que veas qué puede mover una decisión; se probaron en rangos y los resultados clave se mantienen salvo la percolación del arroz cuando el agua es limitada.</p><table class="tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Estado</th></tr></thead><tbody>'
-    + (r.engine_params || []).map((p) => '<tr><td>' + esc(p.id) + '</td><td>' + (p.value == null ? '—' : esc(String(p.value))) + (p.range ? ' (rango ' + p.range.join('–') + ')' : '') + '</td><td><span class="tl-state ' + (p.status === 'LITERATURA' || p.status === 'HEREDADO' ? 'ok' : 'warn') + '">' + esc(p.status.toLowerCase()) + '</span></td></tr>').join('') + '</tbody></table>';
+    + (r.engine_params || []).map((p) => '<tr><td>' + esc(p.id) + '</td><td>' + (p.value == null ? '—' : esc(String(p.value))) + (p.range ? ' (rango ' + p.range.join('–') + ')' : '') + '</td><td><span class="tl-state ' + (CAT_CLASS[p.cat] || 'warn') + '">' + esc(p.cat + ' · ' + p.status.toLowerCase()) + '</span></td></tr>').join('') + '</tbody></table>';
   return '<section class="interp" aria-labelledby="interpT"><h2 id="interpT">' + ico('info') + ' Conoce cómo interpretamos tu recomendación</h2>'
-    + acc('database', 'Qué datos trabajan por ti', t1, true) + acc('check', 'Cómo verificamos los datos', t2, false) + acc('chart', 'Cómo leer tu puntaje', t3, false)
+    + acc('list', '¿Cómo calculamos esta recomendación?', provenanceHtml(r), false) + acc('database', 'Qué datos trabajan por ti', t1, true) + acc('check', 'Cómo verificamos los datos', t2, false) + acc('chart', 'Cómo leer tu puntaje', t3, false)
     + acc('sprout', 'Qué puedes aportar para afinar el resultado', t4, false) + (prov.length ? acc('clock', 'Parámetros en calibración', t5, false) : '') + '</section>';
 }
 function renderRot() {
   const r = state.rot, wrap = $('rotWrap'); wrap.hidden = false;
   if (r.unsupported) { $('rotCards').innerHTML = '<div class="panel" style="grid-column:1/-1">' + r.support.blockers.map((b) => '<p class="note bad">' + esc(b) + '</p>').join('') + '</div>'; $('rotNotes').innerHTML = ''; return; }
-  const cur = r.strategies[0], y0 = firstYear(r.context.start_slot || 'A'), cmp = r.sensitivity && r.sensitivity.comparisons;
+  const cur = r.strategies[0], y0 = y0Of(r), cmp = r.sensitivity && r.sensitivity.comparisons;
   const vOf = (s) => (s.id === 'alt_a' && cmp ? cmp.a_vs_current : s.id === 'alt_b' && cmp ? cmp.b_vs_current : null);
   const note = r.engine === 'v2' && !r.keep_main && !(r.economics && r.economics.complete) && r.strategies.length > 1
     ? '<p class="note value-note" style="grid-column:1/-1">' + ico('info') + ' <span>Esta comparación considera agua, calor, suelo y rotación, pero <b>no incluye tu cultivo principal ni tus márgenes</b>; por eso puede favorecer al cultivo que menos agua necesita. Indícalos en el modo Precisa para afinarla. <a href="#" data-open-precisa>Abrir modo Precisa</a></span></p>' : '';
+  const scen = r.water && r.water.scenario ? '<p class="note scen-note" style="grid-column:1/-1">' + ico('info') + ' <span><b>No indicaste si tienes riego.</b> Mostramos el <b>escenario con riego</b> y marcamos lo que depende de él: sin riego el arroz no es viable. Ambos son escenarios, no condiciones de tu parcela. <a href="#" data-open-irr>Indicar mi riego</a></span></p>' : '';
   const cards = r.strategies.map((s, idx) => {
     const best = s.id === 'alt_a', name = s.id === 'alt_a' ? 'Alternativa A' : s.id === 'alt_b' ? 'Alternativa B' : 'Rotación actual';
     const tag = s.id === 'current' ? ico('clock') + ' Rotación actual' : best ? ico('star') + ' Alternativa A (mayor puntaje)' : ico('sprout') + ' ' + name;
     const eco = s.economics && s.economics.complete ? '<div>' + ico('chart') + '<span><b>S/ ' + nf(s.economics.margin_s_ha_horizon) + '</b><small>Margen declarado por ha</small></span></div>' : '<div>' + ico('thermo') + '<span><b>' + Math.round(100 * mean(s.timeline.map((t) => t.heat_stress_frac))) + ' %</b><small>Días de calor, etapa media</small></span></div>';
     return '<article class="rot ' + (best ? 'best' : s.id === 'current' ? '' : 'alt') + '"><span class="rot-tag">' + tag + '</span>'
-      + '<h3 class="rot-name">' + esc(stratTitle(s.sequence)) + '</h3><p class="rot-sub">' + esc(whyText(s, cur, r)) + '</p>' + timelineHtml(s, y0)
+      + '<h3 class="rot-name">' + esc(stratTitle(s.sequence)) + '</h3><p class="rot-sub">' + esc(whyText(s, cur, r)) + '</p>' + (s.sensitive_to_assumptions ? '<p class="sens-flag">' + ico('alert') + ' Resultado condicionado: depende de datos no declarados o de supuestos con rango. Mira «¿Cómo calculamos esta recomendación?».</p>' : '') + timelineHtml(s, y0)
       + '<div class="rot-stats"><div>' + ico('chart') + '<span><b>' + s.score + '</b><small>Puntaje relativo (0–100)</small></span></div><div>' + ico('cloud') + '<span><b>' + nf(sumNeed(s)) + ' mm</b><small>Riego neto, 4 campañas</small></span></div>' + (s.economics && s.economics.complete ? eco : '') + '</div>'
       + '<button type="button" class="link-btn" data-rot="' + idx + '">' + ico('list') + ' Ver análisis detallado</button></article>';
   }).join('');
-  $('rotCards').innerHTML = note + (r.no_viable ? noViableHtml(r.no_viable) : '') + cards;
+  $('rotCards').innerHTML = scen + note + (r.no_viable ? noViableHtml(r.no_viable) : '') + cards;
   $('rotCards').onclick = (e) => {
     const o = e.target.closest('[data-open-precisa]'); if (o) { e.preventDefault(); $('btnAdjust').click(); return; }
+    if (e.target.closest('[data-open-irr]')) { e.preventDefault(); document.querySelector('input[name="irr"][value="si"]').closest('fieldset').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     const b = e.target.closest('[data-rot]'); if (!b) return;
     const st = r.strategies[+b.dataset.rot];
     $('dlgRotBody').innerHTML = rotDetailHtml(st, vOf(st), r);
@@ -423,6 +455,7 @@ async function initMap() {
 }
 
 // ---------- arranque ----------
+(() => { const r = document.querySelector('input[name="slot"][value="' + defaultSlot() + '"]'); if (r) r.checked = true; })();
 syncMode(); renderTiles(); initMap(); loadSenamhi(); fetchRecent();
 showView((location.hash || '#inicio').slice(1));
 window.addEventListener('hashchange', () => showView((location.hash || '#inicio').slice(1)));

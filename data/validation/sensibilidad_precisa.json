@@ -1,0 +1,420 @@
+{
+ "base": {
+  "viab": {
+   "arroz.A": {
+    "st": "condicionada:moderada",
+    "need": 1067,
+    "heat": 0.2,
+    "dur": 115
+   },
+   "arroz.B": {
+    "st": "condicionada:moderada",
+    "need": 1350,
+    "heat": 0.21,
+    "dur": 114
+   },
+   "loctao.A": {
+    "st": "condicionada:moderada",
+    "need": 75,
+    "heat": 0.31,
+    "dur": 75
+   },
+   "loctao.B": {
+    "st": "condicionada:moderada",
+    "need": 232,
+    "heat": 0.19,
+    "dur": 75
+   }
+  },
+  "top": "LLAL",
+  "top_score": 61,
+  "cur_score": 34,
+  "n_rec": 16,
+  "top_freq": 0,
+  "sens": true,
+  "verdict": "claramente_preferible",
+  "no_viable": false,
+  "prov": {
+   "riego": "E:no declarada → escenario con riego",
+   "percolacion": "B:5 mm/d (rango 2–8)",
+   "campanas": "B:grande ≈ 21 ene · chica ≈ 15 jul",
+   "ciclo_arroz": "A:114 d",
+   "calor_arroz": "E:rango 33–37 °C",
+   "ciclo_loctao": "E:rango 59–90 d",
+   "calor_loctao": "E:rango 32–38 °C",
+   "lluvia": "D:IMERG (principal) + ERA5 y POWER como escenarios",
+   "temperatura": "D:ERA5-Land + offsets mensuales",
+   "calor_obs": "A:estación SENAMHI 1981–2014",
+   "ph": "D:7.35",
+   "textura": "D:estimada por SoilGrids",
+   "relieve": "D:118 m · 0.9 %",
+   "ordinales": "E:escalas ordinales",
+   "rotacion": "E:0.45 / 0.3",
+   "umbrales": "E:inviable ≥ 0.8 · condicionada > 0.1",
+   "prioridades": "E:neutras (no declaradas)"
+  },
+  "used": [],
+  "weights": "{\"water_use\":{\"label\":\"Demanda de agua (menor es mejor)\",\"score\":0.725,\"weight\":0.25},\"heat\":{\"label\":\"Estrés por calor en etapa media\",\"score\":0.652,\"weight\":0.25},\"erosion\":{\"label\":\"Riesgo de erosión y suelo cubierto\",\"score\":0.803,\"weight\":0.1},\"soil_n\":{\"label\":\"Nitrógeno del suelo (cualitativo)\",\"score\":0.531,\"weight\":0.1},\"soil_fit\":{\"label\":\"Aptitud de suelo (pH, encharcamiento)\",\"score\":0.888,\"weight\":0.05},\"rotation\":{\"label\":\"Rotación (repetición de cultivo/familia)\",\"score\":0.35,\"weight\":0.25}}"
+ },
+ "variantes": [
+  {
+   "campo": "Riego",
+   "valor": "sí (sin volumen)",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "estabilidad del ganador: 0→0.05",
+    "procedencia: riego E→C"
+   ],
+   "usado": [
+    "riego"
+   ]
+  },
+  {
+   "campo": "Riego",
+   "valor": "no (secano)",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→inviable, arroz.B condicionada:moderada→inviable, loctao.B condicionada:moderada→condicionada:alta",
+    "ganador: LLAL→—",
+    "puntaje de la actual: 34→35.2",
+    "sensibilidad a supuestos: sí→no",
+    "veredicto: claramente_preferible→—",
+    "pasa a «sin alternativa recomendable»",
+    "procedencia: riego E→C"
+   ],
+   "usado": [
+    "riego"
+   ]
+  },
+  {
+   "campo": "Agua por campaña",
+   "valor": "15 000 m³/ha",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "ganador: LLAL→LALA",
+    "puntaje de la actual: 34→45.2",
+    "sensibilidad a supuestos: sí→no",
+    "procedencia: riego E→C"
+   ],
+   "usado": [
+    "riego",
+    "agua por campaña"
+   ]
+  },
+  {
+   "campo": "Agua por campaña",
+   "valor": "9 000 m³/ha",
+   "cambios": [
+    "viabilidad: loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "ganador: LLAL→LLLL",
+    "puntaje de la actual: 34→38.7",
+    "sensibilidad a supuestos: sí→no",
+    "veredicto: claramente_preferible→probablemente_preferible",
+    "procedencia: riego E→C"
+   ],
+   "usado": [
+    "riego",
+    "agua por campaña"
+   ]
+  },
+  {
+   "campo": "Agua por campaña",
+   "valor": "4 000 m³/ha",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→condicionada:alta, arroz.B condicionada:moderada→condicionada:alta, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "ganador: LLAL→LLLL",
+    "puntaje de la actual: 34→35.2",
+    "sensibilidad a supuestos: sí→no",
+    "veredicto: claramente_preferible→probablemente_preferible",
+    "procedencia: riego E→C"
+   ],
+   "usado": [
+    "riego",
+    "agua por campaña"
+   ]
+  },
+  {
+   "campo": "Percolación del arroz",
+   "valor": "2 mm/d",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "demanda de agua: arroz.A 1067→722 mm, arroz.B 1350→1008 mm",
+    "puntaje de la alternativa: 61→60.8",
+    "puntaje de la actual: 34→35",
+    "estabilidad del ganador: 0→0.08",
+    "procedencia: riego E→C, percolacion B→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "riego",
+    "percolación del arroz"
+   ]
+  },
+  {
+   "campo": "Percolación del arroz",
+   "valor": "8 mm/d",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "demanda de agua: arroz.A 1067→1412 mm, arroz.B 1350→1692 mm",
+    "puntaje de la alternativa: 61→61.1",
+    "puntaje de la actual: 34→33.5",
+    "estabilidad del ganador: 0→0.08",
+    "procedencia: riego E→C, percolacion B→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "riego",
+    "percolación del arroz"
+   ]
+  },
+  {
+   "campo": "Textura del suelo",
+   "valor": "arenosa",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "demanda de agua: arroz.A 1067→1412 mm, arroz.B 1350→1692 mm",
+    "puntaje de la alternativa: 61→61.1",
+    "puntaje de la actual: 34→33.5",
+    "estabilidad del ganador: 0→0.08",
+    "procedencia: riego E→C, textura D→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "riego",
+    "textura del suelo"
+   ]
+  },
+  {
+   "campo": "Textura del suelo",
+   "valor": "arcillosa",
+   "cambios": [
+    "viabilidad: arroz.A condicionada:moderada→favorable, arroz.B condicionada:moderada→favorable, loctao.A condicionada:moderada→favorable, loctao.B condicionada:moderada→favorable",
+    "demanda de agua: arroz.A 1067→814 mm, arroz.B 1350→1108 mm",
+    "puntaje de la alternativa: 61→60.5",
+    "puntaje de la actual: 34→35",
+    "estabilidad del ganador: 0→0.08",
+    "procedencia: riego E→C, textura D→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "riego",
+    "textura del suelo"
+   ]
+  },
+  {
+   "campo": "pH medido",
+   "valor": "5,0",
+   "cambios": [
+    "puntaje de la alternativa: 61→59.6",
+    "procedencia: ph D→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "pH del suelo"
+   ]
+  },
+  {
+   "campo": "pH medido",
+   "valor": "7,0",
+   "cambios": [
+    "puntaje de la alternativa: 61→61.5",
+    "procedencia: ph D→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "pH del suelo"
+   ]
+  },
+  {
+   "campo": "pH medido",
+   "valor": "8,8 (sobre el absoluto del Loctao)",
+   "cambios": [
+    "viabilidad: loctao.A condicionada:moderada→inviable, loctao.B condicionada:moderada→inviable",
+    "ganador: LLAL→—",
+    "puntaje de la actual: 34→29",
+    "sensibilidad a supuestos: sí→no",
+    "veredicto: claramente_preferible→—",
+    "pasa a «sin alternativa recomendable»",
+    "procedencia: ph D→C"
+   ],
+   "usado": [
+    "pH del suelo"
+   ]
+  },
+  {
+   "campo": "Fecha prevista de siembra",
+   "valor": "1 mar",
+   "cambios": [
+    "puntaje de la alternativa: 61→61.9",
+    "puntaje de la actual: 34→35.9",
+    "procedencia: campanas B→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "fecha prevista de siembra"
+   ]
+  },
+  {
+   "campo": "Fecha prevista de siembra",
+   "valor": "1 jun",
+   "cambios": [
+    "puntaje de la alternativa: 61→66.1",
+    "puntaje de la actual: 34→35.7",
+    "procedencia: campanas B→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "fecha prevista de siembra"
+   ]
+  },
+  {
+   "campo": "Fecha prevista de siembra",
+   "valor": "15 oct",
+   "cambios": [
+    "puntaje de la alternativa: 61→62",
+    "puntaje de la actual: 34→30.2",
+    "procedencia: campanas B→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "fecha prevista de siembra"
+   ]
+  },
+  {
+   "campo": "Ciclo del Loctao",
+   "valor": "54 d",
+   "cambios": [
+    "demanda de agua: loctao.B 232→157 mm",
+    "duración: loctao.A 75→54 d, loctao.B 75→54 d",
+    "puntaje de la alternativa: 61→61.2",
+    "procedencia: ciclo_loctao E→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "ciclo del Frijol Loctao (mungo)"
+   ]
+  },
+  {
+   "campo": "Ciclo del Loctao",
+   "valor": "90 d",
+   "cambios": [
+    "demanda de agua: loctao.B 232→287 mm",
+    "duración: loctao.A 75→90 d, loctao.B 75→90 d",
+    "ganador: LLAL→LALA",
+    "procedencia: ciclo_loctao E→C"
+   ],
+   "usado": [
+    "ciclo del Frijol Loctao (mungo)"
+   ]
+  },
+  {
+   "campo": "Ciclo del arroz",
+   "valor": "100 d",
+   "cambios": [
+    "demanda de agua: arroz.A 1067→939 mm, arroz.B 1350→1196 mm",
+    "duración: arroz.A 115→101 d, arroz.B 114→100 d",
+    "puntaje de la alternativa: 61→59.3",
+    "puntaje de la actual: 34→31.8",
+    "procedencia: ciclo_arroz A→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "ciclo del Arroz Tinajones"
+   ]
+  },
+  {
+   "campo": "Ciclo del arroz",
+   "valor": "130 d",
+   "cambios": [
+    "demanda de agua: arroz.A 1067→1218 mm, arroz.B 1350→1518 mm",
+    "duración: arroz.A 115→131 d, arroz.B 114→130 d",
+    "puntaje de la alternativa: 61→62",
+    "puntaje de la actual: 34→35.3",
+    "procedencia: ciclo_arroz A→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "ciclo del Arroz Tinajones"
+   ]
+  },
+  {
+   "campo": "Cultivo principal",
+   "valor": "arroz en las grandes",
+   "cambios": [
+    "ganador: LLAL→ALAL",
+    "veredicto: claramente_preferible→probablemente_preferible"
+   ],
+   "usado": [
+    "cultivo principal a conservar"
+   ]
+  },
+  {
+   "campo": "Cultivo principal",
+   "valor": "Loctao en ≥ 3 campañas",
+   "cambios": [],
+   "usado": [
+    "cultivo principal a conservar"
+   ]
+  },
+  {
+   "campo": "Economía",
+   "valor": "completa",
+   "cambios": [
+    "puntaje de la alternativa: 61→63.8",
+    "puntaje de la actual: 34→27.2",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "datos económicos"
+   ]
+  },
+  {
+   "campo": "Economía",
+   "valor": "incompleta (solo arroz)",
+   "cambios": [],
+   "usado": [
+    "datos económicos"
+   ]
+  },
+  {
+   "campo": "Historial",
+   "valor": "campaña anterior desconocida",
+   "cambios": [],
+   "usado": []
+  },
+  {
+   "campo": "Historial",
+   "valor": "Loctao antes",
+   "cambios": [
+    "puntaje de la actual: 34→59.4",
+    "veredicto: claramente_preferible→equivalentes"
+   ],
+   "usado": []
+  },
+  {
+   "campo": "Prioridad de agua",
+   "valor": "5",
+   "cambios": [
+    "puntaje de la alternativa: 61→62.6",
+    "puntaje de la actual: 34→30.7",
+    "procedencia: prioridades E→C",
+    "criterios del puntaje"
+   ],
+   "usado": [
+    "prioridades"
+   ]
+  },
+  {
+   "campo": "Prioridad de plagas",
+   "valor": "5",
+   "cambios": [
+    "ganador: LLAL→LALA",
+    "puntaje de la actual: 34→29.2",
+    "procedencia: prioridades E→C"
+   ],
+   "usado": [
+    "prioridades"
+   ]
+  }
+ ],
+ "sin_efecto": []
+}

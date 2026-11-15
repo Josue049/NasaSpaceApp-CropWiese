@@ -37,17 +37,19 @@ test('v2: percolación declarada por el agricultor sustituye al valor FAO y aume
 
 test('v2: sin riego no se recomienda nada y se explica qué falta (no se rellenan tres tarjetas)', async () => {
   const r = await run({ irrigation: false });
-  assert.equal(r.candidates_viable, 0);
+  assert.equal(r.candidates_recommendable, 0, 'ninguna secuencia sin riesgo alto');
   assert.equal(r.strategies.length, 1, 'solo la rotación actual como referencia');
   assert.equal(r.viability.arroz.A.status, 'inviable'); assert.equal(r.viability.arroz.B.status, 'inviable');
+  assert.ok(Object.values(r.viability.arroz.A.basis).includes('documentado'), 'el arroz sin riego es inviable por un requisito documentado');
   assert.ok(r.no_viable && /campaña chica/.test(r.no_viable.summary));
   assert.ok(r.no_viable.what_would_help.some((t) => /volumen de riego/.test(t)));
   assert.ok(r.strategies[0].violations.length > 0, 'la actual incluye campañas inviables');
 });
 
-test('v2: una dotación insuficiente hace inviable el arroz y deja solo opciones con Loctao', async () => {
+test('v2: una dotación insuficiente marca riesgo hídrico ALTO en el arroz (umbral metodológico: condicionada, no inviable) y deja solo opciones con Loctao', async () => {
   const r = await run({ water: { supply_m3_ha: 4000 } });
-  assert.equal(r.viability.arroz.A.status, 'inviable');
+  assert.equal(r.viability.arroz.A.status, 'condicionada'); assert.equal(r.viability.arroz.A.severity, 'alta');
+  assert.ok(Object.values(r.viability.arroz.A.basis).includes('metodológico'), 'se identifica el umbral como metodológico');
   assert.ok(r.strategies.length >= 2);
   const alt = r.strategies.find((s) => s.id === 'alt_a'); assert.ok(alt.sequence.every((c) => c === 'loctao'));
   assert.match(r.water.supply_basis, /4000 m³\/ha/);
@@ -56,6 +58,7 @@ test('v2: una dotación insuficiente hace inviable el arroz y deja solo opciones
 test('v2: con dotación suficiente (14 000 m³/ha) el arroz vuelve a ser viable', async () => {
   const r = await run({ water: { supply_m3_ha: 14000 } });
   assert.notEqual(r.viability.arroz.A.status, 'inviable'); assert.notEqual(r.viability.arroz.B.status, 'inviable');
+  assert.ok(!r.viability.arroz.A.severity || r.viability.arroz.A.severity !== 'alta');
 });
 
 test('v2: "cultivo principal a conservar" se respeta y no es una regla global', async () => {
