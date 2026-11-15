@@ -17,7 +17,7 @@ const LEGACY = process.env.FIELDSHIFT_LEGACY === '1';
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
 const DB_FILE = process.env.FIELDSHIFT_DB || path.join(__dirname, 'data', 'parcels.json');
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.apk': 'application/vnd.android.package-archive' };
 
 // ---------- persistencia simple (JSON) ----------
 function loadDb() { try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch { return { parcels: [] }; } }
@@ -308,6 +308,14 @@ function serveStatic(req, res, url) {
   let rel = decodeURIComponent(url.pathname); if (rel === '/') rel = '/index.html';
   const file = path.normalize(path.join(PUBLIC, rel));
   if (!file.startsWith(PUBLIC)) { res.writeHead(403); return res.end('Prohibido'); }
+  if (path.extname(file) === '.apk') { // el instalador de la app (decenas de MB): se envía por flujo, no en memoria
+    fs.stat(file, (err, st) => {
+      if (err || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('No encontrado'); }
+      res.writeHead(200, { 'Content-Type': MIME['.apk'], 'Content-Length': st.size, 'Content-Disposition': 'attachment; filename="cropwise.apk"' });
+      fs.createReadStream(file).pipe(res);
+    });
+    return;
+  }
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('No encontrado'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' }); res.end(buf);

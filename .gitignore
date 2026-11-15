@@ -7,3 +7,6 @@ data/parcels.json
 .env
 .env.*
 !.env.example
+
+# instalador de la app (se copia al servidor, no al repositorio)
+public/downloads/
