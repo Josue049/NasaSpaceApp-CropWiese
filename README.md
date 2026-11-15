@@ -51,6 +51,7 @@ El caso demo (Moyobamba, −6.034, −76.971) funciona **sin conexión** gracias
 - [`docs/ESTADO.md`](docs/ESTADO.md) — **qué está hecho, limitaciones conocidas y siguiente acción**
 - [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md) — modelo científico y fórmulas
 - [`docs/FUENTES.md`](docs/FUENTES.md) — productos de datos verificados, cómo se consultan y referencias
+- [`docs/VALIDACION_MODELO.md`](docs/VALIDACION_MODELO.md) — **retroprueba del modelo con SENAMHI 2026 (`npm run backtest`): qué se mide, qué es circular y qué no se puede evaluar**
 - [`docs/DATA_VALIDATION.md`](docs/DATA_VALIDATION.md) — validación cruzada de lluvia (generada)
 - [`docs/DECISIONES.md`](docs/DECISIONES.md) — registro de decisiones
 - [`docs/PRESENTACION.md`](docs/PRESENTACION.md) — guion y preguntas críticas del jurado

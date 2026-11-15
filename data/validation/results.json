@@ -1,0 +1,315 @@
+{
+ "generated_at": "2026-11-15T00:00:36.963Z",
+ "temperature": {
+  "Tmedia": {
+   "sin_altitud": {
+    "n": 11,
+    "bias": -3.5736363636363637,
+    "mae": 3.5736363636363637,
+    "rmse": 3.7767636654663272
+   },
+   "sin_correccion": {
+    "n": 11,
+    "bias": 2.3442236363636364,
+    "mae": 2.3442236363636364,
+    "rmse": 2.6435679266038283
+   },
+   "validacion_cruzada": {
+    "n": 11,
+    "bias": 3.2297397080004555e-16,
+    "mae": 0.9029090909090921,
+    "rmse": 1.3441022950623362
+   },
+   "linea_base_constante": {
+    "n": 11,
+    "bias": -3.2297397080004555e-16,
+    "mae": 0.8272727272727277,
+    "rmse": 1.0319883720275147
+   },
+   "offset_rango": [
+    2.0125742857142854,
+    2.504288571428572
+   ]
+  },
+  "Tmáx": {
+   "sin_altitud": {
+    "n": 11,
+    "bias": -0.7706493506493498,
+    "mae": 1.9335064935064923,
+    "rmse": 2.549585000244036
+   },
+   "sin_correccion": {
+    "n": 11,
+    "bias": 5.147210649350648,
+    "mae": 5.147210649350648,
+    "rmse": 5.69212269022742
+   },
+   "validacion_cruzada": {
+    "n": 11,
+    "bias": -3.2297397080004555e-16,
+    "mae": 1.816935064935064,
+    "rmse": 2.673358325158426
+   },
+   "linea_base_constante": {
+    "n": 11,
+    "bias": -2.90676573720041e-15,
+    "mae": 1.661818181818183,
+    "rmse": 2.1128180233990803
+   },
+   "offset_rango": [
+    4.52886,
+    5.51528857142857
+   ]
+  },
+  "Tmín": {
+   "sin_altitud": {
+    "n": 11,
+    "bias": -3.939740259740259,
+    "mae": 3.939740259740259,
+    "rmse": 4.0820321706142275
+   },
+   "sin_correccion": {
+    "n": 11,
+    "bias": 1.9781197402597401,
+    "mae": 2.035651688311688,
+    "rmse": 2.2481972854970964
+   },
+   "validacion_cruzada": {
+    "n": 11,
+    "bias": -3.2297397080004555e-16,
+    "mae": 0.9325974025974049,
+    "rmse": 1.1752167147086594
+   },
+   "linea_base_constante": {
+    "n": 11,
+    "bias": -9.689219124001365e-16,
+    "mae": 0.7418181818181818,
+    "rmse": 0.9440338976964759
+   },
+   "offset_rango": [
+    1.8271457142857142,
+    2.2075742857142857
+   ]
+  }
+ },
+ "phenology": {
+  "inSample": [
+   {
+    "phase": "Emergencia",
+    "observed": 5,
+    "predicted": 5,
+    "err": 0
+   },
+   {
+    "phase": "Plántula",
+    "observed": 24,
+    "predicted": 24,
+    "err": 0
+   },
+   {
+    "phase": "Macollaje",
+    "observed": 33,
+    "predicted": 33,
+    "err": 0
+   },
+   {
+    "phase": "Elongación del tallo",
+    "observed": 64,
+    "predicted": 64,
+    "err": 0
+   },
+   {
+    "phase": "Panoja",
+    "observed": 79,
+    "predicted": 79,
+    "err": 0
+   },
+   {
+    "phase": "Desarrollo de panoja",
+    "observed": 86,
+    "predicted": 86,
+    "err": 0
+   },
+   {
+    "phase": "Floración",
+    "observed": 93,
+    "predicted": 93,
+    "err": 0
+   },
+   {
+    "phase": "Maduración lechosa",
+    "observed": 102,
+    "predicted": 102,
+    "err": 0
+   },
+   {
+    "phase": "Maduración pastosa",
+    "observed": 107,
+    "predicted": 107,
+    "err": 0
+   },
+   {
+    "phase": "Maduración córnea",
+    "observed": 114,
+    "predicted": 114,
+    "err": 0
+   }
+  ],
+  "oos": [
+   {
+    "st": "partidor",
+    "variety": "Ferón",
+    "sow": "2025-12-20",
+    "date": "2026-03-04",
+    "obsName": "Inicio de panoja",
+    "stage": "panicle",
+    "station": "Partidor (Piura)",
+    "observed": 74,
+    "predicted": 80,
+    "err": 6
+   },
+   {
+    "st": "lambayeque",
+    "variety": "El Valor",
+    "sow": "2025-11-27",
+    "date": "2026-03-01",
+    "obsName": "Inicio de panoja",
+    "stage": "panicle",
+    "station": "Lambayeque",
+    "observed": 94,
+    "predicted": 79,
+    "err": -15
+   },
+   {
+    "st": "talla",
+    "variety": "El Valor",
+    "sow": "2025-11-22",
+    "date": "2026-03-09",
+    "obsName": "Desarrollo de panoja",
+    "stage": "panicle_development",
+    "station": "Talla (La Libertad)",
+    "observed": 107,
+    "predicted": 86,
+    "err": -21
+   }
+  ]
+ },
+ "ndvi": {
+  "cls": {
+   "pattern": "estacional",
+   "message": "NDVI con subida y bajada marcadas: patrón compatible con un cultivo anual (o pasto/maleza estacional). No identifica la especie.",
+   "n_valid": 20,
+   "n_water": 0,
+   "ndvi_p10": 0.24,
+   "ndvi_p90": 0.76,
+   "amplitude": 0.52,
+   "peak_date": "2026-05-05",
+   "peak_ndvi": 0.819
+  },
+  "win": [
+   "2026-04-10",
+   "2026-04-24"
+  ],
+  "peak_off_days": 11,
+  "trough": {
+   "date": "2026-02-04",
+   "scl": 5,
+   "scene_cloud_pct": 67,
+   "ndvi": 0.124,
+   "valid": true
+  },
+  "trough_vs_sowing": 14,
+  "n_valid": 20
+ },
+ "rain": [
+  {
+   "event": "Siembra",
+   "date": "2026-01-21",
+   "senamhi": 0,
+   "power": 0.42
+  },
+  {
+   "event": "Emergencia",
+   "date": "2026-01-26",
+   "senamhi": 1.2,
+   "power": 0.14
+  },
+  {
+   "event": "Plántula",
+   "date": "2026-02-14",
+   "senamhi": 1.4,
+   "power": 1.09
+  },
+  {
+   "event": "Macollaje",
+   "date": "2026-02-23",
+   "senamhi": 3.5,
+   "power": 10.06
+  },
+  {
+   "event": "Elongación del tallo",
+   "date": "2026-03-26",
+   "senamhi": 0,
+   "power": 0.15
+  },
+  {
+   "event": "Panoja",
+   "date": "2026-04-10",
+   "senamhi": 0,
+   "power": 0.01
+  },
+  {
+   "event": "Desarrollo de panoja",
+   "date": "2026-04-17",
+   "senamhi": 0,
+   "power": 1.89
+  },
+  {
+   "event": "Floración",
+   "date": "2026-04-24",
+   "senamhi": 0,
+   "power": 0
+  },
+  {
+   "event": "Maduración lechosa",
+   "date": "2026-05-03",
+   "senamhi": 0,
+   "power": 0.3
+  },
+  {
+   "event": "Maduración pastosa",
+   "date": "2026-05-08",
+   "senamhi": 0,
+   "power": 0
+  },
+  {
+   "event": "Maduración córnea",
+   "date": "2026-05-15",
+   "senamhi": 0,
+   "power": 0
+  }
+ ],
+ "annual_rain": [
+  {
+   "id": "imerg",
+   "mm": 623
+  },
+  {
+   "id": "era5",
+   "mm": 908
+  },
+  {
+   "id": "power",
+   "mm": 336
+  }
+ ],
+ "ranking": {
+  "viable": 31,
+  "total": 37,
+  "spread": {
+   "min": 92.4,
+   "max": 100,
+   "informative": false
+  }
+ }
+}
