@@ -116,7 +116,7 @@ function analyzeRice(input, g, scenario = SCENARIOS.base) {
   // Corrección EMPÍRICA de temperatura: el gradiente estándar sesga la temperatura (celda POWER ~930 m más alta). Se mide el sesgo contra las
   // temperaturas reportadas por SENAMHI (11 valores, una temporada) y se resta. SUPUESTO: el sesgo es estacionario. El contraste posterior es circular.
   const chk0 = temperatureCheck((first.climates.find((c) => c.role === 'primary') || first.climates[0]).climate);
-  const offsets = offsetsFrom(chk0);
+  const offsets = first.temp_method === 'senamhi_monthly' ? null : offsetsFrom(chk0); // con calibración mensual validada no se aplica la corrección global antigua
   const { climates, problems } = offsets ? buildClimates(g, { ...scenario, temp_offsets: offsets }) : first;
   const support = assessSupport(input, g, climates);
   const cal = calibratedProfile(PROFILE, input.insitu || null);

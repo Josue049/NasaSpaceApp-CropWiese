@@ -100,6 +100,22 @@ async function getEra5(lat, lon) {
 }
 
 // ---------- Pendiente (SRTM 1 arc-sec) vía OpenTopoData ----------
+// ---------- ERA5 temperatura (para la corrección validada contra SENAMHI) ----------
+async function getEra5Temp(lat, lon) {
+  const name = `era5temp_${r2(lat)}_${r2(lon)}.json`;
+  const prov = { source: 'ERA5 reanálisis (ECMWF) vía Open-Meteo', variables: 'temperature_2m_max/min/mean (°C, día UTC)', period: `${Y0}-${Y1}`, resolution: '≈ 0,1° (celda ERA5/ERA5-Land más cercana)', kind: 'ERA5-Land (modelo fijado, serie homogénea); se corrige con offsets mensuales calibrados con SENAMHI Morropón', url: 'https://open-meteo.com/en/docs/historical-weather-api' };
+  const cached = readCache(name);
+  if (cached) return { ok: true, data: cached.json.data, provenance: { ...prov, fetchedAt: cached.json.fetchedAt, cached: true, grid_point: cached.json.grid_point || null } };
+  try {
+    const o = await httpJson(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${Y0}-01-01&end_date=${Y1}-12-31&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean&timezone=UTC&models=era5_land`); // modelo FIJO: con best_match la API cambia de producto en 2017 (serie no homogénea)
+    const data = {};
+    o.daily.time.forEach((t, i) => { const tx = o.daily.temperature_2m_max[i], tn = o.daily.temperature_2m_min[i], tm = o.daily.temperature_2m_mean[i]; if (tx != null && tn != null && tm != null) data[t.replace(/-/g, '')] = [tx, tn, tm]; });
+    const grid_point = { lat: o.latitude, lon: o.longitude, elevation_m: o.elevation };
+    writeCache(name, { fetchedAt: new Date().toISOString(), grid_point, data });
+    return { ok: true, data, provenance: { ...prov, fetchedAt: new Date().toISOString(), cached: false, grid_point } };
+  } catch (e) { return { ok: false, error: `ERA5 (temperatura) no disponible: ${e.message}`, provenance: prov }; }
+}
+
 async function getSlope(lat, lon) {
   const name = `slope_${(+lat).toFixed(3)}_${(+lon).toFixed(3)}.json`;
   const prov = { source: 'SRTM 1 arc-sec (NASA/USGS/NGA) vía API pública OpenTopoData (espejo de terceros)', variables: 'elevación → pendiente (Horn, 3×3, paso ≈ 90 m)', resolution: '~30 m; error vertical SRTM de varios metros → pendiente indicativa', kind: 'medición derivada', url: 'https://www.opentopodata.org/datasets/srtm/' };
@@ -175,4 +191,4 @@ function validatePower(raw) {
   return issues;
 }
 
-module.exports = { getPower, getImergCached, fetchImergYears, getEra5, getSlope, getSoil, validatePower, IMERG_PROV, Y0, Y1, CACHE_DIR };
+module.exports = { getEra5Temp, getPower, getImergCached, fetchImergYears, getEra5, getSlope, getSoil, validatePower, IMERG_PROV, Y0, Y1, CACHE_DIR };

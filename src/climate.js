@@ -52,18 +52,24 @@ function buildClimate(raw, opts = {}) {
   const sc = Object.assign({ precip_factor: 1, temp_delta: 0 }, opts.scenario || {});
   const off = Object.assign({ T: 0, Tx: 0, Tn: 0 }, sc.temp_offsets || {}); // corrección empírica local OPCIONAL (demo de arroz): sesgo medido contra temperaturas SENAMHI de una temporada
   const p = raw.properties.parameter;
-  const [lon, lat, zCell] = raw.geometry.coordinates;
-  // SUPUESTO: gradiente térmico estándar −6,5 °C/km entre la celda POWER y la parcela (SRTM). Humedad relativa sin corregir.
+  const [lon, lat, zPower] = raw.geometry.coordinates;
+  // Método 'senamhi_monthly': la temperatura viene de una serie externa (ERA5) corregida con offsets MENSUALES calibrados contra la estación
+  // SENAMHI Morropón (validación fuera de muestra); el gradiente se aplica respecto a la ELEVACIÓN DE LA ESTACIÓN, no de la celda de POWER.
+  const ext = opts.temp || null, offM = sc.temp_offsets_monthly || null;
+  const zCell = ext ? ext.station_elevation_m : zPower;
+  // SUPUESTO: gradiente térmico estándar −6,5 °C/km entre la celda de referencia y la parcela (SRTM). Humedad relativa sin corregir.
   const dz = Number.isFinite(opts.elevation) ? Math.max(-1500, Math.min(1500, opts.elevation - zCell)) : 0;
   const lapse = dz === 0 ? 0 : -0.0065 * dz, zElev = zCell + dz;
   const days = [], byKey = new Map();
   for (const k of Object.keys(p.PRECTOTCORR).sort()) {
     if (opts.yearRange && (+k.slice(0, 4) < opts.yearRange[0] || +k.slice(0, 4) > opts.yearRange[1])) continue;
     const rainVal = opts.rain ? opts.rain[k] : p.PRECTOTCORR[k];
-    const v = { P: rainVal === undefined ? -999 : rainVal, T: p.T2M[k], Tx: p.T2M_MAX[k], Tn: p.T2M_MIN[k], RH: p.RH2M[k], WS: p.WS2M[k], RS: p.ALLSKY_SFC_SW_DWN[k] };
+    const e = ext ? ext.series[k] : null; // [tx, tn, tm] de ERA5
+    const v = { P: rainVal === undefined ? -999 : rainVal, T: ext ? (e ? e[2] : null) : p.T2M[k], Tx: ext ? (e ? e[0] : null) : p.T2M_MAX[k], Tn: ext ? (e ? e[1] : null) : p.T2M_MIN[k], RH: p.RH2M[k], WS: p.WS2M[k], RS: p.ALLSKY_SFC_SW_DWN[k] };
     if (Object.values(v).some((x) => x === -999 || x == null || Number.isNaN(x))) continue; // día con dato faltante: se omite
     const y = +k.slice(0, 4), m = +k.slice(4, 6), d = +k.slice(6, 8);
-    const T = v.T + lapse + sc.temp_delta + off.T, Tx = v.Tx + lapse + sc.temp_delta + off.Tx, Tn = v.Tn + lapse + sc.temp_delta + off.Tn;
+    const mT = offM ? offM.T[m - 1] : 0, mX = offM ? offM.Tx[m - 1] : 0, mN = offM ? offM.Tn[m - 1] : 0;
+    const T = v.T + lapse + sc.temp_delta + off.T + mT, Tx = v.Tx + lapse + sc.temp_delta + off.Tx + mX, Tn = v.Tn + lapse + sc.temp_delta + off.Tn + mN;
     // SUPUESTO del escenario térmico: la humedad relativa se mantiene constante (aumenta el déficit de vapor)
     const et0 = et0Day({ tmean: T, tmax: Tx, tmin: Tn, rh: Math.min(100, v.RH), ws: v.WS, rs: v.RS, lat, doy: dayOfYear(y, m, d), z: zElev });
     const rec = { key: k, y, m, d, P: v.P * sc.precip_factor, T, Tx, Tn, et0 };
@@ -85,7 +91,15 @@ function buildClimate(raw, opts = {}) {
   const annualP = fullYears.map((y) => days.filter((x) => x.y === y).reduce((a, x) => a + x.P, 0));
   const annualEt0 = fullYears.map((y) => days.filter((x) => x.y === y).reduce((a, x) => a + x.et0, 0));
   const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
-  return { lat, lon, elevation_m: zElev, cell_elevation_m: zCell, lapse_c: lapse, years, days, byKey, monthly, scenario: sc, annual: { precip_mm: mean(annualP), et0_mm: mean(annualEt0), precip_by_year: annualP, n_years: annualP.length } };
+  return { lat, lon, elevation_m: zElev, cell_elevation_m: zCell, lapse_c: lapse, temp_method: ext ? 'senamhi_monthly' : 'legacy', heat_obs: opts.heatObs ? { ...opts.heatObs, station_elevation_m: ext ? ext.station_elevation_m : zCell } : null, years, days, byKey, monthly, scenario: sc, annual: { precip_mm: mean(annualP), et0_mm: mean(annualEt0), precip_by_year: annualP, n_years: annualP.length } };
+}
+
+/** P(Tmax ≥ thr) observada en la estación para un día del año; interpola entre umbrales enteros de la tabla (se acota al rango de la tabla). */
+function heatProb(ho, doy, thr) {
+  const ths = ho.umbrales, lo = ths[0], hi = ths[ths.length - 1], t = Math.max(lo, Math.min(hi, thr));
+  const i = Math.min(ths.length - 2, Math.max(0, Math.floor(t - lo))), f = t - ths[i], idx = Math.min(365, doy - 1);
+  const a = ho.prob_por_doy[ths[i]][idx], b = ho.prob_por_doy[ths[i + 1]][idx];
+  return a == null || b == null ? 0 : a + f * (b - a);
 }
 
 /** Curva Kc FAO-56 por etapas. t = día dentro del ciclo (0..L-1). */
@@ -140,7 +154,7 @@ function tempUncertainty(clim) {
  * Índices hídricos: ETa/ETc (1 = sin estrés); riesgo = fracción de años con índice ponderado < 0,8.
  */
 function evaluateSeason(clim, crop, slot, irrigated, awc = 110, opts = {}) {
-  const dT = opts.dT || 0, eco = crop.eco;
+  const dT = opts.dT || 0, eco = crop.eco, ho = clim.heat_obs || null; // ho: frecuencia OBSERVADA de días calurosos (estación SENAMHI)
   const L = cycleLength(crop), { ini, dev, mid } = crop.cycle;
   const maxDays = Math.min(slot.window_days, eco && eco.gmax ? eco.gmax : Infinity);
   const TAW = awc * crop.root_m, RAW = crop.p_depletion * TAW;
@@ -164,7 +178,7 @@ function evaluateSeason(clim, crop, slot, irrigated, awc = 110, opts = {}) {
       Dr = Math.min(TAW, Math.max(0, Dr - day.P + etaD));
       etc += etcD; eta += etaD; tsum += day.T; rain += day.P; days++;
       const inMid = te >= ini + dev && te < ini + dev + mid;
-      if (inMid) { etcMid += etcD; etaMid += etaD; midDays++; if (day.Tx > crop.t_stress_max) heat++; }
+      if (inMid) { etcMid += etcD; etaMid += etaD; midDays++; if (ho) heat += heatProb(ho, dayOfYear(day.y, day.m, day.d), crop.t_stress_max + 0.0065 * ((clim.elevation_m ?? ho.station_elevation_m) - ho.station_elevation_m)); else if (day.Tx > crop.t_stress_max) heat++; }
       if (te < ini + dev && day.P >= 20) heavyEarly += day.P;
       te += devRate(eco, day.T + dT);
       if (te >= L) { done = true; break; }

@@ -10,14 +10,15 @@ const { CROPS } = require('../src/pipeline');
 const withDomain = async (fn) => { const prev = process.env.FIELDSHIFT_DOMAIN; process.env.FIELDSHIFT_DOMAIN = 'morropon'; try { return await fn(); } finally { process.env.FIELDSHIFT_DOMAIN = prev; } };
 const input = { lat: -5.19, lon: -79.99, area_ha: 1, irrigation: true, start_slot: 'A', history: ['arroz', 'arroz'], priorities: {}, excluded_crops: [], market_pref: {} };
 
-test('Rotación Morropón: solo arroz Tinajones y frijol; campañas grande/chica', async () => {
+test('Rotación Morropón: solo arroz Tinajones y frijol Loctao; campañas grande/chica', async () => {
   await withDomain(async () => {
     const g = await gatherData(-5.19, -79.99);
     const r = analyze(input, g);
     assert.deepEqual(r.domain.crops, ROTATION_CROPS);
     assert.equal(r.domain.slots[0].start.m, 1); assert.equal(r.domain.slots[0].start.d, 21);
     for (const s of r.strategies) for (const c of s.sequence) assert.ok(ROTATION_CROPS.includes(c), `cultivo inesperado ${c}`);
-    assert.ok(r.domain.temp_offsets_c, 'corrección empírica de temperatura aplicada');
+    assert.equal(r.temperature.method, 'senamhi_monthly', 'temperatura: ERA5 + offsets mensuales calibrados con SENAMHI (validados fuera de muestra)');
+    assert.equal(r.engine, 'v2');
   });
 });
 

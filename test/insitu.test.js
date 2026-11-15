@@ -48,11 +48,11 @@ test('Precisa cambia el análisis; Instantánea no cambia', async () => {
   const base = await run({}), same = await run({ mode: 'instantanea' }), p = await run({ mode: 'precisa', insitu: validateInsitu(full).insitu });
   assert.equal(base.mode, 'instantanea'); assert.equal(same.chosen, null);
   assert.equal(p.mode, 'precisa'); assert.equal(p.profile.calibrated, true);
-  assert.equal(p.chosen.dur_days, 104, 'duración recalibrada');
+  assert.ok(Math.abs(p.chosen.dur_days - 104) <= 2, `duración recalibrada ≈ 104 d (depende del método de temperatura; obtenida ${p.chosen.dur_days})`);
   assert.ok(base.windows.every((w) => w.c1_score == null), 'sin dotación C1 no se puntúa');
   assert.ok(p.windows.every((w) => w.c1_score != null), 'con dotación C1 se puntúa en todas las fechas');
   assert.ok(p.insitu.phase_comparison.length === 4);
-  assert.equal(p.insitu.phase_comparison.find((x) => x.phase === 'hard_ripening').diff_days, 10, 'modelo instantáneo: 114 vs 104 observados');
+  assert.ok(Math.abs(p.insitu.phase_comparison.find((x) => x.phase === 'hard_ripening').diff_days - 10) <= 2, 'modelo instantáneo ≈ 114 d frente a 104 observados (±2 d según el método de temperatura)');
   assert.ok(p.criteria_diagnostic.criteria.C1.score != null);
   assert.equal(p.criteria_diagnostic.may_label_as_recommendation, false);
 });

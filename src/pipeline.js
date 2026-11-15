@@ -5,6 +5,7 @@ const path = require('path');
 const ds = require('./datasources');
 const { buildClimate, sowingWindows, awcFromSoil, tempUncertainty, canopyCoverMean } = require('./climate');
 const engine = require('./engine');
+const engine2 = require('./engine2');
 const morropon = require('./morropon');
 const location = require('./location');
 
@@ -27,9 +28,22 @@ async function gatherData(lat, lon, { allowFetchImerg = false, station = morropo
   const useCells = activeDomain().id === 'morropon';
   const loc = useCells ? location.resolveCells(lat, lon, station) : null;
   const q = (src) => (loc ? loc.sources[src].query : { lat, lon });
-  const [power, era5, slope, soil] = await Promise.all([ds.getPower(q('power').lat, q('power').lon), ds.getEra5(q('era5').lat, q('era5').lon), ds.getSlope(lat, lon), ds.getSoil(lat, lon)]);
+  const [power, era5, slope, soil, era5t] = await Promise.all([ds.getPower(q('power').lat, q('power').lon), ds.getEra5(q('era5').lat, q('era5').lon), ds.getSlope(lat, lon), ds.getSoil(lat, lon), useCells ? ds.getEra5Temp(q('era5').lat, q('era5').lon) : Promise.resolve({ ok: false, error: 'no aplica fuera del dominio Morropón' })]);
   const imerg = ds.getImergCached(q('imerg').lat, q('imerg').lon);
-  return { power, era5, slope, soil, imerg, imergComplete: imerg.missing.length === 0, imergMissing: imerg.missing, imergQuery: q('imerg'), location: loc, requested: { lat, lon } };
+  return { power, era5, era5t, slope, soil, imerg, imergComplete: imerg.missing.length === 0, imergMissing: imerg.missing, imergQuery: q('imerg'), location: loc, requested: { lat, lon } };
+}
+
+
+// ---------- calibración con la estación SENAMHI Morropón (scripts/validate_sources_senamhi.js) ----------
+const CAL_FILE = path.join(__dirname, '..', 'data', 'validation', 'calibration_senamhi.json');
+let _cal;
+function calibration() { if (_cal === undefined) { try { _cal = JSON.parse(fs.readFileSync(CAL_FILE, 'utf8')); } catch { _cal = null; } } return _cal; }
+/** 'senamhi_monthly' = ERA5 + offsets mensuales validados fuera de muestra (por defecto en Morropón si hay datos); 'legacy' = POWER con corrección global de 11 valores SENAMHI 2026. */
+function tempMethod(g, scenario = {}) {
+  const forced = scenario.temp_method || process.env.FIELDSHIFT_TEMP_METHOD;
+  if (forced === 'legacy') return 'legacy';
+  const cal = calibration();
+  return activeDomain().id === 'morropon' && cal && cal.temperatura && cal.temperatura.fuente_elegida === 'era5' && g.era5t && g.era5t.ok ? 'senamhi_monthly' : 'legacy';
 }
 
 // Serie utilizable si cubre >= 95 % de los días de la ventana de análisis
@@ -73,13 +87,20 @@ function describeLocation(g, climates) {
 function buildClimates(g, scenario = SCENARIOS.base) {
   if (!g.power.ok) return { climates: [], problems: [g.power.error] };
   const elev = g.slope && g.slope.ok ? g.slope.data.elevation_m : undefined;
-  const raw = g.power.data, sc = { precip_factor: scenario.precip_factor, temp_delta: scenario.temp_delta, temp_offsets: scenario.temp_offsets }, yr = [ds.Y0, ds.Y1], list = [], problems = [];
-  if (g.imergComplete && usableRain(g.imerg.data)) list.push({ id: 'imerg', label: 'GPM IMERG (NASA)', role: 'primary', climate: buildClimate(raw, { rain: g.imerg.data, scenario: sc, yearRange: yr, elevation: elev }), provenance: ds.IMERG_PROV });
+  const method = tempMethod(g, scenario), cal = calibration();
+  const extra = {}; let monthly = null;
+  if (method === 'senamhi_monthly') {
+    const o = cal.temperatura.fuentes.era5.offsets_mensuales_c; monthly = { T: o.tm, Tx: o.tx, Tn: o.tn };
+    extra.temp = { series: g.era5t.data, station_elevation_m: cal.estacion_referencia.elevation_m };
+    extra.heatObs = { umbrales: cal.calor_observado.umbrales, prob_por_doy: cal.calor_observado.prob_por_doy };
+  }
+  const raw = g.power.data, sc = { precip_factor: scenario.precip_factor, temp_delta: scenario.temp_delta, temp_offsets: method === 'legacy' ? scenario.temp_offsets : undefined, temp_offsets_monthly: monthly }, yr = [ds.Y0, ds.Y1], list = [], problems = [];
+  if (g.imergComplete && usableRain(g.imerg.data)) list.push({ id: 'imerg', label: 'GPM IMERG (NASA)', role: 'primary', climate: buildClimate(raw, { rain: g.imerg.data, scenario: sc, yearRange: yr, elevation: elev, ...extra }), provenance: ds.IMERG_PROV });
   else problems.push(`IMERG incompleto (faltan años: ${g.imergMissing.join(', ') || 'n/d'}); se usa fuente alternativa y se degrada la confianza.`);
-  if (g.era5.ok) list.push({ id: 'era5', label: 'ERA5 (control, no-NASA)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { rain: g.era5.data, scenario: sc, yearRange: yr, elevation: elev }), provenance: g.era5.provenance });
+  if (g.era5.ok) list.push({ id: 'era5', label: 'ERA5 (control, no-NASA)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { rain: g.era5.data, scenario: sc, yearRange: yr, elevation: elev, ...extra }), provenance: g.era5.provenance });
   else problems.push(g.era5.error);
-  list.push({ id: 'power', label: 'NASA POWER (lluvia reanálisis)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { scenario: sc, yearRange: yr, elevation: elev }), provenance: g.power.provenance });
-  return { climates: list, problems };
+  list.push({ id: 'power', label: 'NASA POWER (lluvia reanálisis)', role: list.length ? 'check' : 'primary', climate: buildClimate(raw, { scenario: sc, yearRange: yr, elevation: elev, ...extra }), provenance: g.power.provenance });
+  return { climates: list, problems, temp_method: method };
 }
 
 /**
@@ -92,7 +113,7 @@ function buildClimates(g, scenario = SCENARIOS.base) {
 // Dominio de uso. Por defecto, la demo reducida: Morropón (Alto Piura), arroz Tinajones + frijol. FIELDSHIFT_DOMAIN=peru restaura el dominio amplio de v0.2.
 // La caja es una APROXIMACIÓN de diseño (≈ ±12 km de la estación SENAMHI Morropón), no un límite administrativo oficial.
 const DOMAINS = {
-  morropon: { id: 'morropon', label: 'Morropón, Alto Piura (arroz Tinajones + frijol)', box: { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 }, center: { lat: -5.19, lon: -79.99 }, slots: morropon.SLOTS },
+  morropon: { id: 'morropon', label: 'Morropón, Alto Piura (arroz Tinajones + frijol Loctao)', box: { latMin: -5.30, latMax: -5.09, lonMin: -80.10, lonMax: -79.88 }, center: { lat: -5.19, lon: -79.99 }, slots: morropon.SLOTS },
   peru: { id: 'peru', label: 'Perú', box: { latMin: -18.4, latMax: 0.1, lonMin: -81.4, lonMax: -68.6 } },
 };
 const activeDomain = () => DOMAINS[process.env.FIELDSHIFT_DOMAIN] || DOMAINS.morropon;
@@ -131,23 +152,26 @@ function analyze(input, g, scenario = SCENARIOS.base) {
   let built = buildClimates(g, scenario);
   if (!built.climates.length) throw new Error(`Sin datos climáticos: ${built.problems.join(' | ')}`);
   let tempOffsets = null;
-  if (dom.id === 'morropon') { // corrección EMPÍRICA de temperatura con SENAMHI Morropón (una temporada); ver src/morropon.js
+  if (dom.id === 'morropon' && built.temp_method === 'legacy') { // corrección EMPÍRICA global con 11 valores SENAMHI 2026 (método anterior); solo si no hay calibración mensual
     tempOffsets = morropon.offsetsFrom(morropon.temperatureCheck((built.climates.find((c) => c.role === 'primary') || built.climates[0]).climate));
     if (tempOffsets) built = buildClimates(g, { ...scenario, temp_offsets: tempOffsets });
   }
   const { climates, problems } = built;
-  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops, input.rice_cycle || null) : CROPS.crops;
+  // Motor: 'v2' (dos etapas) por defecto en Morropón; 'v1' (puntuación única original) a petición y fuera de Morropón.
+  const engineChoice = dom.id === 'morropon' && input.engine !== 'v1' ? 'v2' : 'v1';
+  const cropList = dom.id === 'morropon' ? morropon.rotationCrops(CROPS.crops, input.rice_cycle || null, engineChoice === 'v1' ? morropon.LEGACY_ROTATION_CROPS : morropon.ROTATION_CROPS) : CROPS.crops;
   const support = assessSupport(input, g, climates);
   const res = support.level === 'no_recomendable'
     ? { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [...support.blockers, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {}, weights_status: '', candidates_evaluated: 0,
       context: { slope_pct: g.slope.ok ? g.slope.data.slope_pct : null, soil: g.soil.ok ? g.soil.data : null, irrigated: !!input.irrigation, start_slot: input.start_slot || 'A', history: input.history || [] } }
-    : engine.run(input, {
+    : (engineChoice === 'v2' ? engine2.run : engine.run)(input, {
       crops: cropList, slots: dom.slots, climates,
       slope: g.slope.ok ? g.slope.data.slope_pct : null,
       soil: g.soil.ok ? g.soil.data : null,
     });
   res.support = support;
   res.location_report = describeLocation(g, climates);
+  res.temperature = (() => { const cal = calibration(); return built.temp_method === 'senamhi_monthly' ? { method: 'senamhi_monthly', source: 'ERA5 (temperatura) + offsets mensuales (Tmax, Tmin, Tmedia) calibrados con SENAMHI Morropón 2001-2014', validation: 'Mejora el RMSE fuera de muestra en ambos sentidos de la partición temporal (docs/VALIDACION_FUENTES_SENAMHI.md)', heat: 'El estrés por calor usa la frecuencia OBSERVADA de días calurosos en la estación (1981-2014), porque los reanálisis corregidos subestiman los días ≥35 °C.', assumption: 'Sesgo estable entre 2001-2014 y 2015-2023 y representatividad de la estación para el punto (hipótesis).', rmse_oos_c: cal.temperatura.fuentes.era5.rmse_fuera_de_muestra_medio } : { method: 'legacy', source: 'NASA POWER con corrección global (11 valores SENAMHI 2026)', validation: 'No validada fuera de muestra; el sesgo de POWER cambia de signo con la estación del año.' }; })();
   res.domain = { id: dom.id, label: dom.label, temp_offsets_c: tempOffsets, crops: cropList.map((c) => c.id), slots: dom.slots || null };
   if (!res.unsupported) {
     const prim = climates.find((c) => c.role === 'primary') || climates[0];
@@ -180,4 +204,4 @@ function analyze(input, g, scenario = SCENARIOS.base) {
   return res;
 }
 
-module.exports = { outOfScope, describeLocation, gatherData, buildClimates, analyze, assessSupport, activeDomain, DOMAINS, SCENARIOS, CROPS };
+module.exports = { tempMethod, calibration, outOfScope, describeLocation, gatherData, buildClimates, analyze, assessSupport, activeDomain, DOMAINS, SCENARIOS, CROPS };
