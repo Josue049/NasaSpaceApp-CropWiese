@@ -75,13 +75,13 @@
 
   <div class="grid-top">
     <section class="card" aria-labelledby="t1">
-      <div class="card-head"><span class="badge-ico"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg></span><div><h2 id="t1">1. Define tu parcela</h2><p>Toca el mapa e indica el cultivo actual.</p></div></div>
+      <div class="card-head"><span class="badge-ico"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg></span><div><h2 id="t1">1. Define tu parcela</h2><p>Toca el mapa e indica el cultivo actual. <span class="req">*</span> obligatorio.</p></div></div>
       <div class="define">
         <div id="map" role="application" aria-label="Mapa para ubicar la parcela en Morropón"></div>
         <dl class="facts">
           <div><dt><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg> Ubicación</dt><dd id="coords">-5.19, -79.99</dd></div>
           <div><dt><svg class="i" aria-hidden="true"><use href="#i-area"/></svg> Área (ha)</dt><dd><input id="area" type="number" min="0" step="0.1" inputmode="decimal" placeholder="opcional" aria-label="Área en hectáreas"></dd></div>
-          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual</dt><dd><select id="h1" aria-label="Cultivo actual"><option value="" selected>— elige —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></dd></div>
+          <div><dt><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Cultivo actual <span class="req" title="Obligatorio">*</span></dt><dd><select id="h1" aria-label="Cultivo actual"><option value="" selected>— elige —</option><option value="arroz">Arroz</option><option value="loctao">Frijol Loctao</option></select></dd></div>
         </dl>
       </div>
       <p id="mapMsg" class="hint" role="status" aria-live="polite"></p>
@@ -113,6 +113,59 @@
       </fieldset>
 
       <div id="precisaBox" hidden>
+        <button type="button" id="btnPrecisa" class="link-btn" aria-haspopup="dialog"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg> Completar los datos de mi parcela</button>
+        <p id="precisaSummary" class="hint" role="status" aria-live="polite">Aún no has indicado datos: se usan solo los datos de la zona.</p>
+      </div>
+
+      <button id="btnGo" class="cta" type="button"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg> Generar recomendación</button>
+      <p id="msg" class="status" role="status" aria-live="polite" hidden></p>
+    </section>
+  </div>
+
+  <div id="rotWrap" hidden>
+    <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg></span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Primero comprobamos qué cultivos son viables en cada campaña de tu parcela; después comparamos las secuencias.</p></div></div>
+    <div id="rotCards" class="rot-grid"></div>
+    <div id="rotNotes"></div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section class="next" aria-labelledby="t3">
+    <div class="next-mascot"><img src="img/fieldi-tablet.png" alt="" aria-hidden="true"></div>
+    <div class="next-text"><h2 id="t3">¿Qué sigue?</h2><p>Puedes ajustar tus datos, explorar los indicadores o aprender más sobre la rotación de cultivos.</p></div>
+    <div class="next-btns">
+      <button class="pill-btn" id="btnAdjust"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Ajustar datos</button>
+      <button class="pill-btn" data-go="indicadores"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg> Ver indicadores</button>
+      <button class="pill-btn" data-go="aprende"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg> Aprender</button>
+    </div>
+  </section>
+</section>
+
+<!-- ============ RECOMENDACIÓN (detalle) ============ -->
+<section id="view-recomendacion" class="view" hidden>
+  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2>Recomendación en detalle</h2><p>Fechas de siembra, fenología y agua de tu parcela.</p></div></div>
+  <div id="detail"><p class="empty">Aún no hay resultados. Ve a <a href="#inicio" data-go="inicio">Inicio</a> y pulsa «Generar recomendación».</p></div>
+</section>
+
+<!-- ============ INDICADORES ============ -->
+<section id="view-indicadores" class="view" hidden>
+  <div class="sec-title"><span class="badge-ico blue"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span><div><h2>Indicadores</h2><p>Qué tan confiable es el análisis y de dónde salen los datos.</p></div></div>
+  <div id="indic"><p class="empty">Genera una recomendación en Inicio para ver los indicadores de tu parcela.</p></div>
+  <div id="valid"></div>
+</section>
+
+<!-- ============ APRENDE ============ -->
+<section id="view-aprende" class="view" hidden>
+  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span><div><h2>Aprende</h2><p>Cómo funciona Field Shift y qué debes tener en cuenta.</p></div></div>
+  <div id="learn"></div>
+</section>
+</main>
+
+
+
+<dialog id="dlgPrecisa" aria-labelledby="dlgPrecisaT">
+  <form method="dialog" id="dlgPrecisaForm">
+    <div class="dlg-head"><h2 id="dlgPrecisaT">Datos de mi parcela</h2><button class="icon-btn" value="close" aria-label="Cerrar"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
         <p class="hint">Todo es opcional. Déjalo vacío si no lo sabes: <b>nunca se completa por ti</b> ni se toma como cero. Lo que ingreses no se guarda y no se verifica.</p>
         <details class="sect" open><summary><svg class="i"><use href="#i-calendar"/></svg><span>Tu campaña</span><svg class="i chev"><use href="#i-chev"/></svg></summary>
           <div class="grid2">
@@ -162,53 +215,9 @@
             <label class="econ-row"><span>Otros costos (S/ ha)</span><input id="e_arroz_oth" type="number" min="0" step="50" inputmode="decimal"><input id="e_loctao_oth" type="number" min="0" step="50" inputmode="decimal"></label>
           </div>
         </details>
-      </div>
-
-      <button id="btnGo" class="cta" type="button"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg> Generar recomendación</button>
-      <p id="msg" class="status" role="status" aria-live="polite" hidden></p>
-    </section>
-  </div>
-
-  <div id="rotWrap" hidden>
-    <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-leaf"/></svg></span><div><h2>Rotaciones recomendadas para tu parcela</h2><p>Primero comprobamos qué cultivos son viables en cada campaña de tu parcela; después comparamos las secuencias.</p></div></div>
-    <div id="rotCards" class="rot-grid"></div>
-    <div id="rotNotes"></div>
-  </div>
-
-  <div class="tiles" id="tiles"></div>
-
-  <section class="next" aria-labelledby="t3">
-    <div class="next-mascot"><img src="img/fieldi-tablet.png" alt="" aria-hidden="true"></div>
-    <div class="next-text"><h2 id="t3">¿Qué sigue?</h2><p>Puedes ajustar tus datos, explorar los indicadores o aprender más sobre la rotación de cultivos.</p></div>
-    <div class="next-btns">
-      <button class="pill-btn" id="btnAdjust"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Ajustar datos</button>
-      <button class="pill-btn" data-go="indicadores"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg> Ver indicadores</button>
-      <button class="pill-btn" data-go="aprende"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg> Aprender</button>
-    </div>
-  </section>
-</section>
-
-<!-- ============ RECOMENDACIÓN (detalle) ============ -->
-<section id="view-recomendacion" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg></span><div><h2>Recomendación en detalle</h2><p>Fechas de siembra, fenología y agua de tu parcela.</p></div></div>
-  <div id="detail"><p class="empty">Aún no hay resultados. Ve a <a href="#inicio" data-go="inicio">Inicio</a> y pulsa «Generar recomendación».</p></div>
-</section>
-
-<!-- ============ INDICADORES ============ -->
-<section id="view-indicadores" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico blue"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span><div><h2>Indicadores</h2><p>Qué tan confiable es el análisis y de dónde salen los datos.</p></div></div>
-  <div id="indic"><p class="empty">Genera una recomendación en Inicio para ver los indicadores de tu parcela.</p></div>
-  <div id="valid"></div>
-</section>
-
-<!-- ============ APRENDE ============ -->
-<section id="view-aprende" class="view" hidden>
-  <div class="sec-title"><span class="badge-ico green"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span><div><h2>Aprende</h2><p>Cómo funciona Field Shift y qué debes tener en cuenta.</p></div></div>
-  <div id="learn"></div>
-</section>
-</main>
-
-
+    <div class="dlg-foot"><button class="cta" value="ok">Listo</button></div>
+  </form>
+</dialog>
 
 <dialog id="dlgRot" aria-labelledby="dlgRotT">
   <div id="dlgRotBody"></div>

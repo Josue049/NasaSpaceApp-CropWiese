@@ -247,3 +247,13 @@ label.check small{color:var(--muted);font-weight:400}
 .tl-note.ok{color:#1f6b2e;background:#e3f3dc}
 .tbl.prov td,.tbl.prov th{vertical-align:top}.tbl.prov small{display:block;color:var(--muted)}
 .tbl.prov .tl-state{white-space:normal}
+
+/* ---------- campos obligatorios y modal de datos de la parcela ---------- */
+.req{color:#c62828;font-weight:800}
+.invalid{border-color:#c62828!important;background:#fff5f5!important;box-shadow:0 0 0 3px rgba(198,40,40,.15)}
+#map.invalid{outline:3px solid #c62828;outline-offset:2px}
+.err{display:block;color:#c62828;font-size:12.5px;font-weight:700;margin-top:3px}
+.status.bad{background:#fbe6e1;color:#7a2417;border:1px solid #c62828;font-weight:700}
+#dlgPrecisa{width:min(720px,95vw)}#dlgPrecisaForm{padding:20px 24px;max-height:92vh;overflow:auto}
+#dlgPrecisa .sect{background:#fbfcf8}
+#btnPrecisa{width:100%}

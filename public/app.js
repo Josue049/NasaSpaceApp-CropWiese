@@ -80,7 +80,49 @@ function syncMode() {
 }
 document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', syncMode));
 document.querySelectorAll('input[name="slot"]').forEach((r) => r.addEventListener('change', () => { renderTiles(); }));
-$('btnAdjust').addEventListener('click', () => { document.querySelector('input[name="mode"][value="precisa"]').checked = true; syncMode(); $('t2').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+$('btnAdjust').addEventListener('click', () => { document.querySelector('input[name="mode"][value="precisa"]').checked = true; syncMode(); openPrecisa(); });
+// ---------- modal de datos de la parcela (modo Precisa) ----------
+const dlgP = $('dlgPrecisa');
+function openPrecisa() { if (dlgP.showModal) { if (!dlgP.open) dlgP.showModal(); } else dlgP.setAttribute('open', ''); }
+$('btnPrecisa').addEventListener('click', openPrecisa);
+dlgP.addEventListener('click', (e) => { if (e.target === dlgP) dlgP.close(); });
+dlgP.addEventListener('close', () => updatePrecisaSummary());
+const PRECISA_FIELDS = ['first_sow', 'keepCrop', 'supply', 'perc', 'cyc_arroz', 'cyc_loctao', 'sow', 'od_tillering', 'od_panicle', 'od_flowering', 'od_hard_ripening', 'soil_tex', 'soil_ph', 'e_arroz_yield', 'e_arroz_price', 'e_arroz_est', 'e_arroz_irr', 'e_arroz_oth', 'e_loctao_yield', 'e_loctao_price', 'e_loctao_est', 'e_loctao_irr', 'e_loctao_oth'];
+function updatePrecisaSummary() {
+  const n = PRECISA_FIELDS.filter((id) => $(id) && $(id).value !== '').length;
+  $('precisaSummary').textContent = n ? n + (n === 1 ? ' dato indicado' : ' datos indicados') + ': se usan en el análisis y no se guardan.' : 'Aún no has indicado datos: se usan solo los datos de la zona.';
+}
+PRECISA_FIELDS.forEach((id) => { const el = $(id); if (el) el.addEventListener('input', updatePrecisaSummary); });
+
+// ---------- validación: campos obligatorios y rangos, señalados en rojo ----------
+function markInvalid(el, msg, inModal) {
+  el.classList.add('invalid'); el.setAttribute('aria-invalid', 'true');
+  const holder = el.closest('label, dd, .econ-row') || el.parentElement;
+  let small = holder.querySelector(':scope > .err'); if (!small) { small = document.createElement('small'); small.className = 'err'; small.setAttribute('role', 'alert'); holder.appendChild(small); }
+  small.textContent = msg;
+  return { el, inModal };
+}
+function clearInvalid() {
+  document.querySelectorAll('.invalid').forEach((e) => { e.classList.remove('invalid'); e.removeAttribute('aria-invalid'); });
+  document.querySelectorAll('.err').forEach((e) => e.remove());
+}
+document.addEventListener('input', (e) => { const el = e.target; if (el.classList && el.classList.contains('invalid')) { el.classList.remove('invalid'); el.removeAttribute('aria-invalid'); const h = el.closest('label, dd, .econ-row') || el.parentElement; const sm = h.querySelector(':scope > .err'); if (sm) sm.remove(); } });
+function validateForm() {
+  clearInvalid();
+  const errs = [], add = (r) => errs.push(r);
+  if (!$('h1').value) add(markInvalid($('h1'), 'Elige tu cultivo actual (obligatorio).', false));
+  if (!Number.isFinite(Number($('lat').value)) || !Number.isFinite(Number($('lon').value)) || $('lat').value === '') { $('map').classList.add('invalid'); add({ el: $('map'), inModal: false }); }
+  const a = $('area').value; if (a !== '' && !(Number(a) >= 0)) add(markInvalid($('area'), 'Escribe un área válida (≥ 0).', false));
+  if (getMode() === 'precisa') {
+    const rng = (id, lo, hi, txt) => { const v = $(id).value; if (v !== '' && !(Number(v) >= lo && Number(v) <= hi)) add(markInvalid($(id), txt, true)); };
+    rng('supply', 0, 40000, 'Entre 0 y 40 000 m³/ha.'); rng('perc', 0, 30, 'Entre 0 y 30 mm/día.'); rng('cyc_arroz', 40, 200, 'Entre 40 y 200 días.'); rng('cyc_loctao', 40, 200, 'Entre 40 y 200 días.'); rng('soil_ph', 3.5, 9.5, 'Entre 3,5 y 9,5.');
+    for (const id of ['e_arroz_yield', 'e_arroz_price', 'e_arroz_est', 'e_arroz_irr', 'e_arroz_oth', 'e_loctao_yield', 'e_loctao_price', 'e_loctao_est', 'e_loctao_irr', 'e_loctao_oth']) rng(id, 0, 1e6, 'Escribe un número ≥ 0.');
+    const obs = ['od_tillering', 'od_panicle', 'od_flowering', 'od_hard_ripening'].filter((id) => $(id).value);
+    if (obs.length && !$('sow').value) add(markInvalid($('sow'), 'Las fechas observadas requieren la fecha de siembra real.', true));
+    const ds = [$('sow'), ...['od_tillering', 'od_panicle', 'od_flowering', 'od_hard_ripening'].map($)].filter((x) => x.value); for (let i = 1; i < ds.length; i++) if (ds[i].value < ds[i - 1].value) { add(markInvalid(ds[i], 'Debe ser posterior a la fecha anterior.', true)); break; }
+  }
+  return errs;
+}
 
 const modeBadge = (j) => {
   if (!j || !j.mode) return '';
@@ -97,10 +139,15 @@ const post = async (url, body) => { const r = await fetch(url, { method: 'POST',
 function setMsg(text, kind) { const m = $('msg'); m.hidden = !text; m.textContent = text || ''; m.className = 'status' + (kind ? ' ' + kind : ''); }
 
 async function generate() {
+  const errs = validateForm();
+  if (errs.length) { // se señalan en rojo; el botón NO se bloquea
+    const first = errs.find((e) => !e.inModal) || errs[0];
+    setMsg(first.inModal ? 'Revisa los campos marcados en rojo en «Datos de mi parcela».' : 'Completa los campos obligatorios marcados en rojo.', 'bad');
+    if (first.inModal) { openPrecisa(); const sec = first.el.closest('details'); if (sec) sec.open = true; setTimeout(() => first.el.scrollIntoView({ block: 'center' }), 50); } else { first.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (first.el.focus && first.el.tagName !== 'DIV') first.el.focus({ preventScroll: true }); }
+    return;
+  }
   const lat = Number($('lat').value), lon = Number($('lon').value);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return setMsg('Toca el mapa para ubicar tu parcela.', 'bad');
   $('btnGo').disabled = true; setMsg('Calculando con los datos de tu punto…');
-  if (!$('h1').value) return setMsg('Elige tu cultivo actual en el bloque 1: con él proyectamos tu rotación.', 'bad');
   const mode = getMode(), insitu = insituPayload(), area = $('area').value, economics = economicsPayload(), keep_main = keepPayload(), declared = declaredPayload();
   const history = $('h0').value ? [$('h0').value, $('h1').value] : [$('h1').value]; // «No lo sé» en la campaña anterior: solo se usa el cultivo actual
   try {
