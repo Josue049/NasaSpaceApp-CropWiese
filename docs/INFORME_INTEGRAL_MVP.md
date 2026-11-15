@@ -1,6 +1,6 @@
-# Field Shift — Informe integral del MVP
+# Cropwise (Field Shift) — Informe integral del MVP
 
-Estado documentado: rama `feat/fieldshift-morropon-validation`, commit `7815113` (**antes** de incorporar el asistente Cropi). Todo lo que sigue se verificó contra el historial de Git (48 commits en el repositorio), los archivos reales, los informes existentes y las pruebas (`npm test`: 116 pruebas, 0 fallos).
+Estado documentado: rama `feat/fieldshift-morropon-validation` (web y backend). Las secciones 1–18 describen el motor, los datos y la interfaz web hasta el commit `7815113`; las secciones 19–23 recogen los errores corregidos, los datos manuales nuevos, el asistente **Cropi**, el despliegue y la app móvil. Todo se verificó contra el historial de Git, los archivos reales, los informes existentes y las pruebas (`npm test`: 136 pruebas, 0 fallos). La marca vigente es **Cropwise** («Datos espaciales, conocimiento local») y la mascota y asistente se llama **Cropi**.
 
 > Principio rector del proyecto: podemos trabajar con estimaciones científicas justificadas, pero nunca fabricar datos para completar el modelo ni presentar hipótesis como hechos. Este informe distingue lo que está **listo** de lo que es **experimental** o está **pendiente de validación**.
 
@@ -17,7 +17,7 @@ Lo que el MVP hace hoy:
 
 Lo que **no** hace: estimar rendimientos, ganancias ni salud del suelo por sí mismo; el margen económico solo se calcula con datos que declara el agricultor. No hay validación de campo ni de un agrónomo.
 
-Tecnología real: servidor **Node.js sin dependencias** (`server.js`, `src/`), frontend **JavaScript plano** (`public/index.html`, `app.js`, `styles.css`) con Leaflet para el mapa. No se usa React, Vite ni Tailwind.
+Tecnología real: servidor **Node.js** (única dependencia: `groq-sdk`, solo para el asistente) (`server.js`, `src/`), frontend **JavaScript plano** (`public/index.html`, `app.js`, `styles.css`) con Leaflet para el mapa. No se usa React, Vite ni Tailwind.
 
 ## 2. Historial por fases (Git)
 
@@ -28,7 +28,7 @@ Tecnología real: servidor **Node.js sin dependencias** (`server.js`, `src/`), f
 | Rediseño de interfaz | 14 nov | `ef72aaa` | Cabecera con pestañas, héroe, tarjetas, mosaicos |
 | **Rama de validación** | 15 nov | `cd3f702` → `7815113` (20 commits) | Ubicación, SENAMHI, validación de fuentes, temperatura calibrada, Loctao, motor v2, auditoría de parámetros, interfaz v2 (116 pruebas) |
 
-La rama parte de `ui-rediseno-fieldshift` (`ef72aaa`); `master` (`8007034`) y las demás ramas no se modificaron. No se ha hecho push.
+La rama parte de `ui-rediseno-fieldshift` (`ef72aaa`); `master` (`8007034`) y las demás ramas no se modificaron. La rama se publicó en GitHub (sección 22); `master` sigue sin cambios.
 
 ## 3. Arquitectura general
 
@@ -239,3 +239,59 @@ Verificaciones manuales en navegador (Chrome headless): flujos de Instantánea y
 ## 18. Documentos de apoyo
 
 `docs/MOTOR_V2.md` · `docs/CIERRE_MVP.md` · `docs/AUDITORIA_PARAMETROS.md` · `docs/PRECISA_SENSIBILIDAD.md` · `docs/COMPARACION_MOTORES.md` · `docs/VALIDACION_FUENTES_SENAMHI.md` · `docs/SENAMHI_MORROPON_QC.md` · `../fieldshift-lab/INFORME.md` (investigación previa, laboratorio aislado).
+
+## 19. Errores detectados y cómo se corrigieron
+
+| # | Error o defecto hallado | Consecuencia | Corrección |
+|---|---|---|---|
+| 1 | El servidor consultaba siempre el **centro** del dominio (`gatherData(center)`) | Mover el marcador no cambiaba el resultado | Celda nativa de cada fuente en el punto elegido; relieve y suelo del punto; sin sustitución silenciosa por datos del centro (sección 5) |
+| 2 | El motor v1 **asumía riego** si no se declaraba | «No lo sé» se convertía en «sí» | Riego de tres estados; «no lo sé» = escenario marcado como condicionado |
+| 3 | v1 no reaccionaba a prioridades, agua ni ubicación; alternancia dominada por un costo ordinal | Resultado casi fijo (arroz continuo o alternancia por reglas, no por datos) | Motor v2 en dos etapas (viabilidad → comparación), sin doble conteo, demanda de agua real (ETc − lluvia, saturación, percolación) |
+| 4 | El sesgo de temperatura de POWER cambia de signo con la estación (Tmax −3,4 °C en diciembre, +2,2 en julio) | Una corrección global empeora el resultado | Offsets **mensuales** sobre ERA5-Land calibrados con SENAMHI 2001–2014 y validados fuera de muestra |
+| 5 | Los reanálisis corregidos subestiman 2–5 veces los días ≥ 35 °C | Estrés por calor irreal | Se usa la frecuencia **observada** en la estación (1981–2014) |
+| 6 | ERA5 (`best_match`) cambiaba de producto en 2017 | Serie inconsistente | Modelo fijado (`era5`; ERA5-Land para temperatura) |
+| 7 | El frijol común no completa su ciclo en la campaña grande con la temperatura calibrada | Cultivo inadecuado para el dominio | Frijol **Loctao** (*Vigna radiata*) con parámetros trazables; el frijol común queda en la base |
+| 8 | «Inviable» se declaraba con umbrales metodológicos | Se descartaban opciones sin base documental | «Inviable» solo por límites documentados; lo demás es «condicionada» |
+| 9 | Sin alternativa viable se devolvía solo la rotación actual, sin explicar | Resultado engañoso | `no_viable` con motivo por campaña y qué dato lo resolvería |
+| 10 | Los valores vacíos podían tomarse como cero | Datos inventados | Vacío = «no declarado» (se omite o viaja como `null`) en motor, API, web y app |
+| 11 | Cálculos y textos sin procedencia | Hipótesis presentadas como hechos | Categorías A–E en cada respuesta; inventario auditado de 59 parámetros |
+| 12 | La corrección de sesgo de lluvia global empeoraba el error | Distorsión | No se aplica; IMERG sin corrección; se declara |
+| 13 | En el chat: respuestas demasiado técnicas, tablas ilegibles y sugerencias que no desaparecían | Mala experiencia para agricultores | Prompt `cropi-1.3.0` (lenguaje sencillo, ≤ 70 palabras), render seguro de tablas, negrita y listas; sugerencias solo al inicio |
+| 14 | Groq rechazaba a veces la solicitud (llamada a herramienta mal formada) y `gpt-oss` agotaba los tokens razonando | Respuestas vacías o error 400 | Reintento y, si persiste, respuesta sin herramientas; razonamiento «low» por defecto |
+| 15 | Detrás de un proxy toda la gente compartía la misma IP en el límite de uso, y el chequeo de origen rechazaba al frontend publicado | Límite global y error 403 en producción | Variables `TRUST_PROXY` y `ALLOWED_ORIGINS` |
+
+## 20. Datos que ahora se pueden ingresar manualmente (modo Precisa)
+
+Todos son opcionales; lo que no se escribe queda «no declarado». Se usan solo si la persona los declara y no se guardan.
+
+- **Campaña:** fecha prevista de siembra de la primera campaña; cultivo principal a conservar (arroz o Loctao) y en qué campañas (grandes, chicas, todas, al menos 2 o 3 de 4).
+- **Agua y riego:** dotación de agua por campaña (m³/ha) y pérdida por filtración del arroz medida (mm/día; sustituye el rango FAO de 2–8).
+- **Cultivos:** ciclo observado del arroz y del Loctao (días); para el arroz ya sembrado, fecha real de siembra y fechas de macollaje, panoja, floración y maduración córnea (recalibran el ciclo).
+- **Suelo:** textura (arenosa, franca, arcillosa) y pH medido (sustituyen la estimación de SoilGrids).
+- **Economía:** rendimiento esperado, precio de venta y costos (establecimiento, riego, otros) por cultivo; solo se usan si están completos para **ambos** cultivos.
+- **Entradas base:** cultivo actual (obligatorio), campaña anterior («No lo sé» permitido), primera campaña a sembrar, área y riego de tres estados (sí / no / no lo sé).
+
+## 21. Asistente Cropi (chat con IA)
+
+- **Principio:** *la IA interpreta y explica; el motor agrícola calcula.* El asistente no calcula rotaciones, no estima rendimientos y no inventa datos.
+- **Arquitectura:** servicio en el backend (`src/assistant/`) con el SDK oficial `groq-sdk`. La clave `GROQ_API_KEY` vive solo en el servidor (`.env`, fuera de git). Modelo por defecto `openai/gpt-oss-120b` (configurable). Sesión anónima por cookie HttpOnly; el análisis activo y el historial están **en memoria** (sin almacenamiento permanente); límites por sesión y por IP.
+- **Herramientas de solo lectura** (lista blanca, argumentos validados): resumen del análisis, detalle de una rotación, comparación, requerimientos de agua, evidencia climática, procedencia de parámetros y **simulación de escenarios** sobre una copia (no altera el análisis activo).
+- **Estilo:** respuestas breves y sin jerga, sin tablas por defecto; las tablas Markdown se dibujan de forma segura (nunca HTML del modelo).
+- **Sin clave:** modo limitado explícito con respuestas deterministas construidas con datos reales del motor; no se simula una IA.
+- **Verificación:** 136 pruebas automáticas con dobles de Groq (solo en pruebas) y verificación **en vivo** con la clave real (`scripts/probar_groq.js`: modelo disponible, texto y llamada a herramienta), además de conversaciones reales en la web, en el emulador Android y a través del backend desplegado. Limitación: el uso correcto de herramientas y el cumplimiento del estilo dependen del modelo y no están garantizados al 100 %.
+
+## 22. Despliegue
+
+| Pieza | Dónde | Estado |
+|---|---|---|
+| Código web + backend | GitHub, rama `feat/fieldshift-morropon-validation` (repositorio `Josue049/NasaSpaceApp-CropWiese`); `master` sin tocar | Publicado |
+| Backend (Node.js) | VPS propio: servicio `systemd` `cropwise` en el puerto interno 3100, detrás de nginx con HTTPS (Let's Encrypt) en `https://cropwise.159-112-142-234.sslip.io` | **En producción**, verificado: mismos puntajes que en local (34 / 61 / 59,4) y Cropi con Groq activo |
+| Frontend (estático) | Servido también por el VPS en la misma dirección. Configuración lista para **Vercel** (`vercel.json`) y **Render** (`render.yaml`), con proxy de `/api` hacia el backend | Pendiente de conectar el repositorio en la cuenta de Vercel; al hacerlo hay que añadir su dominio a `ALLOWED_ORIGINS` en el servidor |
+
+Se eligió **Vercel** (sitio estático con rewrites) por ser la opción más simple: el frontend es JavaScript plano sin compilación; Render funciona igual con `render.yaml`. El VPS comparte máquina con otros proyectos: Cropwise se añadió como servicio y sitio de nginx independientes, sin tocar los existentes.
+
+## 23. App móvil (Flutter) — pendiente en local
+
+Aplicación Android (preparada para iOS) en `cropwise_mobile/`, rama local `feat/cropwise-flutter`: **no se ha subido a GitHub**. Es otra interfaz del mismo backend; no tiene motor ni IA propios. Incluye bienvenida, inicio, parcela con mapa real, datos (Instantánea y Precisa), confirmación, resultados con línea de tiempo, detalle, indicadores, Aprende y el chat de Cropi. Apunta por defecto al backend desplegado.
+
+Verificación: `flutter analyze` sin avisos; 39 pruebas; **paridad web ⇄ app** en 5 casos (entradas y resultados idénticos); APK probado en un emulador Android contra el backend desplegado. Pendiente: revisión visual en más tamaños y dispositivos reales, y publicación.
