@@ -266,3 +266,8 @@ label.check small{color:var(--muted);font-weight:400}
 .grid-top{margin-top:-16px}
 @media (max-width:900px){.hero{min-height:0;padding-bottom:64px}.hero-mascot img{width:min(300px,86%)}}
 @media (max-width:520px){.hero{border-radius:22px;padding:18px 16px 54px}.hero-text h1{font-size:28px}.hero-mascot img{width:min(250px,80%)}}
+
+/* héroe: fondo a todo el ancho de la ventana; el espacio lateral es padding interior (no margen) */
+.hero{width:100vw;margin:0 0 0 calc(50% - 50vw);border-radius:0;box-shadow:none;padding:clamp(20px,2.6vw,40px) max(var(--gut),calc((100vw - var(--maxw))/2 + var(--gut))) clamp(56px,5vw,84px)}
+@media (max-width:900px){.hero{padding-bottom:64px}}
+@media (max-width:520px){.hero{border-radius:0;padding:18px var(--gut) 54px}}
