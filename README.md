@@ -1,10 +1,22 @@
 # Field Shift
 
-> ℹ️ **Proyecto independiente de I+D.** Field Shift se desarrolla como proyecto de investigación y desarrollo tecnológico **independiente**. **No es, por ahora, una entrega oficial** al NASA Space Apps Challenge; la eventual participación y su elegibilidad se evaluarán por separado (el FAQ oficial 2026 dice: *«Teams are not allowed to begin working on the challenges prior to the hackathon.»*). La cronología real —incluido el prototipo v0.1 del 2026‑11‑06— está en [`docs/REGLAS_Y_CRONOLOGIA.md`](docs/REGLAS_Y_CRONOLOGIA.md).
+> ℹ️ Proyecto independiente de I+D. Field Shift se desarrolla como proyecto de investigación y desarrollo tecnológico independiente. No es, por ahora, una entrega oficial al NASA Space Apps Challenge; la eventual participación y su elegibilidad se evaluarán por separado (el FAQ oficial 2026 dice: «Teams are not allowed to begin working on the challenges prior to the hackathon.»). La cronología real —incluido el prototipo v0.1 del 2026-11-06— está en docs/REGLAS_Y_CRONOLOGIA.md.
 
-Herramienta de apoyo a decisiones para **comparar estrategias de rotación de cultivos por parcela** con datos de observación terrestre NASA, suelos, características de cultivos y prioridades del agricultor. Proyecto para el *NASA Space Apps Challenge 2026 – Field Shift: Adapting Farms with NASA Data*.
+Field Shift es una herramienta experimental de apoyo a decisiones agrícolas que busca comparar estrategias de rotación de cultivos mediante la integración de datos de observación de la Tierra de NASA, información edáfica, modelos agroclimáticos y criterios de evaluación multicriterio.
 
-> **Estado: v0.2 (demostración de investigación).** Los resultados son índices relativos calculados con datos de baja resolución y reglas agronómicas **provisionales, aún no validadas por un agrónomo**. No son predicciones de rendimiento ni prueba de mejora del suelo.
+El proyecto toma como referencia el desafío Field Shift: Adapting Farms with NASA Data del NASA Space Apps Challenge 2026 y explora cómo combinar información satelital con observaciones agrícolas locales para apoyar decisiones de manejo más informadas.
+
+Estado: v0.2 (demostración de investigación). Los resultados son índices relativos calculados con datos de baja resolución y reglas agronómicas provisionales, aún no validadas por un agrónomo. No son predicciones de rendimiento ni prueba de mejora del suelo.
+
+Equipo y contribuciones
+
+Field Shift se desarrolla mediante una colaboración interdisciplinaria que combina desarrollo de software, física aplicada, observación de la Tierra y análisis agroclimático.
+
+Josué Gutiérrez (@Josue049) — Arquitectura y desarrollo del software, programación del motor de evaluación multicriterio, integración de fuentes de datos y desarrollo de la interfaz interactiva.
+
+Isabella Nicole Chancahuana Castillo (@isabllach) — formulación y evaluación de criterios de ponderación, análisis de datos fenológicos de SENAMHI, revisión de fuentes de observación satelital y evaluación crítica de resultados e incertidumbres del modelo.
+
+El proyecto se encuentra en una etapa de desarrollo experimental. Sus siguientes líneas de trabajo incluyen la validación agroclimática con observaciones independientes, la integración de series temporales satelitales y la evaluación de estrategias de rotación bajo condiciones agrícolas locales.
 
 ## Qué hace
 
