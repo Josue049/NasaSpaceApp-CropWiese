@@ -254,3 +254,16 @@ test('si Groq rechaza la solicitud (bad_request), reintenta y luego responde sin
   const g2 = fakeGroq([bad(), say('Ok tras reintento')]);
   const s2 = await setup({ groq: g2 }); assert.equal((await chat(s2.A, s2.sid, 'hola')).body.reply, 'Ok tras reintento');
 });
+
+test('HTTP: ALLOWED_ORIGINS admite el frontend publicado; otros orígenes siguen rechazados', async () => {
+  process.env.ALLOWED_ORIGINS = 'https://cropwise.example';
+  delete require.cache[require.resolve('../server')];
+  const { server } = require('../server');
+  await new Promise((r) => server.listen(0, r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const post = (origin) => fetch(base + '/api/assistant/reset', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: '{}' });
+    assert.equal((await post('https://cropwise.example')).status, 200);
+    assert.equal((await post('https://malo.example')).status, 403);
+  } finally { server.close(); delete process.env.ALLOWED_ORIGINS; }
+});

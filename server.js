@@ -132,7 +132,10 @@ function sessionOf(req, res) {
   res.setHeader('Set-Cookie', `fs_sid=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=7200`);
   return sid;
 }
-const sameOrigin = (req) => { const o = req.headers.origin; if (!o) return true; try { return new URL(o).host === req.headers.host; } catch { return false; } };
+// Despliegue detrás de un proxy (nginx / Vercel): TRUST_PROXY=1 usa la IP que informa el proxy; ALLOWED_ORIGINS (lista separada por comas) admite el origen del frontend publicado.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map((x) => x.trim()).filter(Boolean);
+const clientIp = (req) => (process.env.TRUST_PROXY === '1' && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || 'x';
+const sameOrigin = (req) => { const o = req.headers.origin; if (!o) return true; try { const u = new URL(o); return u.host === req.headers.host || ALLOWED_ORIGINS.includes(u.origin); } catch { return false; } };
 
 async function handleAssistant(req, res, p, sid) {
   const sv = assistant.service, out = (r) => { if (r.body && r.body.retry_after) res.setHeader('Retry-After', String(r.body.retry_after)); return send(res, r.status, r.body); };
@@ -142,7 +145,7 @@ async function handleAssistant(req, res, p, sid) {
     if (!sameOrigin(req)) return send(res, 403, { error: 'Origen no permitido' });
     if (p === '/api/assistant/reset') return out(sv.reset(sid));
     let b; try { b = await readBody(req); } catch (e) { return send(res, 400, { error: e.message }); }
-    return out(await sv.chat({ sid, ip: req.socket.remoteAddress || 'x', message: b && b.message })); // el cliente NO elige el análisis: se usa el activo de su sesión
+    return out(await sv.chat({ sid, ip: clientIp(req), message: b && b.message })); // el cliente NO elige el análisis: se usa el activo de su sesión
   }
   return send(res, 404, { error: 'ruta no encontrada' });
 }
