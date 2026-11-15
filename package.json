@@ -4,12 +4,16 @@
   "description": "Field Shift – Apoyo a decisiones de rotación de cultivos con datos NASA (NASA Space Apps 2026)",
   "private": true,
   "type": "commonjs",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.js",
     "validate-data": "node scripts/validate_data.js",
     "backtest": "node scripts/backtest.js"
   },
-  "dependencies": {}
+  "dependencies": {
+    "groq-sdk": "^1.6.0"
+  }
 }

@@ -4,3 +4,6 @@ data/raw/
 data/parcels.json
 *.log
 .shots/
+.env
+.env.*
+!.env.example

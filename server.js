@@ -7,6 +7,10 @@ const crypto = require('crypto');
 const ds = require('./src/datasources');
 const { gatherData, analyze, outOfScope, SCENARIOS, CROPS } = require('./src/pipeline');
 const rice = require('./src/rice');
+// Fieldi (asistente): Groq solo en el servidor; la clave viene de GROQ_API_KEY (.env, nunca en el repo ni en el navegador).
+const { Store: AssistantStore } = require('./src/assistant/store');
+const { createAssistant } = require('./src/assistant');
+const assistant = createAssistant({ loadEnvFile: true, runSimulation: async (input) => analyze(input, await gatherData(input.lat, input.lon), SCENARIOS.base) });
 // Demo reducida: solo arroz Tinajones en Morropón. La API genérica de rotaciones queda apagada salvo FIELDSHIFT_LEGACY=1 (pruebas/desarrollo).
 const LEGACY = process.env.FIELDSHIFT_LEGACY === '1';
 
@@ -120,8 +124,33 @@ function validateRiceInput(b) {
   return { input: { lat, lon, area_ha: Math.max(0, Math.min(1000, Number(b.area_ha) || 0)), sowing_date: sowing, mode: b.mode === 'precisa' ? 'precisa' : 'instantanea', insitu: iv.insitu } };
 }
 
+/** Sesión anónima: identificador aleatorio en cookie HttpOnly (sin datos personales). Solo sirve para aislar el análisis activo de cada navegador. */
+function sessionOf(req, res) {
+  const m = /(?:^|;\s*)fs_sid=([a-f0-9]{32})(?:;|$)/.exec(req.headers.cookie || '');
+  if (m) return m[1];
+  const sid = AssistantStore.newSessionId();
+  res.setHeader('Set-Cookie', `fs_sid=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=7200`);
+  return sid;
+}
+const sameOrigin = (req) => { const o = req.headers.origin; if (!o) return true; try { return new URL(o).host === req.headers.host; } catch { return false; } };
+
+async function handleAssistant(req, res, p, sid) {
+  const sv = assistant.service, out = (r) => { if (r.body && r.body.retry_after) res.setHeader('Retry-After', String(r.body.retry_after)); return send(res, r.status, r.body); };
+  if (req.method === 'GET' && p === '/api/assistant/status') return send(res, 200, await sv.status(sid));
+  if (req.method === 'GET' && p === '/api/assistant/suggestions') return out(sv.suggestions(sid));
+  if (req.method === 'POST' && (p === '/api/assistant/chat' || p === '/api/assistant/reset')) {
+    if (!sameOrigin(req)) return send(res, 403, { error: 'Origen no permitido' });
+    if (p === '/api/assistant/reset') return out(sv.reset(sid));
+    let b; try { b = await readBody(req); } catch (e) { return send(res, 400, { error: e.message }); }
+    return out(await sv.chat({ sid, ip: req.socket.remoteAddress || 'x', message: b && b.message })); // el cliente NO elige el análisis: se usa el activo de su sesión
+  }
+  return send(res, 404, { error: 'ruta no encontrada' });
+}
+
 async function handleApi(req, res, url) {
   const p = url.pathname;
+  const sid = sessionOf(req, res);
+  if (p.startsWith('/api/assistant/')) return handleAssistant(req, res, p, sid);
   if (req.method === 'GET' && p === '/api/rice/meta') return send(res, 200, { scope: rice.DOMAIN, profile: rice.PROFILE, weights: rice.WEIGHTS, limitations: rice.LIMITATIONS, slots: require('./src/morropon').SLOTS });
   if (req.method === 'GET' && p === '/api/validation') { // resumen de la retroprueba (npm run backtest); solo lectura
     try {
@@ -185,6 +214,7 @@ async function handleApi(req, res, url) {
         }, { provenance: 'motor genérico de rotaciones (src/engine.js)' });
       }
     }
+    result.analysis_id = assistant.store.put(sid, v.input, result); // análisis activo de esta sesión para Fieldi (solo en memoria)
     return send(res, 200, result);
   }
   if (req.method === 'POST' && p === '/api/rice/analyze') {
@@ -288,4 +318,4 @@ const server = http.createServer(async (req, res) => {
 });
 
 if (require.main === module) server.listen(PORT, () => console.log(`Field Shift en http://localhost:${PORT}`));
-module.exports = { server, validateInput, defaultStartSlot };
+module.exports = { server, validateInput, defaultStartSlot, assistant };

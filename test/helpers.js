@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 process.env.FIELDSHIFT_DOMAIN = process.env.FIELDSHIFT_DOMAIN || 'peru'; // las pruebas heredadas usan el demo de Moyobamba
 process.env.FIELDSHIFT_LEGACY = '1'; // pruebas de la API genérica de rotaciones
+process.env.GROQ_API_KEY = ''; // las pruebas NUNCA usan una clave real de Groq (el .env local no se aplica porque la variable ya existe)
 process.env.FIELDSHIFT_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-cache-'));
 const { gatherData, analyze, SCENARIOS } = require('../src/pipeline');
 
