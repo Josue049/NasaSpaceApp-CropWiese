@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const ds = require('./src/datasources');
-const { gatherData, analyze, SCENARIOS, CROPS } = require('./src/pipeline');
+const { gatherData, analyze, outOfScope, SCENARIOS, CROPS } = require('./src/pipeline');
 const rice = require('./src/rice');
 // Demo reducida: solo arroz Tinajones en Morropón. La API genérica de rotaciones queda apagada salvo FIELDSHIFT_LEGACY=1 (pruebas/desarrollo).
 const LEGACY = process.env.FIELDSHIFT_LEGACY === '1';
@@ -114,8 +114,13 @@ async function handleApi(req, res, url) {
     if (iv.errors.length) return send(res, 400, { error: 'Entrada inválida', details: iv.errors });
     const cal = require('./src/insitu').calibratedProfile(rice.PROFILE, iv.insitu);
     if (cal.profile.calibrated) v.input.rice_cycle = cal.profile.cycle;
-    const g = await gatherData(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon);
-    const job = ensureImerg(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon, g.imergMissing);
+    // La ubicación elegida por el usuario es la que alimenta el motor (clima por celda nativa; elevación, pendiente y suelo del punto).
+    if (!rice.inBox(v.input.lat, v.input.lon)) { // fuera del ámbito: se explica sin consultar datos de otro lugar
+      const r0 = outOfScope(v.input); r0.input = v.input; r0.mode = 'instantanea'; r0.imerg_job = { state: 'ready', done: 0, total: 0, errors: [] };
+      return send(res, 200, r0);
+    }
+    const g = await gatherData(v.input.lat, v.input.lon);
+    const job = ensureImerg(g.imergQuery.lat, g.imergQuery.lon, g.imergMissing);
     let result;
     try { result = analyze(v.input, g, v.scenario); } catch (e) { return send(res, 422, { error: e.message }); }
     result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };
@@ -141,9 +146,9 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && p === '/api/rice/analyze') {
     const v = validateRiceInput(await readBody(req));
     if (v.errs) return send(res, 400, { error: 'Entrada inválida', details: v.errs });
-    // El clima se toma de la celda de la estación (la demo cubre una sola localidad); la parcela solo aporta su ubicación, área y pendiente.
-    const g = await gatherData(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon);
-    const job = ensureImerg(rice.DOMAIN.center.lat, rice.DOMAIN.center.lon, g.imergMissing);
+    if (!rice.inBox(v.input.lat, v.input.lon)) { const r0 = outOfScope(v.input); r0.imerg_job = { state: 'ready', done: 0, total: 0, errors: [] }; return send(res, 200, r0); }
+    const g = await gatherData(v.input.lat, v.input.lon); // datos del punto elegido, no del centro del dominio
+    const job = ensureImerg(g.imergQuery.lat, g.imergQuery.lon, g.imergMissing);
     let result;
     try { result = rice.analyzeRice(v.input, g); } catch (e) { return send(res, 422, { error: e.message }); }
     result.imerg_job = { state: job.state, done: job.done, total: job.total, errors: job.errors };

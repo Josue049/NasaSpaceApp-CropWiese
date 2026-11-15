@@ -6,6 +6,7 @@ const ds = require('./datasources');
 const { buildClimate, sowingWindows, awcFromSoil, tempUncertainty, canopyCoverMean } = require('./climate');
 const engine = require('./engine');
 const morropon = require('./morropon');
+const location = require('./location');
 
 const CROPS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'crops.json'), 'utf8'));
 for (const c of CROPS.crops) c.canopy_cover = canopyCoverMean(c); // campo derivado (FAO-56 ec. 76); no está en el JSON
@@ -17,15 +18,56 @@ const SCENARIOS = {
   wet: { id: 'wet', label: 'Hipotético lluvioso: lluvia +15 %', precip_factor: 1.15, temp_delta: 0, hypothetical: true },
 };
 
-/** Reúne los datos de un punto. No lanza excepciones: informa lo que falta. */
-async function gatherData(lat, lon, { allowFetchImerg = false } = {}) {
-  const [power, era5, slope, soil] = await Promise.all([ds.getPower(lat, lon), ds.getEra5(lat, lon), ds.getSlope(lat, lon), ds.getSoil(lat, lon)]);
-  const imerg = ds.getImergCached(lat, lon);
-  return { power, era5, slope, soil, imerg, imergComplete: imerg.missing.length === 0, imergMissing: imerg.missing };
+/**
+ * Reúne los datos de un punto. No lanza excepciones: informa lo que falta.
+ * En el dominio Morropón cada fuente de CLIMA se consulta en la celda nativa que contiene al punto elegido (ver src/location.js);
+ * elevación/pendiente (SRTM) y suelo (SoilGrids) se consultan en el punto exacto. Fuera de ese dominio (pruebas heredadas) se usa el punto tal cual.
+ */
+async function gatherData(lat, lon, { allowFetchImerg = false, station = morropon.PROFILE.station } = {}) {
+  const useCells = activeDomain().id === 'morropon';
+  const loc = useCells ? location.resolveCells(lat, lon, station) : null;
+  const q = (src) => (loc ? loc.sources[src].query : { lat, lon });
+  const [power, era5, slope, soil] = await Promise.all([ds.getPower(q('power').lat, q('power').lon), ds.getEra5(q('era5').lat, q('era5').lon), ds.getSlope(lat, lon), ds.getSoil(lat, lon)]);
+  const imerg = ds.getImergCached(q('imerg').lat, q('imerg').lon);
+  return { power, era5, slope, soil, imerg, imergComplete: imerg.missing.length === 0, imergMissing: imerg.missing, imergQuery: q('imerg'), location: loc, requested: { lat, lon } };
 }
 
 // Serie utilizable si cubre >= 95 % de los días de la ventana de análisis
 function usableRain(map) { return !!map && Object.keys(map).length >= (ds.Y1 - ds.Y0 + 1) * 365 * 0.95; }
+
+/** Respuesta para un punto fuera del ámbito de la demo: se explica el motivo sin consultar datos de otro lugar. */
+function outOfScope(input) {
+  const dom = activeDomain();
+  const msg = `Fuera del alcance de la demo (${dom.label}): lat ${dom.box.latMin} a ${dom.box.latMax}, lon ${dom.box.lonMin} a ${dom.box.lonMax} (caja aproximada de diseño).`;
+  return { engine_version: engine.ENGINE_VERSION, generated_at: new Date().toISOString(), unsupported: true, strategies: [], limitations: [msg, 'No se generan estrategias para esta ubicación.'], robustness: null, sensitivity: null, weights: {},
+    support: { level: 'no_recomendable', blockers: [msg], cautions: [], note: 'No se consultaron datos: no se sustituyen por los de otra ubicación.' },
+    location_report: { requested: input ? { lat: input.lat, lon: input.lon } : null, point: null, uses_cells: false, sources: [], fallbacks: [], note: 'Sin consulta de datos por estar fuera del ámbito.' },
+    context: { irrigated: !!(input && input.irrigation), start_slot: (input && input.start_slot) || 'A', history: (input && input.history) || [] } };
+}
+
+/** Resumen auditable de qué datos alimentan el resultado en el punto elegido y qué respaldo explícito se aplicó. */
+function describeLocation(g, climates) {
+  const loc = g.location, req = g.requested || null;
+  const roleOf = (id) => { const c = climates.find((x) => x.id === id); return c ? (c.role === 'primary' ? 'principal' : 'control') : null; };
+  const sources = [];
+  const fallbacks = [];
+  const add = (id, label, resolution, status, cell, note) => sources.push({ id, label, resolution, status, role: roleOf(id), cell: cell || null, note: note || null });
+  const cellInfo = (id) => (loc ? { center: loc.sources[id].cell_center, query: loc.sources[id].query, distance_km: loc.sources[id].distance_to_cell_center_km, same_as_station: loc.sources[id].same_cell_as_station } : null);
+  add('power', 'NASA POWER (MERRA-2)', loc ? loc.sources.power.resolution : '0,5° × 0,625°', g.power.ok ? (g.power.provenance.cached ? 'caché' : 'en vivo') : 'no_disponible', cellInfo('power'), g.power.ok ? null : g.power.error);
+  add('era5', 'ERA5 (Open-Meteo)', loc ? loc.sources.era5.resolution : '~0,1°', g.era5.ok ? (g.era5.provenance.cached ? 'caché' : 'en vivo') : 'no_disponible', cellInfo('era5'), g.era5.ok ? null : g.era5.error);
+  add('imerg', 'GPM IMERG V07', loc ? loc.sources.imerg.resolution : '0,1°', g.imergComplete ? 'caché' : 'no_disponible', cellInfo('imerg'), g.imergComplete ? null : `faltan años: ${g.imergMissing.join(', ')}`);
+  add('srtm', 'SRTM (elevación y pendiente)', '30 m (ventana de 180 m)', g.slope.ok ? (g.slope.provenance.cached ? 'caché' : 'en vivo') : 'no_disponible', null, g.slope.ok ? null : g.slope.error);
+  add('soilgrids', 'SoilGrids 2.0 (suelo 0–30 cm)', '250 m, modelado', g.soil.ok ? (g.soil.provenance.cached ? 'caché' : 'en vivo') : 'no_disponible', g.soil.ok && g.soil.data.queried_at ? { query: g.soil.data.queried_at, moved: !!g.soil.data.moved_from_input } : null, g.soil.ok ? (g.soil.data.moved_from_input ? 'el punto exacto está enmascarado; se usó un punto vecino (≤ 700 m)' : null) : g.soil.error);
+  if (!g.imergComplete) fallbacks.push({ id: 'imerg', text: 'No hay serie IMERG descargada para la celda de este punto: la lluvia principal pasa a ERA5, con POWER como control. La confianza en el riesgo hídrico baja hasta completar la descarga.' });
+  if (!g.soil.ok) fallbacks.push({ id: 'soilgrids', text: 'SoilGrids no respondió en este punto: se omite el criterio de aptitud de suelo. No se sustituye por el suelo de otro lugar.' });
+  if (!g.slope.ok) fallbacks.push({ id: 'srtm', text: 'No se pudo obtener elevación/pendiente de este punto: no se corrige la temperatura por altitud ni se evalúa erosión. No se usan los valores del centro.' });
+  if (!g.power.ok) fallbacks.push({ id: 'power', text: 'NASA POWER no respondió: sin temperatura ni radiación no se puede calcular el análisis.' });
+  return {
+    requested: req, point: { elevation_m: g.slope.ok ? Math.round(g.slope.data.elevation_m) : null, slope_pct: g.slope.ok ? +g.slope.data.slope_pct.toFixed(1) : null, soil_ph: g.soil.ok ? +g.soil.data.phh2o.mean.toFixed(2) : null, clay_pct: g.soil.ok && g.soil.data.clay ? +g.soil.data.clay.mean.toFixed(0) : null, sand_pct: g.soil.ok && g.soil.data.sand ? +g.soil.data.sand.mean.toFixed(0) : null },
+    uses_cells: !!loc, sources, fallbacks,
+    note: 'Clima: una serie por celda nativa de cada producto (puntos de la misma celda comparten datos). Elevación, pendiente y suelo: del punto elegido. Si dos ubicaciones caen en la misma celda de lluvia/temperatura, esas variables no cambiarán entre ellas.',
+  };
+}
 
 /** Construye las climatologías por fuente de lluvia. IMERG es la fuente primaria si está completa. */
 function buildClimates(g, scenario = SCENARIOS.base) {
@@ -105,6 +147,7 @@ function analyze(input, g, scenario = SCENARIOS.base) {
       soil: g.soil.ok ? g.soil.data : null,
     });
   res.support = support;
+  res.location_report = describeLocation(g, climates);
   res.domain = { id: dom.id, label: dom.label, temp_offsets_c: tempOffsets, crops: cropList.map((c) => c.id), slots: dom.slots || null };
   if (!res.unsupported) {
     const prim = climates.find((c) => c.role === 'primary') || climates[0];
@@ -137,4 +180,4 @@ function analyze(input, g, scenario = SCENARIOS.base) {
   return res;
 }
 
-module.exports = { gatherData, buildClimates, analyze, assessSupport, activeDomain, DOMAINS, SCENARIOS, CROPS };
+module.exports = { outOfScope, describeLocation, gatherData, buildClimates, analyze, assessSupport, activeDomain, DOMAINS, SCENARIOS, CROPS };
