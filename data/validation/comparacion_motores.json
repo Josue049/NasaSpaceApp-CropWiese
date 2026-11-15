@@ -1,0 +1,551 @@
+{
+ "generado": "2026-11-15T09:24:10.286Z",
+ "antes_despues": [
+  {
+   "label": "inicio grande · hist. arroz–arroz",
+   "v1_legacy": [
+    [
+     "AAAA",
+     53.9
+    ],
+    [
+     "FAFA",
+     65.5
+    ],
+    [
+     "FFAF",
+     62.5
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AAAA",
+     53.1
+    ],
+    [
+     "FAFA",
+     65.1
+    ],
+    [
+     "FFAF",
+     62.6
+    ]
+   ],
+   "v2": [
+    [
+     "AAAA",
+     34
+    ],
+    [
+     "LLAL",
+     61
+    ],
+    [
+     "LALA",
+     59.4
+    ]
+   ],
+   "v2_no_viable": false
+  },
+  {
+   "label": "inicio chica · hist. arroz–arroz",
+   "v1_legacy": [
+    [
+     "AAAA",
+     53.9
+    ],
+    [
+     "FAFA",
+     65.4
+    ],
+    [
+     "FFAF",
+     62.6
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AAAA",
+     53.1
+    ],
+    [
+     "FAFA",
+     65.6
+    ],
+    [
+     "FFAF",
+     62.4
+    ]
+   ],
+   "v2": [
+    [
+     "AAAA",
+     34
+    ],
+    [
+     "LALA",
+     69.5
+    ],
+    [
+     "LLAL",
+     55.9
+    ]
+   ],
+   "v2_no_viable": false
+  },
+  {
+   "label": "inicio grande · hist. arroz–{leg}",
+   "v1_legacy": [
+    [
+     "AFAF",
+     65.4
+    ],
+    [
+     "FAFA",
+     60
+    ],
+    [
+     "AFFA",
+     59.9
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AFAF",
+     65.6
+    ],
+    [
+     "AFFA",
+     59.9
+    ],
+    [
+     "FAFA",
+     59.6
+    ]
+   ],
+   "v2": [
+    [
+     "ALAL",
+     69.5
+    ],
+    [
+     "LLLL",
+     54.9
+    ],
+    [
+     "ALLA",
+     53.2
+    ]
+   ],
+   "v2_no_viable": false
+  },
+  {
+   "label": "inicio grande · sin riego",
+   "v1_legacy": [
+    [
+     "AAAA",
+     41.8
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AAAA",
+     41
+    ]
+   ],
+   "v2": [
+    [
+     "AAAA",
+     35.2
+    ]
+   ],
+   "v2_no_viable": true
+  },
+  {
+   "label": "inicio grande · 12 000 m³/ha",
+   "v1_legacy": [
+    [
+     "AAAA",
+     53.9
+    ],
+    [
+     "FAFA",
+     65.5
+    ],
+    [
+     "FFAF",
+     62.5
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AAAA",
+     53.1
+    ],
+    [
+     "FAFA",
+     65.1
+    ],
+    [
+     "FFAF",
+     62.6
+    ]
+   ],
+   "v2": [
+    [
+     "AAAA",
+     43.7
+    ],
+    [
+     "ALAL",
+     64
+    ],
+    [
+     "LALA",
+     64.5
+    ]
+   ],
+   "v2_no_viable": false
+  },
+  {
+   "label": "inicio grande · 6 000 m³/ha",
+   "v1_legacy": [
+    [
+     "AAAA",
+     53.9
+    ],
+    [
+     "FAFA",
+     65.5
+    ],
+    [
+     "FFAF",
+     62.5
+    ]
+   ],
+   "v1_nueva_temp": [
+    [
+     "AAAA",
+     53.1
+    ],
+    [
+     "FAFA",
+     65.1
+    ],
+    [
+     "FFAF",
+     62.6
+    ]
+   ],
+   "v2": [
+    [
+     "AAAA",
+     35.2
+    ],
+    [
+     "LLLL",
+     56
+    ]
+   ],
+   "v2_no_viable": false
+  }
+ ],
+ "ubicacion": [
+  {
+   "punto": "Centro (estación)",
+   "lat": -5.19,
+   "lon": -79.99,
+   "elevation_m": 118,
+   "slope_pct": 0.9,
+   "soil_ph": 7.35,
+   "clay_pct": 18,
+   "sand_pct": 62,
+   "fuente_principal": "imerg",
+   "soporte": "limitada",
+   "bloqueos": [],
+   "necesidad_arroz_mm": [
+    1067,
+    1350
+   ],
+   "fallbacks": []
+  },
+  {
+   "punto": "Zona llana (noroeste)",
+   "lat": -5.11,
+   "lon": -80.08,
+   "elevation_m": 108,
+   "slope_pct": 0.2,
+   "soil_ph": 7.28,
+   "clay_pct": 16,
+   "sand_pct": 58,
+   "fuente_principal": "era5",
+   "soporte": "limitada",
+   "bloqueos": [],
+   "necesidad_arroz_mm": [
+    1141,
+    1343
+   ],
+   "fallbacks": [
+    "imerg"
+   ]
+  },
+  {
+   "punto": "Pendiente moderada (suroeste)",
+   "lat": -5.28,
+   "lon": -80.08,
+   "elevation_m": 143,
+   "slope_pct": 13.4,
+   "soil_ph": 7.38,
+   "clay_pct": 21,
+   "sand_pct": 55,
+   "fuente_principal": "era5",
+   "soporte": "limitada",
+   "bloqueos": [],
+   "necesidad_arroz_mm": [
+    1242,
+    1391
+   ],
+   "fallbacks": [
+    "imerg"
+   ]
+  },
+  {
+   "punto": "Piedemonte (este)",
+   "lat": -5.2,
+   "lon": -79.89,
+   "elevation_m": 600,
+   "slope_pct": 54,
+   "soil_ph": 6.68,
+   "clay_pct": 23,
+   "sand_pct": 54,
+   "fuente_principal": "era5",
+   "soporte": "no_recomendable",
+   "bloqueos": [
+    "Pendiente 54 %: el modelo (cultivos anuales) no es adecuado; se requiere una evaluación de conservación de suelos."
+   ],
+   "necesidad_arroz_mm": null,
+   "fallbacks": [
+    "imerg"
+   ]
+  },
+  {
+   "punto": "Zona de mayor altitud (noreste)",
+   "lat": -5.11,
+   "lon": -79.9,
+   "elevation_m": 828,
+   "slope_pct": 61.5,
+   "soil_ph": 6.6,
+   "clay_pct": 28,
+   "sand_pct": 50,
+   "fuente_principal": "era5",
+   "soporte": "no_recomendable",
+   "bloqueos": [
+    "Pendiente 62 %: el modelo (cultivos anuales) no es adecuado; se requiere una evaluación de conservación de suelos."
+   ],
+   "necesidad_arroz_mm": null,
+   "fallbacks": [
+    "imerg"
+   ]
+  }
+ ],
+ "sensibilidad": {
+  "agua": [
+   [
+    "secano",
+    "Arroz: grande inviable, chica inviable · Loctao: grande condicionada, chica inviable",
+    "sin alternativa",
+    "1350 mm"
+   ],
+   [
+    "3000 m³/ha",
+    "Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable",
+    "LLLL (56)",
+    "1350 mm"
+   ],
+   [
+    "6000 m³/ha",
+    "Arroz: grande inviable, chica inviable · Loctao: grande favorable, chica favorable",
+    "LLLL (56)",
+    "1350 mm"
+   ],
+   [
+    "9000 m³/ha",
+    "Arroz: grande favorable, chica inviable · Loctao: grande favorable, chica favorable",
+    "LLAL (63.4)",
+    "1350 mm"
+   ],
+   [
+    "12000 m³/ha",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "ALAL (64)",
+    "1350 mm"
+   ],
+   [
+    "15000 m³/ha",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LALA (66)",
+    "1350 mm"
+   ]
+  ],
+  "temperatura": [
+   [
+    "base",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61)"
+   ],
+   [
+    "+1 °C",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61)"
+   ],
+   [
+    "+2 °C",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61.2)"
+   ],
+   [
+    "+3 °C",
+    "Arroz: grande condicionada, chica favorable · Loctao: grande favorable, chica favorable",
+    "LALA (59.3)"
+   ],
+   [
+    "−1 °C",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61)"
+   ],
+   [
+    "−2 °C",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61)"
+   ]
+  ],
+  "lluvia": [
+   [
+    "Hipotético seco: lluvia −20 %, +1,5 °C",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61.1)"
+   ],
+   [
+    "Hipotético lluvioso: lluvia +15 %",
+    "Arroz: grande favorable, chica favorable · Loctao: grande favorable, chica favorable",
+    "LLAL (61)"
+   ]
+  ],
+  "ciclo_loctao": [
+   [
+    59,
+    "favorable (59 d) / favorable (59 d)",
+    "LLAL (61)"
+   ],
+   [
+    75,
+    "favorable (75 d) / favorable (75 d)",
+    "LLAL (60.6)"
+   ],
+   [
+    90,
+    "favorable (90 d) / favorable (90 d)",
+    "LALA (60.3)"
+   ]
+  ],
+  "umbral_calor": [
+   [
+    32,
+    "0.67 / 0.41",
+    "LALA (49.2)"
+   ],
+   [
+    35,
+    "0.26 / 0.07",
+    "LLAL (61)"
+   ],
+   [
+    38,
+    "0.04 / 0",
+    "LALA (69.7)"
+   ],
+   [
+    40,
+    "0 / 0",
+    "LALA (70.1)"
+   ]
+  ],
+  "percolacion": [
+   [
+    "2 mm/d",
+    "722 / 1008",
+    "ALAL (64.2)"
+   ],
+   [
+    "5 mm/d",
+    "1067 / 1350",
+    "LLAL (63.4)"
+   ],
+   [
+    "8 mm/d",
+    "1412 / 1692",
+    "LLLL (56.2)"
+   ]
+  ],
+  "fuente_lluvia": [
+   [
+    "todas (pesos)",
+    1067,
+    "LLAL (63.4)",
+    "ALAL (64)"
+   ],
+   [
+    "imerg",
+    1067,
+    "LLAL (63.4)",
+    "ALAL (64)"
+   ],
+   [
+    "era5",
+    967,
+    "ALAL (63.6)",
+    "ALAL (64.5)"
+   ],
+   [
+    "power",
+    1134,
+    "LLLL (56.3)",
+    "ALAL (64.2)"
+   ]
+  ],
+  "historial_prioridades": [
+   [
+    "hist. arroz–arroz",
+    "LLAL (61)"
+   ],
+   [
+    "hist. arroz–Loctao",
+    "LLLL (54.9)"
+   ],
+   [
+    "hist. Loctao–arroz",
+    "LLAL (61)"
+   ],
+   [
+    "prioridad agua = 5",
+    "LLAL (62.6)"
+   ],
+   [
+    "prioridad suelo = 5",
+    "LLAL (62.4)"
+   ],
+   [
+    "prioridad plagas = 5",
+    "LALA (62.3)"
+   ],
+   [
+    "prioridad calor = 5",
+    "ALAL (60.8)"
+   ],
+   [
+    "conservar arroz en la grande",
+    "ALAL (58.3)"
+   ]
+  ]
+ }
+}
